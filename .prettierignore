@@ -1,0 +1,20 @@
+node_modules/
+**/node_modules/
+.turbo/
+.expo/
+dist/
+coverage/
+.venv/
+__pycache__/
+*.py
+*.pyc
+pnpm-lock.yaml
+apps/api/.venv/
+supabase/.temp/
+packages/api-contract/src/generated/
+
+# Supplied Phase 1 artifacts — keep verbatim
+AGENTS.md
+opencode-master-prompt.md
+docs/product/
+docs/architecture/

@@ -1,0 +1,49 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "careeros-api"
+version = "0.1.0"
+description = "CareerOS AI trusted API"
+requires-python = ">=3.12"
+dependencies = [
+  "fastapi>=0.141,<1.0",
+  "uvicorn[standard]>=0.52,<1.0",
+  "pydantic>=2.13,<3.0",
+  "pydantic-settings>=2.15,<3.0",
+  "python-multipart>=0.0.20",
+  "httpx>=0.28,<1.0",
+  "supabase>=2.31,<3.0",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=9,<10",
+  "pytest-asyncio>=1.4,<2",
+  "ruff>=0.16,<1",
+  "python-dotenv>=1.2,<2",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["app"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+asyncio_mode = "auto"
+markers = [
+  "integration: tests that hit the live Supabase project; skip without env config",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py314"
+src = ["app", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "ANN", "S"]
+ignore = ["S101"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["ANN001", "ANN201", "S105", "S106"]

@@ -1,0 +1,51 @@
+# Dependencies
+node_modules/
+
+# Expo / EAS
+.expo/
+dist/
+web-build/
+expo-env.d.ts
+*.tsbuildinfo
+
+# Environment secrets — never commit
+.env
+.env.*
+!.env.example
+!.env.test
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+.venv/
+venv/
+
+# Build / output
+coverage/
+*.log
+
+# IDE
+.idea/
+.vscode/
+.DS_Store
+
+# Supabase
+supabase/.branches
+supabase/.temp
+
+# Generated OpenAPI schema (transient; committed types live in src/generated)
+packages/api-contract/openapi.json
+
+# Local tooling binaries (Supabase CLI)
+tools/
+
+# Turbo
+.turbo/
+
+# Misc
+*.local
