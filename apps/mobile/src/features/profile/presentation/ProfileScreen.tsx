@@ -3,6 +3,7 @@ import { useCallback, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
+  Linking,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -232,6 +233,24 @@ export default function ProfileScreen() {
             <Text style={[styles.dangerButtonText, { color: colors.onDanger }]}>{t("profile.deleteAccount")}</Text>
           )}
         </Pressable>
+
+        <View style={styles.legalLinks}>
+          <Pressable
+            accessibilityRole="link"
+            accessibilityLabel="Open Privacy Policy"
+            onPress={() => void Linking.openURL("https://careeros.ai/privacy")}
+          >
+            <Text style={[styles.legalLink, { color: colors.textSecondary }]}>{t("profile.privacyPolicy")}</Text>
+          </Pressable>
+          <Text style={[styles.legalDot, { color: colors.textSecondary }]}>·</Text>
+          <Pressable
+            accessibilityRole="link"
+            accessibilityLabel="Open Terms of Service"
+            onPress={() => void Linking.openURL("https://careeros.ai/terms")}
+          >
+            <Text style={[styles.legalLink, { color: colors.textSecondary }]}>{t("profile.termsOfService")}</Text>
+          </Pressable>
+        </View>
       </ScrollView>
     </AppBackground>
   );
@@ -349,5 +368,19 @@ const styles = StyleSheet.create({
   retryText: {
     fontSize: 15,
     fontWeight: "700",
+  },
+  legalLinks: {
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    marginTop: 24,
+    gap: 8,
+  },
+  legalLink: {
+    fontSize: 13,
+    textDecorationLine: "underline",
+  },
+  legalDot: {
+    fontSize: 13,
   },
 });

@@ -114,6 +114,8 @@ const en = {
     deleteErrorBody: "Please try again later.",
     resetSent: "Password reset link sent to your email.",
     resetFailed: "Could not send the reset link right now. Please try again.",
+    privacyPolicy: "Privacy Policy",
+    termsOfService: "Terms of Service",
     errorTitle: "Could not load your profile",
     couldNotLoad: "Could not load your profile.",
   },

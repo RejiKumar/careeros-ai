@@ -9,7 +9,7 @@ const profiles: Record<AppEnvironment, Partial<ExpoConfig>> = {
     name: "CareerOS AI (Dev)",
     slug: "careeros-ai",
     scheme: "careerosdev",
-    version: "0.1.0",
+    version: "1.0.0",
     android: {
       package: "ai.careeros.app.dev",
       versionCode: 1,
@@ -23,7 +23,7 @@ const profiles: Record<AppEnvironment, Partial<ExpoConfig>> = {
     name: "CareerOS AI (QA)",
     slug: "careeros-ai",
     scheme: "careerosqa",
-    version: "0.1.0",
+    version: "1.0.0",
     android: {
       package: "ai.careeros.app.qa",
       versionCode: 1,
@@ -37,7 +37,7 @@ const profiles: Record<AppEnvironment, Partial<ExpoConfig>> = {
     name: "CareerOS AI",
     slug: "careeros-ai",
     scheme: "careerosai",
-    version: "0.1.0",
+    version: "1.0.0",
     android: {
       package: "ai.careeros.app",
       versionCode: 1,
@@ -57,7 +57,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     ...profile,
     name: profile.name ?? config.name ?? "CareerOS AI",
     slug: profile.slug ?? config.slug ?? "careeros-ai",
-    version: profile.version ?? config.version ?? "0.1.0",
+    version: profile.version ?? config.version ?? "1.0.0",
     orientation: "portrait",
     userInterfaceStyle: "automatic",
     icon: "./assets/careerosai_icon.png",
