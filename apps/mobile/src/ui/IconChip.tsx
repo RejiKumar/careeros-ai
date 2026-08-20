@@ -20,7 +20,7 @@ export default function IconChip({
   gradient,
 }: IconChipProps) {
   const { theme } = useTheme();
-  const iconColor = color ?? theme.colors.primary;
+  const iconColor = color ?? (gradient !== undefined ? "#FFFFFF" : theme.colors.primary);
   const inner = (
     <Ionicons name={name} size={size * 0.5} color={iconColor} />
   );
