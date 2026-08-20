@@ -20,6 +20,7 @@ import GlassCard from "@/ui/GlassCard";
 import IconChip, { type IconName } from "@/ui/IconChip";
 import ScreenHeader from "@/ui/ScreenHeader";
 import ScoreRing from "@/ui/ScoreRing";
+import AdBanner from "@/ui/AdBanner";
 import en, { t } from "../../../i18n";
 
 const LEVEL_NAMES = en.levels;
@@ -384,6 +385,8 @@ export default function DashboardScreen() {
             </Pressable>
           ))}
         </View>
+
+        <AdBanner />
       </ScrollView>
     </AppBackground>
   );

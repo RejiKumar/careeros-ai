@@ -83,6 +83,14 @@ export default ({ config }: ConfigContext): ExpoConfig => {
           backgroundColor: "#000000",
         },
       ],
+      [
+        "react-native-google-mobile-ads",
+        {
+          android_app_id: "ca-app-pub-3940256099942544~3347511713",
+          ios_app_id: "ca-app-pub-3940256099942544~1458002511",
+          user_tracking_usage_description: "This identifier will be used to deliver personalized ads to you.",
+        },
+      ],
     ],
   };
 };
