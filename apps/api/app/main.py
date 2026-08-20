@@ -14,6 +14,7 @@ from app.core.errors import register_exception_handlers
 from app.core.logging import configure_logging
 from app.modules.assessments.router import router as assessments_router
 from app.modules.auth.router import router as auth_router
+from app.modules.billing.router import router as billing_router
 from app.modules.coach.router import router as coach_router
 from app.modules.feedback.router import router as feedback_router
 from app.modules.health.router import router as health_router
@@ -67,6 +68,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.include_router(missions_router, prefix=API_V1_PREFIX)
     app.include_router(roast_router, prefix=API_V1_PREFIX)
     app.include_router(wrapped_router, prefix=API_V1_PREFIX)
+    app.include_router(billing_router, prefix=API_V1_PREFIX)
 
     @app.get("/health", tags=["health"])
     def root_health() -> dict[str, str]:

@@ -59,3 +59,7 @@ package-lock.json
 
 # Original icon file (replaced by resized PNGs)
 apps/mobile/assets/careerosai_icon
+apps/mobile/assets/app_icon
+
+# Temp files
+tmp_screenshot*.png

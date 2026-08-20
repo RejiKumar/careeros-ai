@@ -60,11 +60,11 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     version: profile.version ?? config.version ?? "0.1.0",
     orientation: "portrait",
     userInterfaceStyle: "automatic",
-    icon: "./assets/icon.png",
+    icon: "./assets/careerosai_icon.png",
     android: {
       ...profile.android,
       adaptiveIcon: {
-        foregroundImage: "./assets/adaptive-icon.png",
+        foregroundImage: "./assets/careerosai_icon.png",
         backgroundColor: "#000000",
       },
     },
@@ -77,7 +77,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
       [
         "expo-splash-screen",
         {
-          image: "./assets/splash-icon.png",
+          image: "./assets/careerosai_icon.png",
           imageWidth: 200,
           resizeMode: "contain",
           backgroundColor: "#000000",

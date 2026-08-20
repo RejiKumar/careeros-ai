@@ -1,0 +1,100 @@
+name: Android Build
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "Build environment"
+        required: true
+        default: "production"
+        type: choice
+        options:
+          - dev
+          - qa
+          - production
+      build_type:
+        description: "Build output"
+        required: true
+        default: "split-apk"
+        type: choice
+        options:
+          - split-apk
+          - app-bundle
+  push:
+    branches: [prod]
+
+concurrency:
+  group: android-build-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build Android (${{ inputs.environment || 'production' }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 11.21.0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Generate Expo prebuild
+        working-directory: apps/mobile
+        env:
+          EXPO_PUBLIC_APP_ENV: ${{ inputs.environment || 'production' }}
+          EXPO_PUBLIC_SUPABASE_URL: ${{ secrets.EXPO_PUBLIC_SUPABASE_URL }}
+          EXPO_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.EXPO_PUBLIC_SUPABASE_ANON_KEY }}
+        run: npx expo prebuild --platform android --clean
+
+      - name: Build split APKs (per-ABI)
+        if: ${{ (inputs.build_type || 'split-apk') == 'split-apk' }}
+        working-directory: apps/mobile/android
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleRelease -PenableSeparateBuildPerCPUArchitecture=true
+
+      - name: Build App Bundle
+        if: ${{ inputs.build_type == 'app-bundle' }}
+        working-directory: apps/mobile/android
+        run: |
+          chmod +x gradlew
+          ./gradlew bundleRelease
+
+      - name: Collect APK artifacts
+        if: ${{ (inputs.build_type || 'split-apk') == 'split-apk' }}
+        run: |
+          mkdir -p artifacts
+          find apps/mobile/android/app/build/outputs/apk/release -name "*.apk" -exec cp {} artifacts/ \;
+          ls -lh artifacts/
+
+      - name: Collect AAB artifact
+        if: ${{ inputs.build_type == 'app-bundle' }}
+        run: |
+          mkdir -p artifacts
+          find apps/mobile/android/app/build/outputs/bundle/release -name "*.aab" -exec cp {} artifacts/ \;
+          ls -lh artifacts/
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-${{ inputs.environment || 'production' }}-${{ inputs.build_type || 'split-apk' }}
+          path: artifacts/
+          retention-days: 14
+          if-no-files-found: error
