@@ -12,9 +12,10 @@ function ThemedStatusBar() {
 }
 
 function RestoringScreen() {
+  const { theme } = useTheme();
   return (
-    <View style={styles.restoring}>
-      <ActivityIndicator size="large" color="#26CBF0" accessibilityLabel="Loading" />
+    <View style={[styles.restoring, { backgroundColor: theme.colors.background }]}>
+      <ActivityIndicator size="large" color={theme.colors.primary} accessibilityLabel="Loading" />
     </View>
   );
 }
@@ -59,6 +60,5 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "#000000",
   },
 });
