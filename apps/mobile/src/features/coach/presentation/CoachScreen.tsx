@@ -16,6 +16,7 @@ import { useAuth } from "@/lib/auth";
 import { useTheme } from "@/lib/theme";
 import { t, useStrings } from "../../../i18n";
 import { ApiClient } from "@/services/api";
+import SpeechToTextButton from "@/ui/SpeechToTextButton";
 import {
   ApiError,
   type CoachMessageResponse,
@@ -377,6 +378,12 @@ export default function CoachScreen() {
             placeholderTextColor={colors.textDisabled}
             multiline
             style={[styles.composerInput, { color: colors.textPrimary }]}
+          />
+          <SpeechToTextButton
+            onResult={(text) => setDraft((prev) => (prev === "" ? text : `${prev} ${text}`))}
+            color={colors.textDisabled}
+            activeColor={colors.primaryStrong}
+            label={t("coach.voiceInput")}
           />
           <Pressable
             accessibilityRole="button"

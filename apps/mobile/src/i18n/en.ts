@@ -207,6 +207,7 @@ const en = {
     disclosure: "AI answers are guidance, not verified career advice.",
     emptyChat: "Ask anything about your career \u2014 your resume is already loaded as context.",
     composerPlaceholder: "Ask your career question\u2026",
+    voiceInput: "Voice input",
     errorLoading: "Could not load your conversations.",
     errorLoadingChat: "Could not load this conversation.",
     errorReply: "The coach could not reply right now.",
@@ -242,6 +243,7 @@ const en = {
     disclosure: "AI evaluation is guidance, not a definitive hiring judgment.",
     answerTitle: "Your answer to question {n}",
     answerPlaceholder: "Type your answer here\u2026",
+    voiceInput: "Voice input",
     submitAnswer: "Submit answer",
     evaluation: "Evaluation",
     dimensions: {
@@ -267,6 +269,7 @@ const en = {
     companyPlaceholder: "e.g. Acme Corp",
     jobDescription: "Job description",
     jobDescriptionPlaceholder: "Paste the full job description here\u2026",
+    voiceInput: "Voice input",
     matchButton: "Analyze match",
     savedJobs: "Saved job descriptions",
     matchedSkills: "Matched skills",

@@ -14,6 +14,7 @@ import { useAuth } from "@/lib/auth";
 import { useTheme } from "@/lib/theme";
 import { t } from "../../../i18n";
 import { ApiClient } from "@/services/api";
+import SpeechToTextButton from "@/ui/SpeechToTextButton";
 import {
   ApiError,
   type InterviewAnswerResponse,
@@ -355,6 +356,12 @@ export default function InterviewScreen() {
                   placeholder={t("interview.answerPlaceholder")}
                   placeholderTextColor={colors.textDisabled}
                   style={[styles.answerInput, { backgroundColor: colors.background, borderColor: colors.border, color: colors.textPrimary }]}
+                />
+                <SpeechToTextButton
+                  onResult={(text) => setAnswerDraft((prev) => (prev === "" ? text : `${prev} ${text}`))}
+                  color={colors.textDisabled}
+                  activeColor={colors.primaryStrong}
+                  label={t("interview.voiceInput")}
                 />
                 <Pressable
                   accessibilityRole="button"

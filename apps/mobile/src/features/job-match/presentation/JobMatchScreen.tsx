@@ -14,6 +14,7 @@ import { useAuth } from "@/lib/auth";
 import { useTheme } from "@/lib/theme";
 import { ApiClient } from "@/services/api";
 import { t } from "../../../i18n";
+import SpeechToTextButton from "@/ui/SpeechToTextButton";
 import {
   ApiError,
   type JobDescriptionResponse,
@@ -247,40 +248,65 @@ export default function JobMatchScreen() {
         )}
 
         <Text style={[styles.label, { color: colors.textSecondary }]}>{t("jobMatch.jobTitle")}</Text>
-        <TextInput
-          value={title}
-          onChangeText={setTitle}
-          accessibilityLabel={t("jobMatch.jobTitle")}
-          placeholder={t("jobMatch.jobTitlePlaceholder")}
-          placeholderTextColor={colors.textDisabled}
-          style={[styles.input, { backgroundColor: colors.surface, borderColor: colors.border, color: colors.textPrimary }]}
-        />
+        <View style={styles.fieldRow}>
+          <TextInput
+            value={title}
+            onChangeText={setTitle}
+            accessibilityLabel={t("jobMatch.jobTitle")}
+            placeholder={t("jobMatch.jobTitlePlaceholder")}
+            placeholderTextColor={colors.textDisabled}
+            style={[styles.input, styles.inputWithMic, { backgroundColor: colors.surface, borderColor: colors.border, color: colors.textPrimary }]}
+          />
+          <SpeechToTextButton
+            onResult={(text) => setTitle((prev) => (prev === "" ? text : `${prev} ${text}`))}
+            color={colors.textDisabled}
+            activeColor={colors.primaryStrong}
+            label={t("jobMatch.voiceInput")}
+          />
+        </View>
 
         <Text style={[styles.label, { color: colors.textSecondary }]}>{t("jobMatch.company")}</Text>
-        <TextInput
-          value={company}
-          onChangeText={setCompany}
-          accessibilityLabel={t("jobMatch.company")}
-          placeholder={t("jobMatch.companyPlaceholder")}
-          placeholderTextColor={colors.textDisabled}
-          style={[styles.input, { backgroundColor: colors.surface, borderColor: colors.border, color: colors.textPrimary }]}
-        />
+        <View style={styles.fieldRow}>
+          <TextInput
+            value={company}
+            onChangeText={setCompany}
+            accessibilityLabel={t("jobMatch.company")}
+            placeholder={t("jobMatch.companyPlaceholder")}
+            placeholderTextColor={colors.textDisabled}
+            style={[styles.input, styles.inputWithMic, { backgroundColor: colors.surface, borderColor: colors.border, color: colors.textPrimary }]}
+          />
+          <SpeechToTextButton
+            onResult={(text) => setCompany((prev) => (prev === "" ? text : `${prev} ${text}`))}
+            color={colors.textDisabled}
+            activeColor={colors.primaryStrong}
+            label={t("jobMatch.voiceInput")}
+          />
+        </View>
 
         <Text style={[styles.label, { color: colors.textSecondary }]}>{t("jobMatch.jobDescription")}</Text>
-        <TextInput
-          value={rawText}
-          onChangeText={setRawText}
-          accessibilityLabel={t("jobMatch.jobDescription")}
-          placeholder={t("jobMatch.jobDescriptionPlaceholder")}
-          placeholderTextColor={colors.textDisabled}
-          multiline
-          numberOfLines={6}
-          style={[
-            styles.input,
-            styles.jdInput,
-            { backgroundColor: colors.surface, borderColor: colors.border, color: colors.textPrimary },
-          ]}
-        />
+        <View style={styles.fieldRow}>
+          <TextInput
+            value={rawText}
+            onChangeText={setRawText}
+            accessibilityLabel={t("jobMatch.jobDescription")}
+            placeholder={t("jobMatch.jobDescriptionPlaceholder")}
+            placeholderTextColor={colors.textDisabled}
+            multiline
+            numberOfLines={6}
+            style={[
+              styles.input,
+              styles.jdInput,
+              styles.inputWithMic,
+              { backgroundColor: colors.surface, borderColor: colors.border, color: colors.textPrimary },
+            ]}
+          />
+          <SpeechToTextButton
+            onResult={(text) => setRawText((prev) => (prev === "" ? text : `${prev} ${text}`))}
+            color={colors.textDisabled}
+            activeColor={colors.primaryStrong}
+            label={t("jobMatch.voiceInput")}
+          />
+        </View>
 
         {matchState.status === "error" && (
           <View style={[styles.notice, { backgroundColor: colors.danger }]} accessibilityRole="alert">
@@ -513,6 +539,14 @@ const styles = StyleSheet.create({
   jdInput: {
     minHeight: 140,
     textAlignVertical: "top",
+  },
+  fieldRow: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: 4,
+  },
+  inputWithMic: {
+    flex: 1,
   },
   chipRow: {
     flexDirection: "row",
