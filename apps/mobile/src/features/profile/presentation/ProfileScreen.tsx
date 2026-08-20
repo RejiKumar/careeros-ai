@@ -250,6 +250,22 @@ export default function ProfileScreen() {
           >
             <Text style={[styles.legalLink, { color: colors.textSecondary }]}>{t("profile.termsOfService")}</Text>
           </Pressable>
+          <Text style={[styles.legalDot, { color: colors.textSecondary }]}>·</Text>
+          <Pressable
+            accessibilityRole="link"
+            accessibilityLabel="Open Support"
+            onPress={() => void Linking.openURL("https://careeros.ai/support")}
+          >
+            <Text style={[styles.legalLink, { color: colors.textSecondary }]}>{t("profile.support")}</Text>
+          </Pressable>
+          <Text style={[styles.legalDot, { color: colors.textSecondary }]}>·</Text>
+          <Pressable
+            accessibilityRole="link"
+            accessibilityLabel="Open account deletion guide"
+            onPress={() => void Linking.openURL("https://careeros.ai/delete-account")}
+          >
+            <Text style={[styles.legalLink, { color: colors.textSecondary }]}>{t("profile.deleteAccountGuide")}</Text>
+          </Pressable>
         </View>
       </ScrollView>
     </AppBackground>

@@ -116,6 +116,8 @@ const en = {
     resetFailed: "Could not send the reset link right now. Please try again.",
     privacyPolicy: "Privacy Policy",
     termsOfService: "Terms of Service",
+    support: "Support",
+    deleteAccountGuide: "Delete Account",
     errorTitle: "Could not load your profile",
     couldNotLoad: "Could not load your profile.",
   },
