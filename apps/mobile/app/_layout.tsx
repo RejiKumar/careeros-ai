@@ -2,7 +2,6 @@ import { Stack, usePathname, useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useEffect } from "react";
 import { ActivityIndicator, Platform, StatusBar as RNStatusBar, StyleSheet, View } from "react-native";
-import mobileAds from "react-native-google-mobile-ads";
 
 import { AuthProvider, useAuth } from "@/lib/auth";
 import { ThemeProvider, useTheme } from "@/lib/theme";
@@ -52,13 +51,6 @@ function RootNavigator() {
 }
 
 export default function RootLayout() {
-  useEffect(() => {
-    mobileAds()
-      .initialize()
-      .then(() => {})
-      .catch(() => {});
-  }, []);
-
   return (
     <ThemeProvider>
       <AuthProvider>
