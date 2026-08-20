@@ -74,6 +74,59 @@ def test_me_invalid_token_returns_401() -> None:
     assert response.json()["error"]["code"] == "invalid_token"
 
 
+def test_delete_account_returns_204_and_calls_admin_delete() -> None:
+    deleted_ids: list[str] = []
+
+    class FakeServiceClients(FakeClients):
+        def __init__(self) -> None:
+            super().__init__(lambda token: _claims() if token == "good-token" else None)
+            self.auth = None  # replaced below with a fake admin
+
+        class FakeAuthAdmin:
+            def __init__(self, sink: list[str]) -> None:
+                self._sink = sink
+
+            def delete_user(self, user_id: str) -> None:
+                self._sink.append(user_id)
+
+    fake = FakeServiceClients()
+    fake.service_client = type(
+        "FakeServiceClient",
+        (),
+        {"auth": type("FakeAuth", (), {"admin": FakeServiceClients.FakeAuthAdmin(deleted_ids)})()},
+    )()
+
+    settings = Settings(environment="dev")
+    app = create_app(settings)
+    app.dependency_overrides[get_supabase_clients] = lambda: fake
+
+    response = TestClient(app).delete(
+        f"{API_V1_PREFIX}/auth/me", headers={"Authorization": "Bearer good-token"}
+    )
+
+    assert response.status_code == 204
+    assert deleted_ids == ["u-123"]
+
+
+def test_delete_account_requires_service_client() -> None:
+    client = make_client(lambda token: _claims() if token == "good-token" else None)
+
+    response = client.delete(
+        f"{API_V1_PREFIX}/auth/me", headers={"Authorization": "Bearer good-token"}
+    )
+
+    assert response.status_code == 503
+
+
+def test_delete_account_missing_token_returns_401() -> None:
+    client = make_client(None)
+
+    response = client.delete(f"{API_V1_PREFIX}/auth/me")
+
+    assert response.status_code == 401
+    assert response.json()["error"]["code"] == "missing_token"
+
+
 def test_me_expired_token_returns_401() -> None:
     client = make_client(
         lambda _token: (_ for _ in ()).throw(

@@ -46,3 +46,13 @@ def require_service_client(clients: SupabaseClients) -> Client:
     if clients.service_client is None:
         raise ValueError("Supabase service-role client is not configured")
     return clients.service_client
+
+
+def ensure_guest_account(clients: SupabaseClients, guest_id: str) -> None:
+    """Create the guest_accounts row if missing (idempotent)."""
+    service_client = require_service_client(clients)
+    existing = (
+        service_client.table("guest_accounts").select("id").eq("id", guest_id).execute().data
+    )
+    if not existing:
+        service_client.table("guest_accounts").insert({"id": guest_id}).execute()

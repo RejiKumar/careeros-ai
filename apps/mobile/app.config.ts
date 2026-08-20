@@ -60,9 +60,28 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     version: profile.version ?? config.version ?? "0.1.0",
     orientation: "portrait",
     userInterfaceStyle: "automatic",
+    icon: "./assets/icon.png",
+    android: {
+      ...profile.android,
+      adaptiveIcon: {
+        foregroundImage: "./assets/adaptive-icon.png",
+        backgroundColor: "#14181D",
+      },
+    },
     experiments: {
       typedRoutes: false,
     },
-    plugins: ["expo-router"],
+    plugins: [
+      "expo-router",
+      [
+        "expo-splash-screen",
+        {
+          image: "./assets/splash-icon.png",
+          imageWidth: 200,
+          resizeMode: "contain",
+          backgroundColor: "#14181D",
+        },
+      ],
+    ],
   };
 };

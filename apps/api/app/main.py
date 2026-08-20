@@ -12,8 +12,18 @@ from app import __version__
 from app.core.config import Settings, get_settings
 from app.core.errors import register_exception_handlers
 from app.core.logging import configure_logging
+from app.modules.assessments.router import router as assessments_router
 from app.modules.auth.router import router as auth_router
+from app.modules.coach.router import router as coach_router
+from app.modules.feedback.router import router as feedback_router
 from app.modules.health.router import router as health_router
+from app.modules.interviews.router import router as interviews_router
+from app.modules.job_match.router import router as job_match_router
+from app.modules.missions.router import router as missions_router
+from app.modules.resumes.router import router as resumes_router
+from app.modules.rewrites.router import router as rewrites_router
+from app.modules.roast.router import router as roast_router
+from app.modules.wrapped.router import router as wrapped_router
 
 API_V1_PREFIX = "/api/v1"
 
@@ -46,7 +56,17 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     register_exception_handlers(app)
 
     app.include_router(health_router, prefix=API_V1_PREFIX)
+    app.include_router(interviews_router, prefix=API_V1_PREFIX)
     app.include_router(auth_router, prefix=API_V1_PREFIX)
+    app.include_router(resumes_router, prefix=API_V1_PREFIX)
+    app.include_router(assessments_router, prefix=API_V1_PREFIX)
+    app.include_router(job_match_router, prefix=API_V1_PREFIX)
+    app.include_router(rewrites_router, prefix=API_V1_PREFIX)
+    app.include_router(coach_router, prefix=API_V1_PREFIX)
+    app.include_router(feedback_router, prefix=API_V1_PREFIX)
+    app.include_router(missions_router, prefix=API_V1_PREFIX)
+    app.include_router(roast_router, prefix=API_V1_PREFIX)
+    app.include_router(wrapped_router, prefix=API_V1_PREFIX)
 
     @app.get("/health", tags=["health"])
     def root_health() -> dict[str, str]:

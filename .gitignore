@@ -49,3 +49,13 @@ tools/
 
 # Misc
 *.local
+
+# Expo prebuild output
+android/
+ios/
+
+# npm lockfile (project uses pnpm)
+package-lock.json
+
+# Original icon file (replaced by resized PNGs)
+apps/mobile/assets/careerosai_icon

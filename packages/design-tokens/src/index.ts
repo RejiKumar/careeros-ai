@@ -71,6 +71,41 @@ export const motion = {
   },
 } as const;
 
+export const gradients = {
+  brand: ["#5B5BF0", "#B34AF0"] as const,
+  hero: ["#4F46E5", "#9333EA", "#38BDF8"] as const,
+  success: ["#16A34A", "#22C55E"] as const,
+  accent: ["#38BDF8", "#5B5BF0"] as const,
+  subtle: ["rgba(91, 91, 240, 0.10)", "rgba(179, 74, 240, 0.08)"] as const,
+  glass: ["rgba(255, 255, 255, 0.55)", "rgba(255, 255, 255, 0.25)"] as const,
+} as const;
+
+export const shadows = {
+  card: {
+    shadowColor: "#14181D",
+    shadowOpacity: 0.06,
+    shadowRadius: 16,
+    shadowOffset: { width: 0, height: 6 },
+    elevation: 3,
+  } as const,
+  elevated: {
+    shadowColor: "#14181D",
+    shadowOpacity: 0.12,
+    shadowRadius: 24,
+    shadowOffset: { width: 0, height: 10 },
+    elevation: 6,
+  } as const,
+  floating: {
+    shadowColor: "#14181D",
+    shadowOpacity: 0.18,
+    shadowRadius: 20,
+    shadowOffset: { width: 0, height: 8 },
+    elevation: 8,
+  } as const,
+} as const;
+
+export type GradientToken = keyof typeof gradients;
+
 export const colorPalette = {
   primary: "#5B5BF0",
   "primary-strong": "#3E3ED8",
@@ -113,12 +148,16 @@ export interface ThemeTokens {
     primaryStrong: string;
     primarySoft: string;
     onPrimary: string;
+    secondary: string;
+    accent: string;
     success: string;
     warning: string;
     danger: string;
     onDanger: string;
     aurora: typeof colorPalette.aurora;
   };
+  gradients: typeof gradients;
+  shadows: typeof shadows;
   spacing: typeof spacing;
   radius: typeof radius;
   typography: typeof typography;
@@ -138,12 +177,16 @@ export const lightTheme: ThemeTokens = {
     primaryStrong: colorPalette["primary-strong"],
     primarySoft: colorPalette["primary-soft"],
     onPrimary: colorPalette.neutral["0"],
+    secondary: colorPalette.secondary,
+    accent: colorPalette.accent,
     success: colorPalette.success,
     warning: colorPalette.warning,
     danger: colorPalette.danger,
     onDanger: colorPalette.neutral["0"],
     aurora: colorPalette.aurora,
   },
+  gradients,
+  shadows,
   spacing,
   radius,
   typography,
@@ -163,12 +206,16 @@ export const darkTheme: ThemeTokens = {
     primaryStrong: colorPalette["primary-strong"],
     primarySoft: "rgba(91, 91, 240, 0.18)",
     onPrimary: colorPalette.neutral["0"],
+    secondary: colorPalette.secondary,
+    accent: colorPalette.accent,
     success: "#22C55E",
     warning: "#F59E0B",
     danger: "#EF4444",
     onDanger: colorPalette.neutral["900"],
     aurora: colorPalette.aurora,
   },
+  gradients,
+  shadows,
   spacing,
   radius,
   typography,

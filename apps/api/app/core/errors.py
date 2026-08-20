@@ -49,9 +49,11 @@ async def validation_error_handler(request: Request, exc: RequestValidationError
         message="One or more request fields are invalid.",
         request_id=_request_id(request),
     )
+    # Drop pydantic's ctx (may hold exception objects) so responses stay JSON-safe.
+    fields = [{k: v for k, v in error.items() if k != "ctx"} for error in exc.errors()]
     return JSONResponse(
         status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-        content={"error": detail.model_dump(), "fields": exc.errors()},
+        content={"error": detail.model_dump(), "fields": fields},
     )
 
 

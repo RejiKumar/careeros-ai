@@ -307,3 +307,103 @@ def test_storage_folder_isolation(users: _TestUsers) -> None:
         timeout=30,
     )
     assert denied_upload.status_code in (400, 401, 403)
+
+
+def test_feedback_ownership_allowed_and_denied(users: _TestUsers) -> None:
+    a_headers = _rest_headers(users.a_token)
+    b_headers = _rest_headers(users.b_token)
+
+    created = httpx.post(
+        f"{SUPABASE_URL}/rest/v1/feedback",
+        headers={**a_headers, "Prefer": "return=representation"},
+        json={
+            "output_type": "assessment",
+            "output_id": "assessment-x",
+            "rating": "helpful",
+            "user_id": users.a_id,
+        },
+        timeout=30,
+    )
+    assert created.status_code == 201, created.text
+
+    b_denied = httpx.get(
+        f"{SUPABASE_URL}/rest/v1/feedback?output_type=eq.assessment&output_id=eq.assessment-x",
+        headers=b_headers,
+        timeout=30,
+    )
+    assert b_denied.status_code == 200
+    assert b_denied.json() == []
+
+    a_own = httpx.get(
+        f"{SUPABASE_URL}/rest/v1/feedback?output_type=eq.assessment&output_id=eq.assessment-x",
+        headers=a_headers,
+        timeout=30,
+    )
+    assert a_own.status_code == 200
+    assert len(a_own.json()) == 1
+    assert a_own.json()[0]["rating"] == "helpful"
+
+    updated = httpx.patch(
+        f"{SUPABASE_URL}/rest/v1/feedback?output_type=eq.assessment&output_id=eq.assessment-x",
+        headers=a_headers,
+        json={"rating": "not_helpful", "reason": "too_generic"},
+        timeout=30,
+    )
+    assert updated.status_code in (200, 204), updated.text
+
+    after_update = httpx.get(
+        f"{SUPABASE_URL}/rest/v1/feedback?output_type=eq.assessment&output_id=eq.assessment-x",
+        headers=a_headers,
+        timeout=30,
+    )
+    assert after_update.json()[0]["rating"] == "not_helpful"
+
+
+def test_achievements_seeded_and_user_achievements_owned(users: _TestUsers) -> None:
+    a_headers = _rest_headers(users.a_token)
+    b_headers = _rest_headers(users.b_token)
+
+    listed = httpx.get(
+        f"{SUPABASE_URL}/rest/v1/achievements?select=id,key",
+        headers=a_headers,
+        timeout=30,
+    )
+    assert listed.status_code == 200
+    keys = {row["key"] for row in listed.json()}
+    assert {"ats_warrior", "resume_master", "interview_ready", "streak_7", "perfect_score"} <= keys
+
+    achievement_id = next(row["id"] for row in listed.json() if row["key"] == "resume_master")
+    earned = httpx.post(
+        f"{SUPABASE_URL}/rest/v1/user_achievements",
+        headers={**a_headers, "Prefer": "return=representation"},
+        json={"user_id": users.a_id, "achievement_id": achievement_id},
+        timeout=30,
+    )
+    assert earned.status_code == 201, earned.text
+
+    b_denied = httpx.get(
+        f"{SUPABASE_URL}/rest/v1/user_achievements?achievement_id=eq.{achievement_id}",
+        headers=b_headers,
+        timeout=30,
+    )
+    assert b_denied.status_code == 200
+    assert b_denied.json() == []
+
+
+def test_guest_rows_are_not_publicly_readable() -> None:
+    guest_id = str(uuid.uuid4())
+    response = httpx.get(
+        f"{SUPABASE_URL}/rest/v1/guest_accounts?id=eq.{guest_id}",
+        headers={"apikey": ANON_KEY},
+        timeout=30,
+    )
+    assert response.status_code == 200
+    assert response.json() == []
+
+    client_insert = httpx.post(
+        f"{SUPABASE_URL}/rest/v1/guest_accounts",
+        headers={"apikey": ANON_KEY},
+        json={"id": guest_id},
+        timeout=30,
+    )
+    assert client_insert.status_code in (401, 403)

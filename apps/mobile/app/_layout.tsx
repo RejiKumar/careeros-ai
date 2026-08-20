@@ -1,11 +1,64 @@
-import { Stack } from "expo-router";
+import { Stack, usePathname, useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
+import { useEffect } from "react";
+import { ActivityIndicator, StyleSheet, View } from "react-native";
 
-export default function RootLayout() {
+import { AuthProvider, useAuth } from "@/lib/auth";
+import { ThemeProvider, useTheme } from "@/lib/theme";
+
+function ThemedStatusBar() {
+  const { colorScheme } = useTheme();
+  return <StatusBar style={colorScheme === "dark" ? "light" : "dark"} />;
+}
+
+function RestoringScreen() {
+  const { theme } = useTheme();
+  return (
+    <View style={[styles.restoring, { backgroundColor: theme.colors.background }]}>
+      <ActivityIndicator size="large" color={theme.colors.primary} accessibilityLabel="Loading" />
+    </View>
+  );
+}
+
+function RootNavigator() {
+  const router = useRouter();
+  const { status } = useAuth();
+  const pathname = usePathname();
+
+  // Navigate imperatively so the Stack stays mounted; a render-time <Redirect>
+  // in place of the Stack unmounts the navigator mid-navigation and can loop.
+  useEffect(() => {
+    if (status === "signedOut" && pathname !== "/auth") {
+      router.replace("/auth");
+    }
+  }, [status, pathname, router]);
+
+  if (status === "restoring") {
+    return <RestoringScreen />;
+  }
+
   return (
     <>
-      <StatusBar style="auto" />
+      <ThemedStatusBar />
       <Stack screenOptions={{ headerShown: false }} />
     </>
   );
 }
+
+export default function RootLayout() {
+  return (
+    <ThemeProvider>
+      <AuthProvider>
+        <RootNavigator />
+      </AuthProvider>
+    </ThemeProvider>
+  );
+}
+
+const styles = StyleSheet.create({
+  restoring: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+});
