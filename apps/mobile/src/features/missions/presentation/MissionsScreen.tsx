@@ -37,7 +37,7 @@ function levelName(level: number): string {
 export default function MissionsScreen() {
   const { theme } = useTheme();
   const { colors } = theme;
-  const { session, handleUnauthorized } = useAuth();
+  const { session, guestId, handleUnauthorized } = useAuth();
 
   const [missions, setMissions] = useState<MissionResponse[]>([]);
   const [progressState, setProgressState] = useState<ProgressState>({ status: "loading" });
@@ -47,15 +47,11 @@ export default function MissionsScreen() {
   const accessToken = session?.access_token;
 
   const load = useCallback(async () => {
-    if (accessToken === undefined) {
-      void handleUnauthorized();
-      return;
-    }
     setProgressState({ status: "loading" });
     try {
       const [missionItems, progress] = await Promise.all([
-        apiClient.listMissions(accessToken),
-        apiClient.getMissionProgress(accessToken),
+        apiClient.listMissions(accessToken, guestId ?? undefined),
+        apiClient.getMissionProgress(accessToken, guestId ?? undefined),
       ]);
       setMissions(missionItems);
       setProgressState({ status: "success", data: progress });
@@ -69,7 +65,7 @@ export default function MissionsScreen() {
         });
       }
     }
-  }, [accessToken, handleUnauthorized]);
+  }, [accessToken, guestId, handleUnauthorized]);
 
   useFocusEffect(
     useCallback(() => {
@@ -78,13 +74,13 @@ export default function MissionsScreen() {
   );
 
   async function handleComplete(missionKey: string) {
-    if (accessToken === undefined || completingKey !== null) {
+    if (completingKey !== null) {
       return;
     }
     setCompletingKey(missionKey);
     setCompletionMessage(null);
     try {
-      const result = await apiClient.completeMission(accessToken, missionKey);
+      const result = await apiClient.completeMission(accessToken, missionKey, guestId ?? undefined);
       setCompletionMessage(
         result.already_completed
           ? t("missions.alreadyDone")

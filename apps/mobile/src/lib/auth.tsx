@@ -7,7 +7,6 @@ import {
   clearGuestId,
   clearSession,
   getOrCreateGuestId,
-  loadGuestId,
   loadSession,
   saveSession,
 } from "@/services/sessionStore";
@@ -105,9 +104,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           }
           return;
         }
-        // No session — check for existing guest id
-        const existingGuest = await loadGuestId();
-        if (existingGuest !== null && !cancelled) {
+        // No session — restore (or repair) the guest identity
+        const existingGuest = await getOrCreateGuestId();
+        if (!cancelled) {
           setGuestId(existingGuest);
           setStatus("guest");
           return;

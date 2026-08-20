@@ -396,21 +396,21 @@ export class ApiClient {
 
   /* ─── Missions ─── */
 
-  listMissions(accessToken: string): Promise<MissionResponse[]> {
-    return this.request<MissionResponse[]>("/api/v1/missions", accessToken, undefined, { method: "GET" });
+  listMissions(accessToken: string | undefined, guestId?: string): Promise<MissionResponse[]> {
+    return this.request<MissionResponse[]>("/api/v1/missions", accessToken, guestId, { method: "GET" });
   }
 
-  getMissionProgress(accessToken: string): Promise<MissionProgressResponse> {
-    return this.request<MissionProgressResponse>("/api/v1/missions/progress", accessToken, undefined, {
+  getMissionProgress(accessToken: string | undefined, guestId?: string): Promise<MissionProgressResponse> {
+    return this.request<MissionProgressResponse>("/api/v1/missions/progress", accessToken, guestId, {
       method: "GET",
     });
   }
 
-  completeMission(accessToken: string, missionKey: string): Promise<MissionCompleteResponse> {
+  completeMission(accessToken: string | undefined, missionKey: string, guestId?: string): Promise<MissionCompleteResponse> {
     return this.request<MissionCompleteResponse>(
       `/api/v1/missions/${missionKey}/complete`,
       accessToken,
-      undefined,
+      guestId,
       { method: "POST" },
     );
   }
