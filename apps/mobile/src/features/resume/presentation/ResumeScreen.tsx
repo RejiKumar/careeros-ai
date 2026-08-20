@@ -1,6 +1,6 @@
 import { getDocumentAsync } from "expo-document-picker";
-import { useRouter } from "expo-router";
-import { useState } from "react";
+import { useFocusEffect, useRouter } from "expo-router";
+import { useCallback, useState } from "react";
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 
 import { t } from "../../../i18n";
@@ -59,6 +59,31 @@ export default function ResumeScreen() {
     }
     return err instanceof Error ? err.message : t("resume.genericError");
   }
+
+  const restoreLatestResume = useCallback(async () => {
+    if (accessToken === undefined) {
+      return;
+    }
+    try {
+      const items = await apiClient.listResumes(accessToken);
+      const latest = items.find((r) => r.current_version_id !== null);
+      if (latest === undefined) {
+        return;
+      }
+      const detail = await apiClient.getResume(accessToken, latest.id);
+      if (detail.parsed !== null) {
+        setImportState({ status: "success", resumeId: latest.id, parsed: detail.parsed });
+      }
+    } catch {
+      // Restore is best-effort; the import journey remains available.
+    }
+  }, [accessToken]);
+
+  useFocusEffect(
+    useCallback(() => {
+      void restoreLatestResume();
+    }, [restoreLatestResume]),
+  );
 
   async function handleImport() {
     if (importState.status === "uploading" || importState.status === "picking") {

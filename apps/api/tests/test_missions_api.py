@@ -131,3 +131,60 @@ def test_dashboard_returns_defaults_when_no_data() -> None:
     assert data["latest_match_score"] is None
     assert data["total_xp"] == 0
     assert data["active_missions"] is not None
+
+
+def test_guest_dashboard_and_mission_completion() -> None:
+    """Guests can use the dashboard and complete missions under their own id."""
+    import uuid
+
+    client, clients = _make()
+    _seed_missions(clients)
+    guest_id = str(uuid.uuid4())
+    headers = {"X-Guest-Id": guest_id}
+
+    progress = client.get(f"{API_V1_PREFIX}/missions/progress", headers=headers)
+    assert progress.status_code == 200
+    assert progress.json()["total_xp"] == 0
+
+    dashboard = client.get(f"{API_V1_PREFIX}/dashboard", headers=headers)
+    assert dashboard.status_code == 200
+    assert dashboard.json()["total_xp"] == 0
+
+    completion = client.post(
+        f"{API_V1_PREFIX}/missions/import_resume/complete", headers=headers
+    )
+    assert completion.status_code == 201
+    assert completion.json()["xp_awarded"] == 50
+    assert completion.json()["new_total_xp"] == 50
+
+    dashboard_after = client.get(f"{API_V1_PREFIX}/dashboard", headers=headers)
+    assert dashboard_after.status_code == 200
+    assert dashboard_after.json()["total_xp"] == 50
+
+    guest_rows = [
+        row
+        for row in clients.service_client._rows["mission_completions"]
+        if row.get("guest_id") == guest_id
+    ]
+    assert len(guest_rows) == 1
+    assert guest_rows[0].get("user_id") is None
+
+
+def test_guest_missions_are_isolated_from_users() -> None:
+    import uuid
+
+    client, clients = _make()
+    _seed_missions(clients)
+    guest_a = str(uuid.uuid4())
+    guest_b = str(uuid.uuid4())
+
+    client.post(
+        f"{API_V1_PREFIX}/missions/import_resume/complete",
+        headers={"X-Guest-Id": guest_a},
+    )
+    progress_b = client.get(
+        f"{API_V1_PREFIX}/missions/progress", headers={"X-Guest-Id": guest_b}
+    )
+
+    assert progress_b.status_code == 200
+    assert progress_b.json()["total_xp"] == 0

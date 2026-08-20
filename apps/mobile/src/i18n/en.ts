@@ -163,6 +163,7 @@ const en = {
     subtitle: "AI proposes tighter phrasings without changing any facts \u2014 review each one before it becomes a new version of your resume.",
     emptyTitle: "This resume has no parsed content to improve yet.",
     emptyDesc: "Generate up to three rewrites for the strongest sections of your resume.",
+    noSuggestions: "No improvements to suggest for this resume right now.",
     generateButton: "Generate suggestions",
     generating: "Rewriting suggestions \u2014 this can take a moment\u2026",
     before: "Before",
@@ -240,6 +241,7 @@ const en = {
     newSession: "\u2039 New session",
     disclosure: "AI evaluation is guidance, not a definitive hiring judgment.",
     answerTitle: "Your answer to question {n}",
+    answerPlaceholder: "Type your answer here\u2026",
     submitAnswer: "Submit answer",
     evaluation: "Evaluation",
     dimensions: {
@@ -252,6 +254,7 @@ const en = {
     suggestedAnswer: "Suggested answer:",
     errorQuestions: "Could not load questions.",
     errorEvaluation: "Could not evaluate answer.",
+    errorStart: "Could not start the session. Please try again.",
   },
   jobMatch: {
     eyebrow: "Job Match",

@@ -8,7 +8,7 @@ import type {
   EntitlementResponse,
   FeedbackResponse,
   GuestMigrationResponse,
-  InterviewEvaluationResponse,
+  InterviewAnswerResponse,
   InterviewSessionDetailResponse,
   InterviewSessionResponse,
   JobDescriptionMatchResponse,
@@ -60,6 +60,19 @@ function buildAuthHeaders(accessToken: string | undefined, guestId: string | und
   return headers;
 }
 
+/**
+ * Registered by the AuthProvider so the ApiClient can transparently refresh
+ * an expired access token and retry the failed request once.
+ * Returns the new access token, or null when the refresh failed.
+ */
+type TokenRefresher = () => Promise<string | null>;
+
+let tokenRefresher: TokenRefresher | null = null;
+
+export function setTokenRefresher(refresher: TokenRefresher | null): void {
+  tokenRefresher = refresher;
+}
+
 export class ApiClient {
   readonly baseUrl: string;
 
@@ -72,6 +85,7 @@ export class ApiClient {
     accessToken: string | undefined,
     guestId: string | undefined,
     init: RequestInit,
+    allowRefresh = true,
   ): Promise<T> {
     const response = await fetch(`${this.baseUrl}${path}`, {
       ...init,
@@ -80,6 +94,13 @@ export class ApiClient {
         ...(init.headers ?? {}),
       },
     });
+
+    if (response.status === 401 && allowRefresh && tokenRefresher !== null) {
+      const refreshedToken = await tokenRefresher();
+      if (refreshedToken !== null) {
+        return this.request<T>(path, refreshedToken, guestId, init, false);
+      }
+    }
 
     if (response.status === 204) {
       return undefined as T;
@@ -416,8 +437,8 @@ export class ApiClient {
     accessToken: string | undefined,
     payload: { mode: string; resume_id?: string; target_job?: string; target_skills?: string[] },
     guestId?: string,
-  ): Promise<InterviewSessionResponse> {
-    return this.jsonRequest<InterviewSessionResponse>(
+  ): Promise<InterviewSessionDetailResponse> {
+    return this.jsonRequest<InterviewSessionDetailResponse>(
       "/api/v1/interviews/sessions",
       accessToken,
       guestId,
@@ -457,8 +478,8 @@ export class ApiClient {
     questionId: string,
     content: string,
     guestId?: string,
-  ): Promise<{ answer: { evaluation: InterviewEvaluationResponse } }> {
-    return this.jsonRequest(
+  ): Promise<InterviewAnswerResponse> {
+    return this.jsonRequest<InterviewAnswerResponse>(
       `/api/v1/interviews/sessions/${sessionId}/answers`,
       accessToken,
       guestId,

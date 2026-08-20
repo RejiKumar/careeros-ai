@@ -7,7 +7,7 @@ import logging
 
 from app.ai.provider import CareerAiProvider, ProviderError
 from app.ai.schemas import ResumeContent
-from app.core.auth import CurrentActor, CurrentUser
+from app.core.auth import CurrentActor
 from app.core.errors import AppError
 from app.integrations.supabase.client import (
     SupabaseClients,
@@ -178,9 +178,7 @@ class InterviewService:
             model_version=result.model_version,
         )
         if actor.kind == "user":
-            MissionService(self._clients).evaluate_achievements(
-                CurrentUser(id=actor.id, email=actor.email, role=actor.role)
-            )
+            MissionService(self._clients).evaluate_achievements(actor)
         return InterviewAnswerResponse(
             id=answer["id"],
             question_id=answer["question_id"],

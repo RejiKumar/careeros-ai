@@ -19,7 +19,7 @@ import {
 } from "@/services/contract";
 import AppBackground from "@/ui/AppBackground";
 import ScreenHeader from "@/ui/ScreenHeader";
-import { t, useStrings } from "../../../i18n";
+import { t } from "../../../i18n";
 import en from "../../../i18n/en";
 
 type ProgressState =

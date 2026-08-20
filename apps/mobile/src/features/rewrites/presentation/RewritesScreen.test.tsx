@@ -118,6 +118,24 @@ describe("RewritesScreen", () => {
     expect(getByText("A product-minded software engineer delivering measurable impact.")).toBeOnTheScreen();
   });
 
+  it("shows an explicit empty state when the batch has no suggestions", async () => {
+    mockCreateRewriteBatch.mockResolvedValue({ ...batch, suggestions: [] });
+
+    const { getByLabelText, getByText } = await render(
+      <ThemeProvider>
+        <RewritesScreen />
+      </ThemeProvider>,
+    );
+
+    await waitFor(() => expect(getByLabelText("Generate improvement suggestions")).toBeOnTheScreen());
+    fireEvent.press(getByLabelText("Generate improvement suggestions"));
+
+    await waitFor(() =>
+      expect(getByText("No improvements to suggest for this resume right now.")).toBeOnTheScreen(),
+    );
+    expect(getByLabelText("Try generating suggestions again")).toBeOnTheScreen();
+  });
+
   it("accepts a suggestion and shows the new version message", async () => {
     mockCreateRewriteBatch.mockResolvedValue(batch);
     mockAcceptRewriteBatch.mockResolvedValue({

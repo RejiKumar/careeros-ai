@@ -12,9 +12,13 @@ import json
 
 from app.ai.provider import CareerAiProvider, ProviderError
 from app.ai.schemas import CoachMessage, ResumeContent
-from app.core.auth import CurrentUser
+from app.core.auth import CurrentActor
 from app.core.errors import AppError
-from app.integrations.supabase.client import SupabaseClients, require_service_client
+from app.integrations.supabase.client import (
+    SupabaseClients,
+    ensure_guest_account,
+    require_service_client,
+)
 from app.modules.resumes.repository import ResumeRepository
 from fastapi import status
 
@@ -57,40 +61,48 @@ class CoachAiError(AppError):
 class CoachService:
     def __init__(self, clients: SupabaseClients, provider: CareerAiProvider) -> None:
         service_client = require_service_client(clients)
+        self._clients = clients
         self._provider = provider
         self._resume_repository = ResumeRepository(service_client)
         self._repository = CoachRepository(service_client)
 
     def create_thread(
         self,
-        user: CurrentUser,
+        actor: CurrentActor,
         title: str | None,
         resume_id: str | None,
         job_description_id: str | None = None,
     ) -> CoachThreadResponse:
+        if actor.kind == "guest":
+            ensure_guest_account(self._clients, actor.id)
         context: dict[str, str] = {}
         if resume_id is not None:
-            resume = self._resume_repository.get_resume(actor=user, resume_id=resume_id)
+            resume = self._resume_repository.get_resume(actor=actor, resume_id=resume_id)
             if resume is None:
                 raise ResumeNotFoundError()
             context["resume_id"] = resume_id
         if job_description_id is not None:
             context["job_description_id"] = job_description_id
         thread = self._repository.create_thread(
-            user_id=user.id, title=title, context=context or None
+            actor_id=actor.id,
+            is_guest=actor.kind == "guest",
+            title=title,
+            context=context or None,
         )
         return _to_thread_response(thread)
 
     def update_thread(
         self,
-        user: CurrentUser,
+        actor: CurrentActor,
         thread_id: str,
         *,
         title: str | None = None,
         resume_id: str | None = None,
         job_description_id: str | None = None,
     ) -> CoachThreadResponse:
-        thread = self._repository.get_thread(user_id=user.id, thread_id=thread_id)
+        thread = self._repository.get_thread(
+            actor_id=actor.id, is_guest=actor.kind == "guest", thread_id=thread_id
+        )
         if thread is None:
             raise CoachThreadNotFoundError()
 
@@ -98,7 +110,7 @@ class CoachService:
         context: dict[str, str] = dict(existing_context)
 
         if resume_id is not None:
-            resume = self._resume_repository.get_resume(actor=user, resume_id=resume_id)
+            resume = self._resume_repository.get_resume(actor=actor, resume_id=resume_id)
             if resume is None:
                 raise ResumeNotFoundError()
             context["resume_id"] = resume_id
@@ -111,34 +123,46 @@ class CoachService:
             del context["job_description_id"]
 
         updated = self._repository.update_thread(
-            user_id=user.id,
+            actor_id=actor.id,
+            is_guest=actor.kind == "guest",
             thread_id=thread_id,
             title=title,
             context=context or None,
         )
         return _to_thread_response(updated)
 
-    def delete_thread(self, user: CurrentUser, thread_id: str) -> None:
-        thread = self._repository.get_thread(user_id=user.id, thread_id=thread_id)
+    def delete_thread(self, actor: CurrentActor, thread_id: str) -> None:
+        thread = self._repository.get_thread(
+            actor_id=actor.id, is_guest=actor.kind == "guest", thread_id=thread_id
+        )
         if thread is None:
             raise CoachThreadNotFoundError()
-        self._repository.delete_thread(user_id=user.id, thread_id=thread_id)
+        self._repository.delete_thread(
+            actor_id=actor.id, is_guest=actor.kind == "guest", thread_id=thread_id
+        )
 
     def post_message(
-        self, user: CurrentUser, thread_id: str, content: str, *, locale: str = "en"
+        self, actor: CurrentActor, thread_id: str, content: str, *, locale: str = "en"
     ) -> CoachMessagePairResponse:
-        thread = self._repository.get_thread(user_id=user.id, thread_id=thread_id)
+        thread = self._repository.get_thread(
+            actor_id=actor.id, is_guest=actor.kind == "guest", thread_id=thread_id
+        )
         if thread is None:
             raise CoachThreadNotFoundError()
 
         user_message = self._repository.create_message(
-            user_id=user.id, thread_id=thread_id, role="user", content=content, request_id=None
+            actor_id=actor.id,
+            is_guest=actor.kind == "guest",
+            thread_id=thread_id,
+            role="user",
+            content=content,
+            request_id=None,
         )
         history = [
             CoachMessage(role=row["role"], content=row["content"])
             for row in self._repository.list_messages(thread_id=thread_id)
         ]
-        resume_context = self._build_context_str(user, thread.get("context"))
+        resume_context = self._build_context_str(actor, thread.get("context"))
 
         try:
             result = self._provider.coach_reply(history, resume_context, locale=locale)
@@ -146,7 +170,8 @@ class CoachService:
             raise CoachAiError() from exc
 
         assistant_message = self._repository.create_message(
-            user_id=user.id,
+            actor_id=actor.id,
+            is_guest=actor.kind == "guest",
             thread_id=thread_id,
             role="assistant",
             content=result.content.content,
@@ -158,26 +183,31 @@ class CoachService:
         )
 
     def get_thread_detail(
-        self, user: CurrentUser, thread_id: str, *, limit: int = 50, offset: int = 0
+        self, actor: CurrentActor, thread_id: str, *, limit: int = 50, offset: int = 0
     ) -> CoachThreadDetailResponse:
-        thread = self._repository.get_thread(user_id=user.id, thread_id=thread_id)
+        thread = self._repository.get_thread(
+            actor_id=actor.id, is_guest=actor.kind == "guest", thread_id=thread_id
+        )
         if thread is None:
             raise CoachThreadNotFoundError()
         rows = self._repository.list_messages(thread_id=thread_id, limit=limit, offset=offset)
         messages = [_to_message_response(row) for row in rows]
         return CoachThreadDetailResponse(thread=_to_thread_response(thread), messages=messages)
 
-    def list_threads(self, user: CurrentUser) -> list[CoachThreadResponse]:
-        return [_to_thread_response(row) for row in self._repository.list_threads(user_id=user.id)]
+    def list_threads(self, actor: CurrentActor) -> list[CoachThreadResponse]:
+        rows = self._repository.list_threads(
+            actor_id=actor.id, is_guest=actor.kind == "guest"
+        )
+        return [_to_thread_response(row) for row in rows]
 
-    def _build_context_str(self, user: CurrentUser, context: dict | None) -> str | None:
+    def _build_context_str(self, actor: CurrentActor, context: dict | None) -> str | None:
         """Build a read-only context string from resume and/or job description references."""
         if not context:
             return None
         parts: list[str] = []
         resume_id = context.get("resume_id")
         if resume_id:
-            resume = self._resume_repository.get_resume(actor=user, resume_id=resume_id)
+            resume = self._resume_repository.get_resume(actor=actor, resume_id=resume_id)
             if resume:
                 version_id = resume.get("current_version_id")
                 if version_id:

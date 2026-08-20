@@ -65,7 +65,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
       ...profile.android,
       adaptiveIcon: {
         foregroundImage: "./assets/adaptive-icon.png",
-        backgroundColor: "#14181D",
+        backgroundColor: "#000000",
       },
     },
     experiments: {
@@ -79,7 +79,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
           image: "./assets/splash-icon.png",
           imageWidth: 200,
           resizeMode: "contain",
-          backgroundColor: "#14181D",
+          backgroundColor: "#000000",
         },
       ],
     ],

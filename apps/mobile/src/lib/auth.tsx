@@ -11,6 +11,7 @@ import {
   loadSession,
   saveSession,
 } from "@/services/sessionStore";
+import { setTokenRefresher } from "@/services/api";
 import {
   exchangeOAuthCode,
   getOAuthRedirectUri,
@@ -34,10 +35,45 @@ interface AuthContextValue {
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
+let refreshInFlight: Promise<string | null> | null = null;
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [status, setStatus] = useState<AuthStatus>("restoring");
   const [session, setSession] = useState<Session | null>(null);
   const [guestId, setGuestId] = useState<string | null>(null);
+
+  const refreshToken = useCallback(async (): Promise<string | null> => {
+    if (refreshInFlight !== null) {
+      return refreshInFlight;
+    }
+    refreshInFlight = (async (): Promise<string | null> => {
+      const stored = await loadSession();
+      if (stored === null || stored.refresh_token === undefined) {
+        return null;
+      }
+      const { data, error } = await getSupabaseClient().auth.refreshSession({
+        refresh_token: stored.refresh_token,
+      });
+      if (error !== null || data.session === null) {
+        await clearSession();
+        return null;
+      }
+      await saveSession(data.session);
+      setSession(data.session);
+      setStatus("signedIn");
+      return data.session.access_token;
+    })();
+    try {
+      return await refreshInFlight;
+    } finally {
+      refreshInFlight = null;
+    }
+  }, []);
+
+  useEffect(() => {
+    setTokenRefresher(refreshToken);
+    return () => setTokenRefresher(null);
+  }, [refreshToken]);
 
   useEffect(() => {
     let cancelled = false;
@@ -47,21 +83,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const stored = await loadSession();
         if (stored !== null) {
           let sess = stored;
-          if (stored.expires_at !== undefined && stored.expires_at * 1000 <= Date.now()) {
-            const { data, error } = await getSupabaseClient().auth.refreshSession({
-              refresh_token: stored.refresh_token,
-            });
-            if (error !== null) {
-              await clearSession();
+          const isExpired =
+            stored.expires_at === undefined || stored.expires_at === null || stored.expires_at * 1000 <= Date.now();
+          if (isExpired) {
+            const refreshed = await refreshToken();
+            if (refreshed === null) {
               if (!cancelled) {
                 setSession(null);
                 setStatus("signedOut");
               }
               return;
             }
-            if (data.session !== null) {
-              await saveSession(data.session);
-              sess = data.session;
+            const reloaded = await loadSession();
+            if (reloaded !== null) {
+              sess = reloaded;
             }
           }
           if (!cancelled) {
@@ -93,7 +128,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [refreshToken]);
 
   const signIn = useCallback(async (email: string, password: string) => {
     const { data, error } = await getSupabaseClient().auth.signInWithPassword({

@@ -65,6 +65,7 @@ export default function InterviewScreen() {
   const [targetJob, setTargetJob] = useState("");
   const [targetSkills, setTargetSkills] = useState("");
   const [creating, setCreating] = useState(false);
+  const [createError, setCreateError] = useState<string | null>(null);
   const [activeSession, setActiveSession] = useState<InterviewSessionResponse | null>(null);
   const [sessionDetail, setSessionDetail] = useState<SessionDetailState>({ status: "idle" });
   const [answerDraft, setAnswerDraft] = useState("");
@@ -97,6 +98,7 @@ export default function InterviewScreen() {
       return;
     }
     setCreating(true);
+    setCreateError(null);
     try {
       const payload: { mode: string; resume_id?: string; target_job?: string; target_skills?: string[] } = {
         mode: selectedMode,
@@ -110,28 +112,18 @@ export default function InterviewScreen() {
       if (targetSkills.trim() !== "") {
         payload.target_skills = targetSkills.split(",").map((s) => s.trim()).filter(Boolean);
       }
-      const session = isGuest
+      const detail = isGuest
         ? await apiClient.createInterviewSession(undefined, payload, guestId ?? undefined)
         : await apiClient.createInterviewSession(accessToken, payload);
-      setActiveSession(session);
+      setActiveSession(detail.session);
       setViewMode("session");
-      // Load questions
-      setSessionDetail({ status: "loading" });
-      try {
-        const detail = isGuest
-          ? await apiClient.getInterviewSession(undefined, session.id, guestId ?? undefined)
-          : await apiClient.getInterviewSession(accessToken, session.id);
-        setSessionDetail({ status: "success", questions: detail.questions });
-      } catch (err) {
-        setSessionDetail({
-          status: "error",
-          message: err instanceof Error ? err.message : t("interview.errorQuestions"),
-        });
-      }
+      setSessionDetail({ status: "success", questions: detail.questions });
     } catch (err) {
       if (err instanceof ApiError && err.status === 401) {
         void handleUnauthorized();
+        return;
       }
+      setCreateError(err instanceof Error ? err.message : t("interview.errorStart"));
     } finally {
       setCreating(false);
     }
@@ -149,10 +141,10 @@ export default function InterviewScreen() {
       const result = isGuest
         ? await apiClient.submitInterviewAnswer(undefined, activeSession.id, activeQuestionId, answerDraft.trim(), guestId ?? undefined)
         : await apiClient.submitInterviewAnswer(accessToken, activeSession.id, activeQuestionId, answerDraft.trim());
-      setAnswerState({ status: "success", evaluation: result.answer.evaluation });
+      setAnswerState({ status: "success", evaluation: result.evaluation });
       setAnswers((prev) => {
         const next = new Map(prev);
-        next.set(activeQuestionId, { id: "", question_id: activeQuestionId, content: answerDraft.trim(), evaluation: result.answer.evaluation, created_at: new Date().toISOString() });
+        next.set(activeQuestionId, { id: result.id, question_id: activeQuestionId, content: answerDraft.trim(), evaluation: result.evaluation, created_at: result.created_at });
         return next;
       });
     } catch (err) {
@@ -258,6 +250,12 @@ export default function InterviewScreen() {
             style={[styles.textInput, { backgroundColor: colors.surface, borderColor: colors.border, color: colors.textPrimary }]}
           />
 
+          {createError !== null && (
+            <View style={[styles.errorCard, { backgroundColor: colors.danger }]} accessibilityRole="alert">
+              <Text style={[styles.errorText, { color: colors.onDanger }]}>{createError}</Text>
+            </View>
+          )}
+
           <Pressable
             accessibilityRole="button"
             accessibilityLabel={t("interview.startButton")}
@@ -353,8 +351,8 @@ export default function InterviewScreen() {
                   value={answerDraft}
                   onChangeText={setAnswerDraft}
                   multiline
-                  accessibilityLabel={t("interview.submitAnswer")}
-                  placeholder={t("interview.submitAnswer")}
+                  accessibilityLabel={t("interview.answerPlaceholder")}
+                  placeholder={t("interview.answerPlaceholder")}
                   placeholderTextColor={colors.textDisabled}
                   style={[styles.answerInput, { backgroundColor: colors.background, borderColor: colors.border, color: colors.textPrimary }]}
                 />

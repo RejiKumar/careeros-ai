@@ -256,7 +256,23 @@ export default function RewritesScreen() {
           </View>
         )}
 
-        {batchState.status === "success" && (
+        {batchState.status === "success" && batchState.batch.suggestions.length === 0 && (
+          <View style={[styles.notice, { backgroundColor: colors.surfaceRaised }]} accessibilityRole="alert">
+            <Text style={[styles.noticeText, { color: colors.textPrimary }]}>
+              {t("rewrites.noSuggestions")}
+            </Text>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Try generating suggestions again"
+              onPress={() => void handleGenerate()}
+              style={[styles.retryButton, { backgroundColor: colors.surface }]}
+            >
+              <Text style={[styles.retryText, { color: colors.textPrimary }]}>{t("rewrites.generateButton")}</Text>
+            </Pressable>
+          </View>
+        )}
+
+        {batchState.status === "success" && batchState.batch.suggestions.length > 0 && (
           <>
             {batchState.batch.suggestions.map((suggestion) => (
               <View
