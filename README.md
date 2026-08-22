@@ -46,19 +46,19 @@ See `docs/runbooks/branch-promotion-policy.md` for branch and promotion rules, a
 
 ### Screens
 
-| Route | Screen | Purpose |
-| --- | --- | --- |
-| `/` (Home tab) | Dashboard | Career overview: resume score, XP/level, match score, streak, missions, quick actions |
-| `/auth` | Auth | Email/password sign in, sign up, Google OAuth, and continue as guest |
-| `/resume` | Resume Health | Import a resume (PDF/DOCX/TXT), review parsed content, view AI health score |
-| `/job-match` | Job Match | Paste a job description, run compatibility analysis against resume |
-| `/coach` | AI Career Coach | Context-aware chat with suggested prompts, copy, regenerate, guidance disclosure |
-| `/profile` | Profile | Account info, plan usage, achievements, password reset, sign out, delete account |
-| `/missions` | Missions | Daily/weekly missions with XP rewards |
-| `/rewrites` | Rewrites | AI improvement suggestions with accept -> new version |
-| `/roast` | Resume Roast | 5 roast modes (Friendly Mentor, Professional HR, Brutal HR, Funny Roast, Robot Recruiter) |
-| `/wrapped` | Resume Wrapped | Shareable career summary with per-data-point opt-in toggles |
-| `/interview` | Interview Coach | Practice sessions (HR/Technical/Behavioral/Manager/Startup/Custom) with 5-dimension evaluation |
+| Route          | Screen          | Purpose                                                                                        |
+| -------------- | --------------- | ---------------------------------------------------------------------------------------------- |
+| `/` (Home tab) | Dashboard       | Career overview: resume score, XP/level, match score, streak, missions, quick actions          |
+| `/auth`        | Auth            | Email/password sign in, sign up, Google OAuth, and continue as guest                           |
+| `/resume`      | Resume Health   | Import a resume (PDF/DOCX/TXT), review parsed content, view AI health score                    |
+| `/job-match`   | Job Match       | Paste a job description, run compatibility analysis against resume                             |
+| `/coach`       | AI Career Coach | Context-aware chat with suggested prompts, copy, regenerate, guidance disclosure               |
+| `/profile`     | Profile         | Account info, plan usage, achievements, password reset, sign out, delete account               |
+| `/missions`    | Missions        | Daily/weekly missions with XP rewards                                                          |
+| `/rewrites`    | Rewrites        | AI improvement suggestions with accept -> new version                                          |
+| `/roast`       | Resume Roast    | 5 roast modes (Friendly Mentor, Professional HR, Brutal HR, Funny Roast, Robot Recruiter)      |
+| `/wrapped`     | Resume Wrapped  | Shareable career summary with per-data-point opt-in toggles                                    |
+| `/interview`   | Interview Coach | Practice sessions (HR/Technical/Behavioral/Manager/Startup/Custom) with 5-dimension evaluation |
 
 ### Feature capabilities
 
@@ -127,21 +127,21 @@ For "Continue with Google" to work, the Supabase project must have the Google pr
 
 All functional requirements live in OpenSpec changes under `openspec/changes/` (each contains `proposal.md`, `specs/`, `design.md`, `tasks.md`). Specs are synced to `openspec/specs/` when a change is archived.
 
-| Milestone | Status | Change |
-| --- | --- | --- |
-| M0 — Foundation | Complete | repo, design tokens, API + Supabase schema, contracts |
-| M1 — Auth, resume import & health score | Complete | `openspec/changes/mobile-auth-resume-health` |
-| M2 — Rewrites, coach, job match | Complete (backend + mobile) | `openspec/changes/complete-v1-core-features` |
-| M3 — Roast, wrapped, interview, achievements, guest, feedback | Complete (backend + mobile) | `openspec/changes/complete-v1-core-features` |
+| Milestone                                                     | Status                      | Change                                                |
+| ------------------------------------------------------------- | --------------------------- | ----------------------------------------------------- |
+| M0 — Foundation                                               | Complete                    | repo, design tokens, API + Supabase schema, contracts |
+| M1 — Auth, resume import & health score                       | Complete                    | `openspec/changes/mobile-auth-resume-health`          |
+| M2 — Rewrites, coach, job match                               | Complete (backend + mobile) | `openspec/changes/complete-v1-core-features`          |
+| M3 — Roast, wrapped, interview, achievements, guest, feedback | Complete (backend + mobile) | `openspec/changes/complete-v1-core-features`          |
 
 ## Test coverage
 
-| Area | Tests | Status |
-| --- | --- | --- |
-| Backend API (pytest) | 192 | All passing |
-| Mobile component/unit (jest) | 40 | All passing |
-| TypeScript (tsc --noEmit) | — | Clean |
-| Lint (expo lint + ruff) | — | Clean |
+| Area                         | Tests | Status      |
+| ---------------------------- | ----- | ----------- |
+| Backend API (pytest)         | 192   | All passing |
+| Mobile component/unit (jest) | 40    | All passing |
+| TypeScript (tsc --noEmit)    | —     | Clean       |
+| Lint (expo lint + ruff)      | —     | Clean       |
 
 ## Status
 
@@ -149,20 +149,20 @@ V1 core features are fully implemented across backend and mobile: guest mode, au
 
 ## Pending items for production
 
-| Item | Priority | Notes |
-| --- | --- | --- |
-| AdMob integration | High | Environment placeholders exist; SDK not installed. Install `react-native-google-mobile-ads`, configure banner/interstitial ads |
-| Gemini rate limit handling | High | Added exponential backoff for 429s; free tier quota (20 req/day) is a billing concern |
-| EAS Build setup | High | Required for Play Store submission (`eas build`, `eas submit`) |
-| App signing (Play Store) | High | Generate upload key, configure Google Play App Signing |
-| Play Store listing | High | Store description, screenshots, feature graphic, content rating |
-| Privacy policy & ToS | High | Required for Play Store compliance |
-| Skeletons & haptics | Medium | Design system completeness (M3 scope) |
-| Streaming AI responses | Medium | Non-streaming works; streaming for real-time coach/interview |
-| Firebase Analytics + Crashlytics | Medium | Error monitoring, user behavior tracking |
-| FCM push notifications | Medium | Career reminders, mission reminders |
-| CI/CD (GitHub Actions) | Medium | Automated testing, build, deployment pipeline |
-| Additional languages | Low | i18n infrastructure ready; add `hi.ts`, `ml.ts`, etc. |
+| Item                             | Priority | Notes                                                                                                                          |
+| -------------------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| AdMob integration                | High     | Environment placeholders exist; SDK not installed. Install `react-native-google-mobile-ads`, configure banner/interstitial ads |
+| Gemini rate limit handling       | High     | Added exponential backoff for 429s; free tier quota (20 req/day) is a billing concern                                          |
+| EAS Build setup                  | High     | Required for Play Store submission (`eas build`, `eas submit`)                                                                 |
+| App signing (Play Store)         | High     | Generate upload key, configure Google Play App Signing                                                                         |
+| Play Store listing               | High     | Store description, screenshots, feature graphic, content rating                                                                |
+| Privacy policy & ToS             | High     | Required for Play Store compliance                                                                                             |
+| Skeletons & haptics              | Medium   | Design system completeness (M3 scope)                                                                                          |
+| Streaming AI responses           | Medium   | Non-streaming works; streaming for real-time coach/interview                                                                   |
+| Firebase Analytics + Crashlytics | Medium   | Error monitoring, user behavior tracking                                                                                       |
+| FCM push notifications           | Medium   | Career reminders, mission reminders                                                                                            |
+| CI/CD (GitHub Actions)           | Medium   | Automated testing, build, deployment pipeline                                                                                  |
+| Additional languages             | Low      | i18n infrastructure ready; add `hi.ts`, `ml.ts`, etc.                                                                          |
 
 ## Play Store preparation steps
 

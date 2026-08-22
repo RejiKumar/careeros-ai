@@ -66,7 +66,13 @@ const parsedResume = {
     },
   ],
   education: [
-    { institution: "Home studies", degree: null, field_of_study: "Mathematics", start_date: null, end_date: null },
+    {
+      institution: "Home studies",
+      degree: null,
+      field_of_study: "Mathematics",
+      start_date: null,
+      end_date: null,
+    },
   ],
   projects: [],
   certifications: [],
@@ -97,7 +103,11 @@ const assessmentResponse: AssessmentResponse = {
   id: "assessment-1",
   resume_id: "resume-1",
   scores: [
-    { dimension: "Impact", score: 70, explanation: "Quantified outcomes are present in some bullets." },
+    {
+      dimension: "Impact",
+      score: 70,
+      explanation: "Quantified outcomes are present in some bullets.",
+    },
     { dimension: "Keywords", score: 40, explanation: "A few role keywords are missing." },
   ],
   strengths: ["Clear structure"],
@@ -116,7 +126,9 @@ async function renderResume(): Promise<Screen> {
   );
 }
 
-function pickFile(overrides: Partial<{ name: string; size: number; uri: string; mimeType: string }> = {}) {
+function pickFile(
+  overrides: Partial<{ name: string; size: number; uri: string; mimeType: string }> = {},
+) {
   mockGetDocumentAsync.mockResolvedValueOnce({
     canceled: false,
     assets: [
@@ -145,7 +157,14 @@ describe("ResumeScreen", () => {
 
   it("restores the latest parsed resume on mount", async () => {
     mockListResumes.mockResolvedValue([
-      { id: "resume-1", title: "ada.pdf", status: "ready", current_version_id: "v1", created_at: "2026-08-16T00:00:00Z", updated_at: "2026-08-16T00:00:00Z" },
+      {
+        id: "resume-1",
+        title: "ada.pdf",
+        status: "ready",
+        current_version_id: "v1",
+        created_at: "2026-08-16T00:00:00Z",
+        updated_at: "2026-08-16T00:00:00Z",
+      },
     ]);
     mockGetResume.mockResolvedValue({
       resume: importResponse.resume,

@@ -204,15 +204,17 @@ export default function JobMatchScreen() {
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
-        <Text style={[styles.eyebrow, { color: colors.primaryStrong }]}>{t("jobMatch.eyebrow")}</Text>
-        <Text style={[styles.title, { color: colors.textPrimary }]}>
-          {t("jobMatch.title")}
+        <Text style={[styles.eyebrow, { color: colors.primaryStrong }]}>
+          {t("jobMatch.eyebrow")}
         </Text>
+        <Text style={[styles.title, { color: colors.textPrimary }]}>{t("jobMatch.title")}</Text>
         <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
           {t("jobMatch.subtitle")}
         </Text>
 
-        <Text style={[styles.label, { color: colors.textSecondary }]}>{t("jobMatch.resumeLabel")}</Text>
+        <Text style={[styles.label, { color: colors.textSecondary }]}>
+          {t("jobMatch.resumeLabel")}
+        </Text>
         {resumes.length === 0 ? (
           <Text style={[styles.emptyText, { color: colors.textDisabled }]}>
             No resume imported yet — import one from the Resume tab first.
@@ -247,7 +249,9 @@ export default function JobMatchScreen() {
           </View>
         )}
 
-        <Text style={[styles.label, { color: colors.textSecondary }]}>{t("jobMatch.jobTitle")}</Text>
+        <Text style={[styles.label, { color: colors.textSecondary }]}>
+          {t("jobMatch.jobTitle")}
+        </Text>
         <View style={styles.fieldRow}>
           <TextInput
             value={title}
@@ -255,7 +259,15 @@ export default function JobMatchScreen() {
             accessibilityLabel={t("jobMatch.jobTitle")}
             placeholder={t("jobMatch.jobTitlePlaceholder")}
             placeholderTextColor={colors.textDisabled}
-            style={[styles.input, styles.inputWithMic, { backgroundColor: colors.surface, borderColor: colors.border, color: colors.textPrimary }]}
+            style={[
+              styles.input,
+              styles.inputWithMic,
+              {
+                backgroundColor: colors.surface,
+                borderColor: colors.border,
+                color: colors.textPrimary,
+              },
+            ]}
           />
           <SpeechToTextButton
             onResult={(text) => setTitle((prev) => (prev === "" ? text : `${prev} ${text}`))}
@@ -273,7 +285,15 @@ export default function JobMatchScreen() {
             accessibilityLabel={t("jobMatch.company")}
             placeholder={t("jobMatch.companyPlaceholder")}
             placeholderTextColor={colors.textDisabled}
-            style={[styles.input, styles.inputWithMic, { backgroundColor: colors.surface, borderColor: colors.border, color: colors.textPrimary }]}
+            style={[
+              styles.input,
+              styles.inputWithMic,
+              {
+                backgroundColor: colors.surface,
+                borderColor: colors.border,
+                color: colors.textPrimary,
+              },
+            ]}
           />
           <SpeechToTextButton
             onResult={(text) => setCompany((prev) => (prev === "" ? text : `${prev} ${text}`))}
@@ -283,7 +303,9 @@ export default function JobMatchScreen() {
           />
         </View>
 
-        <Text style={[styles.label, { color: colors.textSecondary }]}>{t("jobMatch.jobDescription")}</Text>
+        <Text style={[styles.label, { color: colors.textSecondary }]}>
+          {t("jobMatch.jobDescription")}
+        </Text>
         <View style={styles.fieldRow}>
           <TextInput
             value={rawText}
@@ -297,7 +319,11 @@ export default function JobMatchScreen() {
               styles.input,
               styles.jdInput,
               styles.inputWithMic,
-              { backgroundColor: colors.surface, borderColor: colors.border, color: colors.textPrimary },
+              {
+                backgroundColor: colors.surface,
+                borderColor: colors.border,
+                color: colors.textPrimary,
+              },
             ]}
           />
           <SpeechToTextButton
@@ -309,8 +335,13 @@ export default function JobMatchScreen() {
         </View>
 
         {matchState.status === "error" && (
-          <View style={[styles.notice, { backgroundColor: colors.danger }]} accessibilityRole="alert">
-            <Text style={[styles.noticeText, { color: colors.onDanger }]}>{matchState.message}</Text>
+          <View
+            style={[styles.notice, { backgroundColor: colors.danger }]}
+            accessibilityRole="alert"
+          >
+            <Text style={[styles.noticeText, { color: colors.onDanger }]}>
+              {matchState.message}
+            </Text>
           </View>
         )}
 
@@ -344,12 +375,17 @@ export default function JobMatchScreen() {
           />
         )}
 
-        <Text style={[styles.sectionTitle, { color: colors.textPrimary, marginTop: 32 }]}>{t("jobMatch.savedJobs")}</Text>
+        <Text style={[styles.sectionTitle, { color: colors.textPrimary, marginTop: 32 }]}>
+          {t("jobMatch.savedJobs")}
+        </Text>
         {listState.status === "loading" && (
           <ActivityIndicator color={colors.primary} accessibilityLabel="Loading job descriptions" />
         )}
         {listState.status === "error" && (
-          <View style={[styles.notice, { backgroundColor: colors.danger }]} accessibilityRole="alert">
+          <View
+            style={[styles.notice, { backgroundColor: colors.danger }]}
+            accessibilityRole="alert"
+          >
             <Text style={[styles.noticeText, { color: colors.onDanger }]}>{listState.message}</Text>
           </View>
         )}
@@ -362,7 +398,10 @@ export default function JobMatchScreen() {
           listState.items.map((item) => (
             <View
               key={item.id}
-              style={[styles.savedCard, { backgroundColor: colors.surface, borderColor: colors.border }]}
+              style={[
+                styles.savedCard,
+                { backgroundColor: colors.surface, borderColor: colors.border },
+              ]}
             >
               <View style={styles.savedBody}>
                 <Text style={[styles.savedTitle, { color: colors.textPrimary }]}>
@@ -380,7 +419,9 @@ export default function JobMatchScreen() {
                   onPress={() => void handleRerun(item.id)}
                   style={[styles.smallButton, { backgroundColor: colors.primary }]}
                 >
-                  <Text style={[styles.smallButtonText, { color: colors.onPrimary }]}>{t("jobMatch.match")}</Text>
+                  <Text style={[styles.smallButtonText, { color: colors.onPrimary }]}>
+                    {t("jobMatch.match")}
+                  </Text>
                 </Pressable>
                 <Pressable
                   accessibilityRole="button"
@@ -388,7 +429,9 @@ export default function JobMatchScreen() {
                   onPress={() => void handleDelete(item.id)}
                   style={[styles.smallButton, { backgroundColor: colors.danger }]}
                 >
-                  <Text style={[styles.smallButtonText, { color: colors.onDanger }]}>{t("common.delete")}</Text>
+                  <Text style={[styles.smallButtonText, { color: colors.onDanger }]}>
+                    {t("common.delete")}
+                  </Text>
                 </Pressable>
               </View>
             </View>
@@ -410,8 +453,15 @@ function MatchResultView({
   onRerun: () => void;
 }) {
   return (
-    <View style={[styles.resultCard, { backgroundColor: colors.primarySoft, borderColor: colors.primary }]}>
-      <Text style={[styles.resultLabel, { color: colors.primaryStrong }]}>{t("jobMatch.resultLabel")}</Text>
+    <View
+      style={[
+        styles.resultCard,
+        { backgroundColor: colors.primarySoft, borderColor: colors.primary },
+      ]}
+    >
+      <Text style={[styles.resultLabel, { color: colors.primaryStrong }]}>
+        {t("jobMatch.resultLabel")}
+      </Text>
       <Text style={[styles.resultScore, { color: colors.primaryStrong }]}>{match.score}%</Text>
       <Text style={[styles.resultSubtitle, { color: colors.textSecondary }]}>
         {jobDescription.title ?? t("jobMatch.thisRole")}
@@ -424,7 +474,9 @@ function MatchResultView({
             {match.matched_skills.join(", ")}
           </Text>
         ) : (
-          <Text style={[styles.emptyText, { color: colors.textDisabled }]}>{t("jobMatch.noMatchedSkills")}</Text>
+          <Text style={[styles.emptyText, { color: colors.textDisabled }]}>
+            {t("jobMatch.noMatchedSkills")}
+          </Text>
         )}
       </Section>
 
@@ -434,7 +486,9 @@ function MatchResultView({
             {match.missing_skills.join(", ")}
           </Text>
         ) : (
-          <Text style={[styles.emptyText, { color: colors.textDisabled }]}>{t("jobMatch.nothingMissing")}</Text>
+          <Text style={[styles.emptyText, { color: colors.textDisabled }]}>
+            {t("jobMatch.nothingMissing")}
+          </Text>
         )}
       </Section>
 
@@ -446,7 +500,9 @@ function MatchResultView({
             </Text>
           ))
         ) : (
-          <Text style={[styles.emptyText, { color: colors.textDisabled }]}>{t("jobMatch.noStrengths")}</Text>
+          <Text style={[styles.emptyText, { color: colors.textDisabled }]}>
+            {t("jobMatch.noStrengths")}
+          </Text>
         )}
       </Section>
 
@@ -454,12 +510,18 @@ function MatchResultView({
         {match.actions.length > 0 ? (
           match.actions.map((action) => (
             <View key={action.title} style={styles.actionBlock}>
-              <Text style={[styles.actionTitle, { color: colors.textPrimary }]}>{action.title}</Text>
-              <Text style={[styles.actionDetail, { color: colors.textSecondary }]}>{action.detail}</Text>
+              <Text style={[styles.actionTitle, { color: colors.textPrimary }]}>
+                {action.title}
+              </Text>
+              <Text style={[styles.actionDetail, { color: colors.textSecondary }]}>
+                {action.detail}
+              </Text>
             </View>
           ))
         ) : (
-          <Text style={[styles.emptyText, { color: colors.textDisabled }]}>{t("jobMatch.noActions")}</Text>
+          <Text style={[styles.emptyText, { color: colors.textDisabled }]}>
+            {t("jobMatch.noActions")}
+          </Text>
         )}
       </Section>
 
@@ -473,7 +535,9 @@ function MatchResultView({
           pressed && styles.pressed,
         ]}
       >
-        <Text style={[styles.secondaryButtonText, { color: colors.primaryStrong }]}>{t("jobMatch.runAgain")}</Text>
+        <Text style={[styles.secondaryButtonText, { color: colors.primaryStrong }]}>
+          {t("jobMatch.runAgain")}
+        </Text>
       </Pressable>
     </View>
   );

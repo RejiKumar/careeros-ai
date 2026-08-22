@@ -14,11 +14,13 @@ The mobile app is a static shell: the intro card promises a reviewable resume he
 ## Capabilities
 
 ### New Capabilities
+
 - `mobile-auth`: Email/password sign in and account creation against Supabase Auth, session persistence and restore on launch, and app-level routing gated on session state.
 - `resume-import`: Document picking with extension/size validation, authenticated multipart upload to the API, and reviewable display of the parsed resume with explicit loading/error/empty states.
 - `resume-health-score`: Triggering and displaying the AI health assessment (per-dimension scores 0-100, strengths, gaps with suggestions, evidence), clearly presented as reviewable AI output.
 
 ### Modified Capabilities
+
 <!-- No existing specs yet; none modified. -->
 
 ## Impact

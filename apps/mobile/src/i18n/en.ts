@@ -109,7 +109,8 @@ const en = {
     signOut: "Sign out",
     deleteAccount: "Delete my account",
     deleteTitle: "Delete your account?",
-    deleteBody: "This permanently deletes your account and all of your resumes, chats, missions and scores. This cannot be undone.",
+    deleteBody:
+      "This permanently deletes your account and all of your resumes, chats, missions and scores. This cannot be undone.",
     deleteError: "Could not delete your account",
     deleteErrorBody: "Please try again later.",
     resetSent: "Password reset link sent to your email.",
@@ -126,7 +127,8 @@ const en = {
     title: "See how healthy your resume is",
     subtitle: "Three reviewable steps from file to a score you can act on.",
     emptyTitle: "No resume imported yet",
-    emptyDesc: "Your health score, explanation and approved suggestions will appear here once you import a resume.",
+    emptyDesc:
+      "Your health score, explanation and approved suggestions will appear here once you import a resume.",
     importButton: "Import resume",
     improveButton: "Improve my resume",
     uploading: "Importing and analysing your resume \u2014 this can take a moment\u2026",
@@ -152,7 +154,8 @@ const en = {
     linksLabel: "Links",
     scoreButton: "Get my health score",
     scoring: "Scoring your resume \u2014 this can take a moment\u2026",
-    scoreReviewCard: "AI-generated review \u2014 scores reflect only evidence present in your resume.",
+    scoreReviewCard:
+      "AI-generated review \u2014 scores reflect only evidence present in your resume.",
     overallScore: "Overall health score",
     strengths: "Strengths",
     gapsSuggestions: "Gaps & suggestions",
@@ -164,7 +167,8 @@ const en = {
   rewrites: {
     eyebrow: "Resume Improvements",
     title: "Stronger wording, your call",
-    subtitle: "AI proposes tighter phrasings without changing any facts \u2014 review each one before it becomes a new version of your resume.",
+    subtitle:
+      "AI proposes tighter phrasings without changing any facts \u2014 review each one before it becomes a new version of your resume.",
     emptyTitle: "This resume has no parsed content to improve yet.",
     emptyDesc: "Generate up to three rewrites for the strongest sections of your resume.",
     noSuggestions: "No improvements to suggest for this resume right now.",
@@ -184,7 +188,8 @@ const en = {
   missions: {
     eyebrow: "Missions",
     title: "Build your career, earn XP",
-    subtitle: "Small daily actions that keep your career moving. No pressure \u2014 a missed day never punishes you.",
+    subtitle:
+      "Small daily actions that keep your career moving. No pressure \u2014 a missed day never punishes you.",
     totalXP: "Total XP",
     dayStreak: "Day streak",
     levelPill: "Lv {n}",
@@ -265,7 +270,8 @@ const en = {
   jobMatch: {
     eyebrow: "Job Match",
     title: "See how you fit a role",
-    subtitle: "AI-estimated compatibility \u2014 every employer uses different systems, so treat this as guidance, not an official score.",
+    subtitle:
+      "AI-estimated compatibility \u2014 every employer uses different systems, so treat this as guidance, not an official score.",
     resumeLabel: "Resume to match",
     jobTitle: "Job title (optional)",
     jobTitlePlaceholder: "e.g. Senior React Native Engineer",

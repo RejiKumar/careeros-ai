@@ -17,22 +17,11 @@ const TAB_ICONS: Record<string, { active: IconName; inactive: IconName }> = {
   profile: { active: "person", inactive: "person-outline" },
 };
 
-function TabBarIcon({
-  name,
-  focused,
-}: {
-  name: string;
-  focused: boolean;
-}) {
+function TabBarIcon({ name, focused }: { name: string; focused: boolean }) {
   const { theme } = useTheme();
   const icon = TAB_ICONS[name] ?? { active: "ellipse", inactive: "ellipse-outline" };
   return (
-    <View
-      style={[
-        styles.iconWrap,
-        focused && { backgroundColor: theme.colors.primarySoft },
-      ]}
-    >
+    <View style={[styles.iconWrap, focused && { backgroundColor: theme.colors.primarySoft }]}>
       <Ionicons
         name={focused ? icon.active : icon.inactive}
         size={22}

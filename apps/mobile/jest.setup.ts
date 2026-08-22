@@ -40,7 +40,12 @@ jest.mock("react-native-google-mobile-ads", () => {
     },
     useForeground: jest.fn(),
     useInterstitialAd: jest.fn(() => ({ isLoaded: false, show: jest.fn(), load: jest.fn() })),
-    useRewardedAd: jest.fn(() => ({ isLoaded: false, show: jest.fn(), load: jest.fn(), reward: null })),
+    useRewardedAd: jest.fn(() => ({
+      isLoaded: false,
+      show: jest.fn(),
+      load: jest.fn(),
+      reward: null,
+    })),
   };
 });
 

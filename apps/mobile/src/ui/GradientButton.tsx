@@ -58,9 +58,7 @@ export default function GradientButton({
           <ActivityIndicator color={colors.onPrimary} accessibilityLabel="Working" />
         ) : (
           <>
-            {icon !== undefined && (
-              <Ionicons name={icon} size={18} color={colors.onPrimary} />
-            )}
+            {icon !== undefined && <Ionicons name={icon} size={18} color={colors.onPrimary} />}
             <Text style={[styles.label, { color: colors.onPrimary }]}>{label}</Text>
           </>
         )}

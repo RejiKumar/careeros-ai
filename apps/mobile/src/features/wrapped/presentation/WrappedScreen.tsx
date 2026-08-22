@@ -125,40 +125,71 @@ export default function WrappedScreen() {
         />
 
         {wrappedState.status === "loading" && (
-          <ActivityIndicator size="large" color={colors.primary} accessibilityLabel="Loading wrapped data" />
+          <ActivityIndicator
+            size="large"
+            color={colors.primary}
+            accessibilityLabel="Loading wrapped data"
+          />
         )}
 
         {wrappedState.status === "error" && (
-          <View style={[styles.errorCard, { backgroundColor: colors.danger }]} accessibilityRole="alert">
-            <Text style={[styles.errorText, { color: colors.onDanger }]}>{wrappedState.message}</Text>
+          <View
+            style={[styles.errorCard, { backgroundColor: colors.danger }]}
+            accessibilityRole="alert"
+          >
+            <Text style={[styles.errorText, { color: colors.onDanger }]}>
+              {wrappedState.message}
+            </Text>
             <Pressable
               accessibilityRole="button"
               accessibilityLabel="Retry loading wrapped data"
               onPress={() => void loadWrapped()}
               style={[styles.retryButton, { backgroundColor: colors.surfaceRaised }]}
             >
-              <Text style={[styles.retryText, { color: colors.textPrimary }]}>{t("common.tryAgain")}</Text>
+              <Text style={[styles.retryText, { color: colors.textPrimary }]}>
+                {t("common.tryAgain")}
+              </Text>
             </Pressable>
           </View>
         )}
 
         {wrappedState.status === "success" && (
           <>
-            <View style={[styles.toggleSection, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+            <View
+              style={[
+                styles.toggleSection,
+                { backgroundColor: colors.surface, borderColor: colors.border },
+              ]}
+            >
               <View style={styles.toggleHeader}>
-                <Text style={[styles.toggleSectionTitle, { color: colors.textPrimary }]}>{t("wrapped.includeSection")}</Text>
-                <Pressable accessibilityRole="button" accessibilityLabel={t("common.selectAll")} onPress={selectAll}>
-                  <Text style={[styles.selectAllText, { color: colors.primaryStrong }]}>{t("common.selectAll")}</Text>
+                <Text style={[styles.toggleSectionTitle, { color: colors.textPrimary }]}>
+                  {t("wrapped.includeSection")}
+                </Text>
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel={t("common.selectAll")}
+                  onPress={selectAll}
+                >
+                  <Text style={[styles.selectAllText, { color: colors.primaryStrong }]}>
+                    {t("common.selectAll")}
+                  </Text>
                 </Pressable>
               </View>
               {wrappedState.data.data_points.map((dp) => (
                 <View key={dp.key} style={styles.toggleRow}>
                   <View style={styles.toggleLabelWrap}>
-                    <Text style={[styles.toggleLabel, { color: dp.available ? colors.textPrimary : colors.textDisabled }]}>
+                    <Text
+                      style={[
+                        styles.toggleLabel,
+                        { color: dp.available ? colors.textPrimary : colors.textDisabled },
+                      ]}
+                    >
                       {dp.label}
                     </Text>
                     {!dp.available && (
-                      <Text style={[styles.unavailableText, { color: colors.textDisabled }]}>{t("common.notAvailable")}</Text>
+                      <Text style={[styles.unavailableText, { color: colors.textDisabled }]}>
+                        {t("common.notAvailable")}
+                      </Text>
                     )}
                   </View>
                   <Switch
@@ -174,8 +205,15 @@ export default function WrappedScreen() {
             </View>
 
             {wrappedState.data.achievements.length > 0 && (
-              <View style={[styles.achievementsCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-                <Text style={[styles.achievementsTitle, { color: colors.textPrimary }]}>{t("achievements.title")}</Text>
+              <View
+                style={[
+                  styles.achievementsCard,
+                  { backgroundColor: colors.surface, borderColor: colors.border },
+                ]}
+              >
+                <Text style={[styles.achievementsTitle, { color: colors.textPrimary }]}>
+                  {t("achievements.title")}
+                </Text>
                 {wrappedState.data.achievements.map((ach) => (
                   <View key={ach.key} style={styles.achievementRow}>
                     <Text style={[styles.achievementName, { color: colors.textPrimary }]}>
@@ -191,9 +229,20 @@ export default function WrappedScreen() {
               </View>
             )}
 
-            <ViewShot ref={viewShotRef} options={{ format: "png", quality: 1.0 }} style={styles.viewShot}>
-              <View style={[styles.previewCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-                <Text style={[styles.previewTitle, { color: colors.primaryStrong }]}>{t("wrapped.previewTitle")}</Text>
+            <ViewShot
+              ref={viewShotRef}
+              options={{ format: "png", quality: 1.0 }}
+              style={styles.viewShot}
+            >
+              <View
+                style={[
+                  styles.previewCard,
+                  { backgroundColor: colors.surface, borderColor: colors.border },
+                ]}
+              >
+                <Text style={[styles.previewTitle, { color: colors.primaryStrong }]}>
+                  {t("wrapped.previewTitle")}
+                </Text>
                 {filteredPoints.length === 0 && (
                   <Text style={[styles.previewEmpty, { color: colors.textDisabled }]}>
                     {t("wrapped.previewEmpty")}
@@ -201,8 +250,12 @@ export default function WrappedScreen() {
                 )}
                 {filteredPoints.map((dp) => (
                   <View key={dp.key} style={styles.previewRow}>
-                    <Text style={[styles.previewLabel, { color: colors.textSecondary }]}>{dp.label}</Text>
-                    <Text style={[styles.previewValue, { color: colors.textPrimary }]}>{dp.value}</Text>
+                    <Text style={[styles.previewLabel, { color: colors.textSecondary }]}>
+                      {dp.label}
+                    </Text>
+                    <Text style={[styles.previewValue, { color: colors.textPrimary }]}>
+                      {dp.value}
+                    </Text>
                   </View>
                 ))}
               </View>
@@ -220,7 +273,9 @@ export default function WrappedScreen() {
                 filteredPoints.length === 0 && styles.disabled,
               ]}
             >
-              <Text style={[styles.shareButtonText, { color: colors.onPrimary }]}>{t("wrapped.shareButton")}</Text>
+              <Text style={[styles.shareButtonText, { color: colors.onPrimary }]}>
+                {t("wrapped.shareButton")}
+              </Text>
             </Pressable>
           </>
         )}
@@ -232,14 +287,25 @@ export default function WrappedScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1 },
   scrollContent: { padding: 24, paddingBottom: 48 },
-  eyebrow: { fontSize: 13, fontWeight: "700", letterSpacing: 1.2, textTransform: "uppercase", marginTop: 24 },
+  eyebrow: {
+    fontSize: 13,
+    fontWeight: "700",
+    letterSpacing: 1.2,
+    textTransform: "uppercase",
+    marginTop: 24,
+  },
   title: { fontSize: 28, lineHeight: 36, fontWeight: "700", marginTop: 8 },
   subtitle: { fontSize: 15, lineHeight: 22, marginTop: 8, marginBottom: 16 },
   toggleSection: { borderRadius: 16, borderWidth: 1, padding: 16, gap: 10 },
   toggleHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
   toggleSectionTitle: { fontSize: 16, fontWeight: "700" },
   selectAllText: { fontSize: 13, fontWeight: "600" },
-  toggleRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", paddingVertical: 6 },
+  toggleRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingVertical: 6,
+  },
   toggleLabelWrap: { flex: 1, marginRight: 12 },
   toggleLabel: { fontSize: 14, fontWeight: "500" },
   unavailableText: { fontSize: 12, marginTop: 1 },
@@ -261,6 +327,11 @@ const styles = StyleSheet.create({
   disabled: { opacity: 0.6 },
   errorCard: { marginTop: 16, borderRadius: 12, padding: 16, gap: 12 },
   errorText: { fontSize: 14, lineHeight: 20 },
-  retryButton: { borderRadius: 10, paddingHorizontal: 16, paddingVertical: 10, alignSelf: "flex-start" },
+  retryButton: {
+    borderRadius: 10,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    alignSelf: "flex-start",
+  },
   retryText: { fontSize: 14, fontWeight: "700" },
 });

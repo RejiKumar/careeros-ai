@@ -12,7 +12,7 @@ module.exports = function withAdMobAndCleartext(config) {
     }
 
     const idx = app["meta-data"].findIndex(
-      (m) => m.$["android:name"] === "com.google.android.gms.ads.APPLICATION_ID"
+      (m) => m.$["android:name"] === "com.google.android.gms.ads.APPLICATION_ID",
     );
 
     const entry = {

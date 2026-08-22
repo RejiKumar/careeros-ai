@@ -39,18 +39,21 @@ Generated: 2026-08-20
 ## CRITICAL — Must Fix Before Submission
 
 ### 1. App Signing
+
 - [ ] Generate upload key (`keytool -genkeypair`)
 - [ ] Configure EAS credentials (`eas credentials`)
 - [ ] Enable Google Play App Signing
 - [ ] Set `build.gradle` signing config for release builds
 
 ### 2. Privacy Policy & Terms
+
 - [ ] Write Privacy Policy (what data is collected, how it's used, Supabase/Gemini subprocessors)
 - [ ] Write Terms of Service
 - [ ] Host both at publicly accessible URLs (GitHub Pages or Vercel)
 - [ ] Add links in app (Profile screen) and Play Store listing
 
 ### 3. Billing / Monetization
+
 - [ ] Install `react-native-iap` or `expo-in-app-purchases`
 - [ ] Implement subscription purchase flow (monthly/yearly Pro plan)
 - [ ] Implement purchase verification (server-side receipt validation)
@@ -59,6 +62,7 @@ Generated: 2026-08-20
 - [ ] Add quota limits display in Profile screen
 
 ### 4. Play Store Listing
+
 - [ ] Write app description (short + full)
 - [ ] Capture screenshots (phone + tablet, min 2, max 8)
 - [ ] Create feature graphic (1024×500)
@@ -71,12 +75,14 @@ Generated: 2026-08-20
 ## HIGH — Should Have Before Launch
 
 ### 5. Analytics & Crash Reporting
+
 - [ ] Install Firebase (`@react-native-firebase/app`)
 - [ ] Configure Firebase Analytics (product events: app_opened, resume_uploaded, coach_message_sent, etc.)
 - [ ] Configure Firebase Crashlytics
 - [ ] Add `google-services.json` to project (gitignored)
 
 ### 6. AdMob
+
 - [ ] Install `react-native-google-mobile-ads`
 - [ ] Configure ad unit IDs (test + production)
 - [ ] Add banner ads (dashboard, mission complete screen)
@@ -84,6 +90,7 @@ Generated: 2026-08-20
 - [ ] Add rewarded ads (extra coach messages, extra interview questions)
 
 ### 7. Rate Limiting
+
 - [ ] Add FastAPI rate limiting middleware (per-user, per-endpoint)
 - [ ] Enforce free-tier AI request limits server-side
 
@@ -92,25 +99,30 @@ Generated: 2026-08-20
 ## MEDIUM — Can Ship Without, Add Post-Launch
 
 ### 8. Push Notifications
+
 - [ ] Install `expo-notifications`
 - [ ] Configure FCM
 - [ ] Mission reminders, streak reminders, weekly career tips
 
 ### 9. Offline Support
+
 - [ ] Add data caching layer (AsyncStorage or MMKV)
 - [ ] Cache last resume, dashboard data, coach threads
 - [ ] Show offline indicator, queue writes
 
 ### 10. Onboarding
+
 - [ ] First-run tutorial/walkthrough
 - [ ] Profile setup wizard (name, target role, experience level)
 
 ### 11. Performance
+
 - [ ] Replace ScrollView lists with FlashList for large datasets
 - [ ] Add skeleton/shimmer loading states
 - [ ] Convert sync Gemini calls to async (fastapi async def routes)
 
 ### 12. Testing
+
 - [ ] E2E tests (Detox or Maestro)
 - [ ] Integration tests for critical flows
 - [ ] Add billing API tests
@@ -129,4 +141,5 @@ Generated: 2026-08-20
 ---
 
 ## Current Version: 0.1.0 (versionCode 1)
+
 ## Readiness Estimate: ~60% of V1 code, ~30% of Play Store requirements

@@ -9,14 +9,20 @@ try {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     const mobileAds = require("react-native-google-mobile-ads").default;
     // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const { BannerAd, BannerAdSize, TestIds, useForeground } = require("react-native-google-mobile-ads");
+    const {
+      BannerAd,
+      BannerAdSize,
+      TestIds,
+      useForeground,
+    } = require("react-native-google-mobile-ads");
 
-    const bannerUnitId = Platform.select({
-      android: process.env.EXPO_PUBLIC_ADMOB_BANNER_UNIT_ID_ANDROID || TestIds.BANNER,
-      ios: process.env.EXPO_PUBLIC_ADMOB_BANNER_UNIT_ID_IOS || TestIds.BANNER,
-    }) ?? TestIds.BANNER;
+    const bannerUnitId =
+      Platform.select({
+        android: process.env.EXPO_PUBLIC_ADMOB_BANNER_UNIT_ID_ANDROID || TestIds.BANNER,
+        ios: process.env.EXPO_PUBLIC_ADMOB_BANNER_UNIT_ID_IOS || TestIds.BANNER,
+      }) ?? TestIds.BANNER;
 
-    function BannerInner({ size }: { size?: typeof BannerAdSize[keyof typeof BannerAdSize] }) {
+    function BannerInner({ size }: { size?: (typeof BannerAdSize)[keyof typeof BannerAdSize] }) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const bannerRef = React.useRef<any>(null);
       const [loaded, setLoaded] = useState(false);
@@ -24,7 +30,13 @@ try {
       useForeground(() => bannerRef.current?.load());
 
       return (
-        <View style={{ alignItems: "center", opacity: loaded ? 1 : 0, minHeight: loaded ? undefined : 0 }}>
+        <View
+          style={{
+            alignItems: "center",
+            opacity: loaded ? 1 : 0,
+            minHeight: loaded ? undefined : 0,
+          }}
+        >
           <BannerAd
             ref={bannerRef}
             unitId={bannerUnitId}
