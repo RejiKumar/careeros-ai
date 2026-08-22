@@ -28,14 +28,19 @@ def _seed_achievements(fake: FakeClients) -> dict[str, str]:
         ("streak_7", "7-Day Streak", "streak_days_gte_7"),
         ("perfect_score", "Perfect Score", "assessment_score_gte_95"),
     ]:
-        row = fake.service_client.table("achievements").insert(
-            {
-                "key": key,
-                "title": title,
-                "description": "Test description",
-                "condition": condition,
-            }
-        ).execute().data[0]
+        row = (
+            fake.service_client.table("achievements")
+            .insert(
+                {
+                    "key": key,
+                    "title": title,
+                    "description": "Test description",
+                    "condition": condition,
+                }
+            )
+            .execute()
+            .data[0]
+        )
         keys[key] = row["id"]
     return keys
 
@@ -81,15 +86,20 @@ def test_get_achievements_lists_all() -> None:
 def test_mission_completion_awards_streak_7_after_seven_days() -> None:
     client, fake = _make_client()
     achievement_ids = _seed_achievements(fake)
-    mission = fake.service_client.table("missions").insert(
-        {
-            "key": "daily_review",
-            "title": "Daily review",
-            "xp_reward": 10,
-            "cadence": "daily",
-            "is_active": True,
-        }
-    ).execute().data[0]
+    mission = (
+        fake.service_client.table("missions")
+        .insert(
+            {
+                "key": "daily_review",
+                "title": "Daily review",
+                "xp_reward": 10,
+                "cadence": "daily",
+                "is_active": True,
+            }
+        )
+        .execute()
+        .data[0]
+    )
 
     today = datetime.now(tz=UTC).date()
     for days_ago in range(7, 0, -1):

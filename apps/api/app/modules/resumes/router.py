@@ -83,4 +83,3 @@ def update_resume(
         title=payload.title,
         structured_data=payload.structured_data,
     )
-

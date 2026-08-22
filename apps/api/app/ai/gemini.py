@@ -208,9 +208,7 @@ class GeminiProvider(CareerAiProvider):
         payload = content.model_dump(mode="json")
         user_text = _ASSESS_USER_PROMPT.format(content=json.dumps(payload, ensure_ascii=False))
         system_prompt = _ASSESS_SYSTEM_PROMPT + _language_instruction(locale)
-        raw, request_id = self._generate(
-            system_prompt, user_text, _assessment_json_schema()
-        )
+        raw, request_id = self._generate(system_prompt, user_text, _assessment_json_schema())
         assessment = _validated(ResumeAssessment, raw, request_id)
         return AssessmentResult(
             content=assessment,
@@ -331,7 +329,7 @@ class GeminiProvider(CareerAiProvider):
                 json=body,
             )
             if response.status_code == 429 and attempt < attempts - 1:
-                wait = 2 ** attempt * 5.0
+                wait = 2**attempt * 5.0
                 logger.warning(
                     "Gemini rate limited (429), retrying in %.0fs (attempt %d/%d)",
                     wait,

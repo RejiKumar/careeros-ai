@@ -132,4 +132,3 @@ def _to_response(row: dict, *, resume_id: str | None) -> AssessmentResponse:
         prompt_version=row.get("prompt_version"),
         created_at=row["created_at"],
     )
-

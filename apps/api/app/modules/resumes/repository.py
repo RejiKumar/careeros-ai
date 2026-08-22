@@ -20,9 +20,7 @@ class ResumeRepository:
         self._client = client
 
     def create_resume(self, *, owner: dict, title: str) -> dict:
-        rows = self._client.table(RESUMES_TABLE).insert(
-            {**owner, "title": title}
-        ).execute().data
+        rows = self._client.table(RESUMES_TABLE).insert({**owner, "title": title}).execute().data
         return rows[0]
 
     def create_version(

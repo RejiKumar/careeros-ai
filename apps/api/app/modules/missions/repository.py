@@ -1,4 +1,5 @@
 """Mission persistence backed by Supabase (service-role client)."""
+
 from __future__ import annotations
 
 from datetime import date
@@ -14,22 +15,10 @@ class MissionRepository:
         self._client = client
 
     def list_active(self) -> list[dict]:
-        return (
-            self._client.table(MISSIONS_TABLE)
-            .select("*")
-            .eq("is_active", True)
-            .execute()
-            .data
-        )
+        return self._client.table(MISSIONS_TABLE).select("*").eq("is_active", True).execute().data
 
     def get_by_key(self, *, mission_key: str) -> dict | None:
-        rows = (
-            self._client.table(MISSIONS_TABLE)
-            .select("*")
-            .eq("key", mission_key)
-            .execute()
-            .data
-        )
+        rows = self._client.table(MISSIONS_TABLE).select("*").eq("key", mission_key).execute().data
         return rows[0] if rows else None
 
     def get_completion(
@@ -75,13 +64,7 @@ class MissionRepository:
         )
 
     def get_mission_key(self, *, mission_id: str) -> str:
-        rows = (
-            self._client.table(MISSIONS_TABLE)
-            .select("key")
-            .eq("id", mission_id)
-            .execute()
-            .data
-        )
+        rows = self._client.table(MISSIONS_TABLE).select("key").eq("id", mission_id).execute().data
         return rows[0]["key"] if rows else ""
 
     def get_total_xp(self, *, actor_id: str, is_guest: bool) -> int:
@@ -138,23 +121,11 @@ class MissionRepository:
         return rows[0] if rows else None
 
     def get_jd_title(self, *, jd_id: str) -> str | None:
-        rows = (
-            self._client.table("job_descriptions")
-            .select("title")
-            .eq("id", jd_id)
-            .execute()
-            .data
-        )
+        rows = self._client.table("job_descriptions").select("title").eq("id", jd_id).execute().data
         return rows[0].get("title") if rows else None
 
     def list_achievements(self) -> list[dict]:
-        return (
-            self._client.table("achievements")
-            .select("*")
-            .order("key")
-            .execute()
-            .data
-        )
+        return self._client.table("achievements").select("*").order("key").execute().data
 
     def list_earned_achievements(self, *, actor_id: str, is_guest: bool) -> dict[str, str]:
         rows = (

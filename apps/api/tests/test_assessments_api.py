@@ -79,9 +79,12 @@ def test_create_assessment_other_resume_is_not_found() -> None:
 
 def test_create_assessment_without_content_is_rejected() -> None:
     client, clients = _make(FakeProvider())
-    row = clients.service_client.table("resumes").insert(
-        {"user_id": "u-1", "title": "Empty resume"}
-    ).execute().data[0]
+    row = (
+        clients.service_client.table("resumes")
+        .insert({"user_id": "u-1", "title": "Empty resume"})
+        .execute()
+        .data[0]
+    )
 
     response = _assess(client, row["id"])
 

@@ -220,4 +220,3 @@ def _to_parsed_content(structured_data: dict | None) -> ResumeContent | None:
         return ResumeContent.model_validate(structured_data)
     except Exception:
         return None
-

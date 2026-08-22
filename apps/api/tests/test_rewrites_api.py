@@ -143,14 +143,15 @@ def test_accept_twice_is_conflict() -> None:
     client, _ = _make(FakeProvider())
     resume_id = _import(client)
     batch_id = _generate(client, resume_id).json()["id"]
-    accept = {
-        "accepted_data": {"contact": {"full_name": "Ada Lovelace"}, "summary": "Improved."}
-    }
-    assert client.post(
-        f"{API_V1_PREFIX}/resumes/{resume_id}/rewrites/{batch_id}/accept",
-        json=accept,
-        headers=_AUTH,
-    ).status_code == 201
+    accept = {"accepted_data": {"contact": {"full_name": "Ada Lovelace"}, "summary": "Improved."}}
+    assert (
+        client.post(
+            f"{API_V1_PREFIX}/resumes/{resume_id}/rewrites/{batch_id}/accept",
+            json=accept,
+            headers=_AUTH,
+        ).status_code
+        == 201
+    )
 
     response = client.post(
         f"{API_V1_PREFIX}/resumes/{resume_id}/rewrites/{batch_id}/accept",
@@ -190,9 +191,7 @@ def test_get_single_batch_returns_batch() -> None:
     resume_id = _import(client)
     batch_id = _generate(client, resume_id).json()["id"]
 
-    response = client.get(
-        f"{API_V1_PREFIX}/resumes/{resume_id}/rewrites/{batch_id}", headers=_AUTH
-    )
+    response = client.get(f"{API_V1_PREFIX}/resumes/{resume_id}/rewrites/{batch_id}", headers=_AUTH)
 
     assert response.status_code == 200
     body = response.json()
@@ -205,9 +204,7 @@ def test_get_single_batch_unknown_is_not_found() -> None:
     client, _ = _make(FakeProvider())
     resume_id = _import(client)
 
-    response = client.get(
-        f"{API_V1_PREFIX}/resumes/{resume_id}/rewrites/unknown", headers=_AUTH
-    )
+    response = client.get(f"{API_V1_PREFIX}/resumes/{resume_id}/rewrites/unknown", headers=_AUTH)
 
     assert response.status_code == 404
 
@@ -232,16 +229,21 @@ def test_accept_stale_version_is_conflict() -> None:
     batch_id = _generate(client, resume_id).json()["id"]
 
     # Simulate the resume being edited (new version created) after batch generation
-    new_version = clients.service_client.table("resume_versions").insert(
-        {
-            "resume_id": resume_id,
-            "user_id": "u-1",
-            "version": 2,
-            "source": "edit",
-            "structured_data": {"contact": {"full_name": "Ada"}},
-            "source_request_id": None,
-        }
-    ).execute().data[0]
+    new_version = (
+        clients.service_client.table("resume_versions")
+        .insert(
+            {
+                "resume_id": resume_id,
+                "user_id": "u-1",
+                "version": 2,
+                "source": "edit",
+                "structured_data": {"contact": {"full_name": "Ada"}},
+                "source_request_id": None,
+            }
+        )
+        .execute()
+        .data[0]
+    )
     clients.service_client.table("resumes").rows[0]["current_version_id"] = new_version["id"]
 
     response = client.post(

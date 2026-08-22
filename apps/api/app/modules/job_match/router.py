@@ -115,5 +115,3 @@ def run_match(
         resume_version_id=payload.resume_version_id,
         locale=locale,
     )
-
-
