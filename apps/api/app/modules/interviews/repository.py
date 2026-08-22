@@ -47,11 +47,7 @@ class InterviewRepository:
         return query.execute().data
 
     def get_parsed_resume(self, *, resume_id: str, actor_id: str, is_guest: bool) -> dict | None:
-        query = (
-            self._client.table("resumes")
-            .select("id, current_version_id")
-            .eq("id", resume_id)
-        )
+        query = self._client.table("resumes").select("id, current_version_id").eq("id", resume_id)
         query = query.eq("guest_id", actor_id) if is_guest else query.eq("user_id", actor_id)
         rows = query.execute().data
         if not rows or not rows[0].get("current_version_id"):

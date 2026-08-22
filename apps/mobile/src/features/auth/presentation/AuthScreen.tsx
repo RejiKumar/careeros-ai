@@ -122,16 +122,17 @@ export default function AuthScreen() {
         style={styles.flex}
         behavior={Platform.OS === "ios" ? "padding" : undefined}
       >
-        <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
+        <ScrollView
+          contentContainerStyle={styles.scrollContent}
+          keyboardShouldPersistTaps="handled"
+        >
           <BrandMark size={64} />
           <Text style={[styles.eyebrow, { color: colors.primaryStrong }]}>{t("auth.brand")}</Text>
           <Text style={[styles.title, { color: colors.textPrimary }]}>
             {isSignIn ? t("auth.signInTitle") : t("auth.signUpTitle")}
           </Text>
           <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
-            {isSignIn
-              ? t("auth.signInSubtitle")
-              : t("auth.signUpSubtitle")}
+            {isSignIn ? t("auth.signInSubtitle") : t("auth.signUpSubtitle")}
           </Text>
 
           <Pressable
@@ -167,7 +168,9 @@ export default function AuthScreen() {
           </View>
 
           <View style={styles.form}>
-            <Text style={[styles.label, { color: colors.textSecondary }]}>{t("auth.emailLabel")}</Text>
+            <Text style={[styles.label, { color: colors.textSecondary }]}>
+              {t("auth.emailLabel")}
+            </Text>
             <TextInput
               value={email}
               onChangeText={setEmail}
@@ -180,11 +183,17 @@ export default function AuthScreen() {
               placeholderTextColor={colors.textDisabled}
               style={[
                 styles.input,
-                { backgroundColor: colors.surface, borderColor: colors.border, color: colors.textPrimary },
+                {
+                  backgroundColor: colors.surface,
+                  borderColor: colors.border,
+                  color: colors.textPrimary,
+                },
               ]}
             />
 
-            <Text style={[styles.label, { color: colors.textSecondary }]}>{t("auth.passwordLabel")}</Text>
+            <Text style={[styles.label, { color: colors.textSecondary }]}>
+              {t("auth.passwordLabel")}
+            </Text>
             <View
               style={[
                 styles.passwordWrapper,
@@ -204,7 +213,9 @@ export default function AuthScreen() {
               />
               <Pressable
                 accessibilityRole="button"
-                accessibilityLabel={passwordVisible ? t("auth.hidePassword") : t("auth.showPassword")}
+                accessibilityLabel={
+                  passwordVisible ? t("auth.hidePassword") : t("auth.showPassword")
+                }
                 accessibilityState={{ selected: passwordVisible }}
                 onPress={() => setPasswordVisible((visible) => !visible)}
                 hitSlop={8}

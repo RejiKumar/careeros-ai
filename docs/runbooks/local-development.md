@@ -76,7 +76,6 @@ pnpm build
 pnpm format:check
 ```
 
-
 ## Mobile (Expo)
 
 ```bash

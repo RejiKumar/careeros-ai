@@ -1,13 +1,24 @@
 import { Stack, usePathname, useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useEffect } from "react";
-import { ActivityIndicator, StyleSheet, View } from "react-native";
+import {
+  ActivityIndicator,
+  Platform,
+  StatusBar as RNStatusBar,
+  StyleSheet,
+  View,
+} from "react-native";
 
 import { AuthProvider, useAuth } from "@/lib/auth";
 import { ThemeProvider, useTheme } from "@/lib/theme";
 
 function ThemedStatusBar() {
-  const { colorScheme } = useTheme();
+  const { colorScheme, theme } = useTheme();
+  useEffect(() => {
+    if (Platform.OS === "android") {
+      RNStatusBar.setBackgroundColor(colorScheme === "dark" ? "#14181D" : theme.colors.surface);
+    }
+  }, [colorScheme, theme]);
   return <StatusBar style={colorScheme === "dark" ? "light" : "dark"} />;
 }
 

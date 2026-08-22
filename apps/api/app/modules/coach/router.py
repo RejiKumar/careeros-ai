@@ -5,7 +5,7 @@ from __future__ import annotations
 from typing import Annotated
 
 from app.ai.provider import CareerAiProvider, get_ai_provider
-from app.core.auth import CurrentUser, get_current_user
+from app.core.auth import CurrentActor, get_current_actor
 from app.core.i18n import get_request_locale
 from app.integrations.supabase.client import SupabaseClients, get_supabase_clients
 from fastapi import APIRouter, Depends
@@ -34,30 +34,30 @@ def get_coach_service(
 def create_thread(
     payload: CoachThreadCreateRequest,
     service: Annotated[CoachService, Depends(get_coach_service)],
-    user: Annotated[CurrentUser, Depends(get_current_user)],
+    actor: Annotated[CurrentActor, Depends(get_current_actor)],
 ) -> CoachThreadResponse:
     return service.create_thread(
-        user, payload.title, payload.resume_id, payload.job_description_id
+        actor, payload.title, payload.resume_id, payload.job_description_id
     )
 
 
 @router.get("/threads", response_model=list[CoachThreadResponse])
 def list_threads(
     service: Annotated[CoachService, Depends(get_coach_service)],
-    user: Annotated[CurrentUser, Depends(get_current_user)],
+    actor: Annotated[CurrentActor, Depends(get_current_actor)],
 ) -> list[CoachThreadResponse]:
-    return service.list_threads(user)
+    return service.list_threads(actor)
 
 
 @router.get("/threads/{thread_id}", response_model=CoachThreadDetailResponse)
 def get_thread(
     thread_id: str,
     service: Annotated[CoachService, Depends(get_coach_service)],
-    user: Annotated[CurrentUser, Depends(get_current_user)],
+    actor: Annotated[CurrentActor, Depends(get_current_actor)],
     limit: int = 50,
     offset: int = 0,
 ) -> CoachThreadDetailResponse:
-    return service.get_thread_detail(user, thread_id, limit=limit, offset=offset)
+    return service.get_thread_detail(actor, thread_id, limit=limit, offset=offset)
 
 
 @router.patch("/threads/{thread_id}", response_model=CoachThreadResponse)
@@ -65,10 +65,10 @@ def update_thread(
     thread_id: str,
     payload: CoachThreadUpdateRequest,
     service: Annotated[CoachService, Depends(get_coach_service)],
-    user: Annotated[CurrentUser, Depends(get_current_user)],
+    actor: Annotated[CurrentActor, Depends(get_current_actor)],
 ) -> CoachThreadResponse:
     return service.update_thread(
-        user,
+        actor,
         thread_id,
         title=payload.title,
         resume_id=payload.resume_id,
@@ -80,9 +80,9 @@ def update_thread(
 def delete_thread(
     thread_id: str,
     service: Annotated[CoachService, Depends(get_coach_service)],
-    user: Annotated[CurrentUser, Depends(get_current_user)],
+    actor: Annotated[CurrentActor, Depends(get_current_actor)],
 ) -> None:
-    service.delete_thread(user, thread_id)
+    service.delete_thread(actor, thread_id)
 
 
 @router.post(
@@ -95,6 +95,6 @@ def send_message(
     payload: CoachMessageRequest,
     locale: Annotated[str, Depends(get_request_locale)],
     service: Annotated[CoachService, Depends(get_coach_service)],
-    user: Annotated[CurrentUser, Depends(get_current_user)],
+    actor: Annotated[CurrentActor, Depends(get_current_actor)],
 ) -> CoachMessagePairResponse:
-    return service.post_message(user, thread_id, payload.content, locale=locale)
+    return service.post_message(actor, thread_id, payload.content, locale=locale)

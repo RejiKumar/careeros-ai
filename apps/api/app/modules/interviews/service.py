@@ -7,7 +7,7 @@ import logging
 
 from app.ai.provider import CareerAiProvider, ProviderError
 from app.ai.schemas import ResumeContent
-from app.core.auth import CurrentActor, CurrentUser
+from app.core.auth import CurrentActor
 from app.core.errors import AppError
 from app.integrations.supabase.client import (
     SupabaseClients,
@@ -110,8 +110,7 @@ class InterviewService:
         questions = self._repository.create_questions(
             session_id=session_row["id"],
             questions=[
-                {"question": q.question, "focus": q.focus}
-                for q in result.content.questions
+                {"question": q.question, "focus": q.focus} for q in result.content.questions
             ],
         )
         return InterviewSessionDetailResponse(
@@ -120,9 +119,7 @@ class InterviewService:
         )
 
     def list_sessions(self, actor: CurrentActor) -> list[InterviewSessionResponse]:
-        rows = self._repository.list_sessions(
-            actor_id=actor.id, is_guest=actor.kind == "guest"
-        )
+        rows = self._repository.list_sessions(actor_id=actor.id, is_guest=actor.kind == "guest")
         return [_to_session_response(row) for row in rows]
 
     def get_session(self, actor: CurrentActor, session_id: str) -> InterviewSessionDetailResponse:
@@ -151,15 +148,17 @@ class InterviewService:
         if question is None:
             raise QuestionNotFoundError()
 
-        resume_context = self._repository.get_parsed_resume(
-            resume_id=session.get("resume_id"),
-            actor_id=actor.id,
-            is_guest=actor.kind == "guest",
-        ) if session.get("resume_id") else None
-        resume_text = (
-            json.dumps(resume_context, ensure_ascii=False)[:10_000]
-            if resume_context
+        resume_context = (
+            self._repository.get_parsed_resume(
+                resume_id=session.get("resume_id"),
+                actor_id=actor.id,
+                is_guest=actor.kind == "guest",
+            )
+            if session.get("resume_id")
             else None
+        )
+        resume_text = (
+            json.dumps(resume_context, ensure_ascii=False)[:10_000] if resume_context else None
         )
 
         try:
@@ -178,16 +177,12 @@ class InterviewService:
             model_version=result.model_version,
         )
         if actor.kind == "user":
-            MissionService(self._clients).evaluate_achievements(
-                CurrentUser(id=actor.id, email=actor.email, role=actor.role)
-            )
+            MissionService(self._clients).evaluate_achievements(actor)
         return InterviewAnswerResponse(
             id=answer["id"],
             question_id=answer["question_id"],
             content=answer["content"],
-            evaluation=InterviewEvaluationResponse(
-                **answer["evaluation"]
-            ),
+            evaluation=InterviewEvaluationResponse(**answer["evaluation"]),
             created_at=answer["created_at"],
         )
 

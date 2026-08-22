@@ -1,13 +1,18 @@
 """Mission and dashboard use cases."""
+
 from __future__ import annotations
 
 from datetime import UTC, date, datetime
 
 from fastapi import status
 
-from app.core.auth import CurrentUser
+from app.core.auth import CurrentActor
 from app.core.errors import AppError
-from app.integrations.supabase.client import SupabaseClients, require_service_client
+from app.integrations.supabase.client import (
+    SupabaseClients,
+    ensure_guest_account,
+    require_service_client,
+)
 
 from .repository import MissionRepository
 from .schema import (
@@ -34,15 +39,17 @@ class MissionNotFoundError(AppError):
 class MissionService:
     def __init__(self, clients: SupabaseClients) -> None:
         service_client = require_service_client(clients)
+        self._clients = clients
         self._repository = MissionRepository(service_client)
 
     def list_missions(self) -> list[MissionResponse]:
         return [_to_mission_response(row) for row in self._repository.list_active()]
 
-    def get_progress(self, user: CurrentUser) -> MissionProgressResponse:
-        total_xp = self._repository.get_total_xp(user_id=user.id)
-        completions = self._repository.list_completions(user_id=user.id)
-        dates = self._repository.get_completion_dates(user_id=user.id)
+    def get_progress(self, actor: CurrentActor) -> MissionProgressResponse:
+        is_guest = actor.kind == "guest"
+        total_xp = self._repository.get_total_xp(actor_id=actor.id, is_guest=is_guest)
+        completions = self._repository.list_completions(actor_id=actor.id, is_guest=is_guest)
+        dates = self._repository.get_completion_dates(actor_id=actor.id, is_guest=is_guest)
         return MissionProgressResponse(
             total_xp=total_xp,
             level=_level(total_xp),
@@ -51,19 +58,20 @@ class MissionService:
             completions=[_to_completion_response(c) for c in completions],
         )
 
-    def complete_mission(
-        self, user: CurrentUser, mission_key: str
-    ) -> MissionCompleteResponse:
+    def complete_mission(self, actor: CurrentActor, mission_key: str) -> MissionCompleteResponse:
+        if actor.kind == "guest":
+            ensure_guest_account(self._clients, actor.id)
         mission = self._repository.get_by_key(mission_key=mission_key)
         if mission is None:
             raise MissionNotFoundError()
 
+        is_guest = actor.kind == "guest"
         today = datetime.now(tz=UTC).date()
         existing = self._repository.get_completion(
-            user_id=user.id, mission_id=mission["id"], completed_on=today
+            actor_id=actor.id, is_guest=is_guest, mission_id=mission["id"], completed_on=today
         )
         if existing is not None:
-            total_xp = self._repository.get_total_xp(user_id=user.id)
+            total_xp = self._repository.get_total_xp(actor_id=actor.id, is_guest=is_guest)
             return MissionCompleteResponse(
                 mission_key=mission_key,
                 xp_awarded=0,
@@ -73,65 +81,75 @@ class MissionService:
 
         xp = mission["xp_reward"]
         self._repository.create_completion(
-            user_id=user.id,
+            actor_id=actor.id,
+            is_guest=is_guest,
             mission_id=mission["id"],
             completed_on=today,
             xp_awarded=xp,
         )
-        self.evaluate_achievements(user)
-        total_xp = self._repository.get_total_xp(user_id=user.id)
+        self.evaluate_achievements(actor)
+        total_xp = self._repository.get_total_xp(actor_id=actor.id, is_guest=is_guest)
         return MissionCompleteResponse(
             mission_key=mission_key,
             xp_awarded=xp,
             new_total_xp=total_xp,
         )
 
-    def list_achievements(self, user: CurrentUser) -> list[AchievementResponse]:
+    def list_achievements(self, actor: CurrentActor) -> list[AchievementResponse]:
         definitions = self._repository.list_achievements()
-        earned = self._repository.list_earned_achievements(user_id=user.id)
+        earned = self._repository.list_earned_achievements(
+            actor_id=actor.id, is_guest=actor.kind == "guest"
+        )
         return [
             _to_achievement_response(definition, earned.get(definition["id"]))
             for definition in definitions
         ]
 
-    def evaluate_achievements(self, user: CurrentUser) -> list[str]:
+    def evaluate_achievements(self, actor: CurrentActor) -> list[str]:
         """Award achievements whose conditions are met; returns new keys."""
+        if actor.kind == "guest":
+            return []
         definitions = self._repository.list_achievements()
-        earned_ids = set(self._repository.list_earned_achievements(user_id=user.id))
+        earned_ids = set(
+            self._repository.list_earned_achievements(actor_id=actor.id, is_guest=False)
+        )
         newly_awarded: list[str] = []
 
         for definition in definitions:
             if definition["id"] in earned_ids:
                 continue
             condition = definition.get("condition", "")
-            if self._condition_met(user, condition):
+            if self._condition_met(actor, condition):
                 self._repository.award_achievement(
-                    user_id=user.id, achievement_id=definition["id"]
+                    actor_id=actor.id, is_guest=False, achievement_id=definition["id"]
                 )
                 newly_awarded.append(definition["key"])
         return newly_awarded
 
-    def _condition_met(self, user: CurrentUser, condition: str) -> bool:
+    def _condition_met(self, actor: CurrentActor, condition: str) -> bool:
         if condition == "first_assessment":
-            return self._repository.count_completed_assessments(user_id=user.id) >= 1
+            return (
+                self._repository.count_completed_assessments(actor_id=actor.id, is_guest=False) >= 1
+            )
         if condition == "assessment_score_gte_80":
-            score = self._repository.get_best_assessment_score(user_id=user.id)
+            score = self._repository.get_best_assessment_score(actor_id=actor.id, is_guest=False)
             return score is not None and score >= 80
         if condition == "assessment_score_gte_95":
-            score = self._repository.get_best_assessment_score(user_id=user.id)
+            score = self._repository.get_best_assessment_score(actor_id=actor.id, is_guest=False)
             return score is not None and score >= 95
         if condition == "first_interview":
-            return self._repository.count_interview_sessions(user_id=user.id) >= 1
+            return self._repository.count_interview_sessions(actor_id=actor.id, is_guest=False) >= 1
         if condition == "streak_days_gte_7":
-            dates = self._repository.get_completion_dates(user_id=user.id)
+            dates = self._repository.get_completion_dates(actor_id=actor.id, is_guest=False)
             return _streak(dates) >= 7
         return False
 
-    def get_dashboard(self, user: CurrentUser) -> DashboardResponse:
+    def get_dashboard(self, actor: CurrentActor) -> DashboardResponse:
         missions = self.list_missions()
-        progress = self.get_progress(user)
-        assessment = self._repository.get_latest_assessment(user_id=user.id)
-        match = self._repository.get_latest_match(user_id=user.id)
+        progress = self.get_progress(actor)
+        is_guest = actor.kind == "guest"
+        assessment = self._repository.get_latest_assessment(actor_id=actor.id, is_guest=is_guest)
+        match = self._repository.get_latest_match(actor_id=actor.id, is_guest=is_guest)
 
         health_score: int | None = None
         health_level: str | None = None
@@ -165,7 +183,7 @@ class MissionService:
             current_streak=progress.current_streak,
             active_missions=missions,
             recent_completions=progress.completions[:5],
-            achievements=self.list_achievements(user),
+            achievements=self.list_achievements(actor),
         )
 
 
@@ -196,6 +214,7 @@ def _streak(dates: list[date]) -> int:
 
 def _prev_date(d: date) -> date:
     from datetime import timedelta
+
     return d - timedelta(days=1)
 
 

@@ -55,7 +55,7 @@
 
 ## 10. Mobile: feedback controls
 
-- [x] 10.1 Reusable FeedbackControl component (Helpful / Not helpful + reason picker) 
+- [x] 10.1 Reusable FeedbackControl component (Helpful / Not helpful + reason picker)
 - [x] 10.2 Wire into score, match result, coach message and roast outputs; API client `submitFeedback`
 - [x] 10.3 Component tests: rating, reason skip, change rating
 

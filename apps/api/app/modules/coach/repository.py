@@ -13,45 +13,58 @@ class CoachRepository:
         self._client = client
 
     def create_thread(
-        self, *, user_id: str, title: str | None, context: dict | None
+        self, *, actor_id: str, is_guest: bool, title: str | None, context: dict | None
     ) -> dict:
         rows = (
             self._client.table(COACH_THREADS_TABLE)
-            .insert({"user_id": user_id, "title": title, "context": context})
+            .insert(
+                {
+                    "guest_id" if is_guest else "user_id": actor_id,
+                    "title": title,
+                    "context": context,
+                }
+            )
             .execute()
             .data
         )
         return rows[0]
 
-    def get_thread(self, *, user_id: str, thread_id: str) -> dict | None:
+    def get_thread(self, *, actor_id: str, is_guest: bool, thread_id: str) -> dict | None:
         rows = (
             self._client.table(COACH_THREADS_TABLE)
             .select("*")
             .eq("id", thread_id)
-            .eq("user_id", user_id)
+            .eq("guest_id" if is_guest else "user_id", actor_id)
             .execute()
             .data
         )
         return rows[0] if rows else None
 
-    def list_threads(self, *, user_id: str) -> list[dict]:
+    def list_threads(self, *, actor_id: str, is_guest: bool) -> list[dict]:
         return (
             self._client.table(COACH_THREADS_TABLE)
             .select("*")
-            .eq("user_id", user_id)
+            .eq("guest_id" if is_guest else "user_id", actor_id)
             .order("updated_at", desc=True)
             .execute()
             .data
         )
 
     def create_message(
-        self, *, user_id: str, thread_id: str, role: str, content: str, request_id: str | None
+        self,
+        *,
+        actor_id: str,
+        is_guest: bool,
+        thread_id: str,
+        role: str,
+        content: str,
+        request_id: str | None,
     ) -> dict:
         rows = (
             self._client.table(COACH_MESSAGES_TABLE)
             .insert(
                 {
-                    "user_id": user_id,
+                    "guest_id" if is_guest else "user_id": actor_id,
                     "thread_id": thread_id,
                     "role": role,
                     "content": content,
@@ -66,7 +79,8 @@ class CoachRepository:
     def update_thread(
         self,
         *,
-        user_id: str,
+        actor_id: str,
+        is_guest: bool,
         thread_id: str,
         title: str | None,
         context: dict | None,
@@ -77,25 +91,23 @@ class CoachRepository:
         if context is not None:
             updates["context"] = context
         if not updates:
-            return self.get_thread(user_id=user_id, thread_id=thread_id)
+            return self.get_thread(actor_id=actor_id, is_guest=is_guest, thread_id=thread_id)
         rows = (
             self._client.table(COACH_THREADS_TABLE)
             .update(updates)
             .eq("id", thread_id)
-            .eq("user_id", user_id)
+            .eq("guest_id" if is_guest else "user_id", actor_id)
             .execute()
             .data
         )
         return rows[0] if rows else None
 
-    def delete_thread(self, *, user_id: str, thread_id: str) -> None:
+    def delete_thread(self, *, actor_id: str, is_guest: bool, thread_id: str) -> None:
         self._client.table(COACH_THREADS_TABLE).delete().eq("id", thread_id).eq(
-            "user_id", user_id
+            "guest_id" if is_guest else "user_id", actor_id
         ).execute()
 
-    def list_messages(
-        self, *, thread_id: str, limit: int = 50, offset: int = 0
-    ) -> list[dict]:
+    def list_messages(self, *, thread_id: str, limit: int = 50, offset: int = 0) -> list[dict]:
         rows = (
             self._client.table(COACH_MESSAGES_TABLE)
             .select("*")

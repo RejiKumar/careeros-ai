@@ -1,6 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import { Tabs } from "expo-router";
 import { StyleSheet, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { useTheme } from "@/lib/theme";
 
@@ -16,22 +17,11 @@ const TAB_ICONS: Record<string, { active: IconName; inactive: IconName }> = {
   profile: { active: "person", inactive: "person-outline" },
 };
 
-function TabBarIcon({
-  name,
-  focused,
-}: {
-  name: string;
-  focused: boolean;
-}) {
+function TabBarIcon({ name, focused }: { name: string; focused: boolean }) {
   const { theme } = useTheme();
   const icon = TAB_ICONS[name] ?? { active: "ellipse", inactive: "ellipse-outline" };
   return (
-    <View
-      style={[
-        styles.iconWrap,
-        focused && { backgroundColor: theme.colors.primarySoft },
-      ]}
-    >
+    <View style={[styles.iconWrap, focused && { backgroundColor: theme.colors.primarySoft }]}>
       <Ionicons
         name={focused ? icon.active : icon.inactive}
         size={22}
@@ -43,6 +33,7 @@ function TabBarIcon({
 
 export default function TabsLayout() {
   const { theme } = useTheme();
+  const insets = useSafeAreaInsets();
 
   return (
     <Tabs
@@ -52,11 +43,12 @@ export default function TabsLayout() {
         tabBarInactiveTintColor: theme.colors.textDisabled,
         tabBarLabelStyle: styles.label,
         tabBarStyle: {
-          height: 68,
+          height: 68 + insets.bottom,
+          paddingBottom: insets.bottom,
+          paddingTop: 6,
           backgroundColor: theme.colors.surface,
           borderTopWidth: 1,
           borderTopColor: theme.colors.border,
-          paddingTop: 6,
           elevation: 10,
           shadowColor: "#14181D",
           shadowOpacity: 0.1,

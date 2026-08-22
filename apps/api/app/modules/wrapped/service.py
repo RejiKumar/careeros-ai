@@ -39,9 +39,7 @@ class WrappedService:
         is_guest = actor.kind == "guest"
         points: list[WrappedDataPoint] = []
 
-        assessment = self._repository.get_latest_assessment(
-            actor_id=actor.id, is_guest=is_guest
-        )
+        assessment = self._repository.get_latest_assessment(actor_id=actor.id, is_guest=is_guest)
         if assessment:
             scores = assessment.get("scores") or []
             nums = [s["score"] for s in scores if isinstance(s.get("score"), int)]

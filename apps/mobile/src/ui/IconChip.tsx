@@ -13,17 +13,10 @@ interface IconChipProps {
   gradient?: readonly [string, string];
 }
 
-export default function IconChip({
-  name,
-  size = 44,
-  color,
-  gradient,
-}: IconChipProps) {
+export default function IconChip({ name, size = 44, color, gradient }: IconChipProps) {
   const { theme } = useTheme();
-  const iconColor = color ?? theme.colors.primary;
-  const inner = (
-    <Ionicons name={name} size={size * 0.5} color={iconColor} />
-  );
+  const iconColor = color ?? (gradient !== undefined ? "#FFFFFF" : theme.colors.primary);
+  const inner = <Ionicons name={name} size={size * 0.5} color={iconColor} />;
 
   if (gradient !== undefined) {
     return (

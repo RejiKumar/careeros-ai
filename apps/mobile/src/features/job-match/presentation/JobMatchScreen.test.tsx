@@ -1,7 +1,11 @@
 import { fireEvent, render, userEvent, waitFor } from "@testing-library/react-native";
 
 import { ThemeProvider } from "@/lib/theme";
-import { ApiError, type JobDescriptionMatchResponse, type ResumeResponse } from "@/services/contract";
+import {
+  ApiError,
+  type JobDescriptionMatchResponse,
+  type ResumeResponse,
+} from "@/services/contract";
 
 import JobMatchScreen from "./JobMatchScreen";
 
@@ -101,7 +105,9 @@ describe("JobMatchScreen", () => {
     fireEvent.press(getByLabelText("Match"));
 
     expect(mockCreateJobDescription).not.toHaveBeenCalled();
-    await waitFor(() => expect(getByText("Paste a job description to match against.")).toBeOnTheScreen());
+    await waitFor(() =>
+      expect(getByText("Paste a job description to match against.")).toBeOnTheScreen(),
+    );
   });
 
   it("shows the match result after a successful analysis", async () => {
@@ -125,7 +131,9 @@ describe("JobMatchScreen", () => {
   });
 
   it("shows the error inline when analysis fails", async () => {
-    mockCreateJobDescription.mockRejectedValue(new ApiError(502, "AI unavailable", "ai_provider_error"));
+    mockCreateJobDescription.mockRejectedValue(
+      new ApiError(502, "AI unavailable", "ai_provider_error"),
+    );
 
     const { getByLabelText, getByText } = await render(
       <ThemeProvider>

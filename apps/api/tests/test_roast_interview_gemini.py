@@ -34,9 +34,7 @@ def _provider(
 
 def _ok_payload(raw: str) -> dict:
     return {
-        "candidates": [
-            {"content": {"parts": [{"text": raw}]}, "finishReason": "STOP"}
-        ],
+        "candidates": [{"content": {"parts": [{"text": raw}]}, "finishReason": "STOP"}],
         "modelVersion": "gemini-3.6-flash",
     }
 
@@ -56,9 +54,7 @@ def test_roast_resume_success() -> None:
                 json.dumps(
                     {
                         "tone": "friendly_mentor",
-                        "sections": [
-                            {"title": "Summary", "content": "Understated opening."}
-                        ],
+                        "sections": [{"title": "Summary", "content": "Understated opening."}],
                         "improvements": [
                             "Quantify at least one achievement.",
                             "Lead with the strongest skill.",
@@ -77,9 +73,7 @@ def test_roast_resume_success() -> None:
 
 
 def test_roast_resume_malformed_output_raises() -> None:
-    provider, _ = _provider(
-        lambda _request: httpx.Response(200, json=_ok_payload('{"tone": 42}'))
-    )
+    provider, _ = _provider(lambda _request: httpx.Response(200, json=_ok_payload('{"tone": 42}')))
 
     with pytest.raises(ProviderError):
         provider.roast_resume(CONTENT, mode="brutal_hr")
@@ -161,9 +155,7 @@ def test_evaluate_interview_answer_success() -> None:
 
 
 def test_evaluate_interview_answer_malformed_output_raises() -> None:
-    provider, _ = _provider(
-        lambda _request: httpx.Response(200, json=_ok_payload("[]"))
-    )
+    provider, _ = _provider(lambda _request: httpx.Response(200, json=_ok_payload("[]")))
 
     with pytest.raises(ProviderError):
         provider.evaluate_interview_answer("Q", "A", resume_context=None)

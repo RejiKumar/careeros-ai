@@ -10,7 +10,7 @@ from fastapi import status
 
 from app.ai.provider import CareerAiProvider, ProviderError
 from app.ai.schemas import GapFinding, HealthDimensionScore, ResumeContent
-from app.core.auth import CurrentActor, CurrentUser
+from app.core.auth import CurrentActor
 from app.core.errors import AppError
 from app.core.owner import owner_fields
 from app.integrations.supabase.client import SupabaseClients, require_service_client
@@ -101,9 +101,7 @@ class AssessmentService:
             gaps=[gap.model_dump() for gap in result.content.gaps],
         )
         if actor.kind == "user":
-            MissionService(self._clients).evaluate_achievements(
-                CurrentUser(id=actor.id, email=actor.email, role=actor.role)
-            )
+            MissionService(self._clients).evaluate_achievements(actor)
         return _to_response(row, resume_id=resume_id)
 
     def get_assessment(self, actor: CurrentActor, assessment_id: str) -> AssessmentResponse:
@@ -134,4 +132,3 @@ def _to_response(row: dict, *, resume_id: str | None) -> AssessmentResponse:
         prompt_version=row.get("prompt_version"),
         created_at=row["created_at"],
     )
-

@@ -8,7 +8,7 @@ import type {
   EntitlementResponse,
   FeedbackResponse,
   GuestMigrationResponse,
-  InterviewEvaluationResponse,
+  InterviewAnswerResponse,
   InterviewSessionDetailResponse,
   InterviewSessionResponse,
   JobDescriptionMatchResponse,
@@ -44,12 +44,14 @@ function parseErrorEnvelope(status: number, text: string): ApiError {
   } catch {
     // Not JSON — fall back to the status-based message.
   }
-  const message =
-    envelope?.error?.message ?? envelope?.detail ?? `Request failed (${status}).`;
+  const message = envelope?.error?.message ?? envelope?.detail ?? `Request failed (${status}).`;
   return new ApiError(status, message, envelope?.error?.code ?? null);
 }
 
-function buildAuthHeaders(accessToken: string | undefined, guestId: string | undefined): Record<string, string> {
+function buildAuthHeaders(
+  accessToken: string | undefined,
+  guestId: string | undefined,
+): Record<string, string> {
   const headers: Record<string, string> = {};
   if (accessToken !== undefined && accessToken !== null && accessToken !== "") {
     headers.Authorization = `Bearer ${accessToken}`;
@@ -58,6 +60,19 @@ function buildAuthHeaders(accessToken: string | undefined, guestId: string | und
     headers["X-Guest-Id"] = guestId;
   }
   return headers;
+}
+
+/**
+ * Registered by the AuthProvider so the ApiClient can transparently refresh
+ * an expired access token and retry the failed request once.
+ * Returns the new access token, or null when the refresh failed.
+ */
+type TokenRefresher = () => Promise<string | null>;
+
+let tokenRefresher: TokenRefresher | null = null;
+
+export function setTokenRefresher(refresher: TokenRefresher | null): void {
+  tokenRefresher = refresher;
 }
 
 export class ApiClient {
@@ -72,6 +87,7 @@ export class ApiClient {
     accessToken: string | undefined,
     guestId: string | undefined,
     init: RequestInit,
+    allowRefresh = true,
   ): Promise<T> {
     const response = await fetch(`${this.baseUrl}${path}`, {
       ...init,
@@ -81,6 +97,13 @@ export class ApiClient {
       },
     });
 
+    if (response.status === 401 && allowRefresh && tokenRefresher !== null) {
+      const refreshedToken = await tokenRefresher();
+      if (refreshedToken !== null) {
+        return this.request<T>(path, refreshedToken, guestId, init, false);
+      }
+    }
+
     if (response.status === 204) {
       return undefined as T;
     }
@@ -89,7 +112,8 @@ export class ApiClient {
 
     if (!response.ok) {
       const envelope = body as ApiErrorEnvelope;
-      const message = envelope?.error?.message ?? envelope?.detail ?? `Request failed (${response.status}).`;
+      const message =
+        envelope?.error?.message ?? envelope?.detail ?? `Request failed (${response.status}).`;
       throw new ApiError(response.status, message, envelope?.error?.code ?? null);
     }
 
@@ -108,7 +132,11 @@ export class ApiClient {
       return this.request<T>(path, accessToken, guestId, { method, headers });
     }
     headers.Accept = "application/json";
-    return this.request<T>(path, accessToken, guestId, { method, headers, body: JSON.stringify(payload) });
+    return this.request<T>(path, accessToken, guestId, {
+      method,
+      headers,
+      body: JSON.stringify(payload),
+    });
   }
 
   /* ─── Auth ─── */
@@ -134,24 +162,37 @@ export class ApiClient {
   /* ─── Dashboard ─── */
 
   getDashboard(accessToken: string | undefined, guestId?: string): Promise<DashboardResponse> {
-    return this.request<DashboardResponse>("/api/v1/dashboard", accessToken, guestId, { method: "GET" });
+    return this.request<DashboardResponse>("/api/v1/dashboard", accessToken, guestId, {
+      method: "GET",
+    });
   }
 
   /* ─── Entitlements ─── */
 
   getEntitlements(accessToken: string): Promise<EntitlementResponse> {
-    return this.request<EntitlementResponse>("/api/v1/billing/entitlements", accessToken, undefined, {
-      method: "GET",
-    });
+    return this.request<EntitlementResponse>(
+      "/api/v1/billing/entitlements",
+      accessToken,
+      undefined,
+      {
+        method: "GET",
+      },
+    );
   }
 
   /* ─── Resumes ─── */
 
   listResumes(accessToken: string | undefined, guestId?: string): Promise<ResumeResponse[]> {
-    return this.request<ResumeResponse[]>("/api/v1/resumes", accessToken, guestId, { method: "GET" });
+    return this.request<ResumeResponse[]>("/api/v1/resumes", accessToken, guestId, {
+      method: "GET",
+    });
   }
 
-  getResume(accessToken: string | undefined, resumeId: string, guestId?: string): Promise<ResumeDetailResponse> {
+  getResume(
+    accessToken: string | undefined,
+    resumeId: string,
+    guestId?: string,
+  ): Promise<ResumeDetailResponse> {
     return this.request<ResumeDetailResponse>(`/api/v1/resumes/${resumeId}`, accessToken, guestId, {
       method: "GET",
     });
@@ -219,7 +260,11 @@ export class ApiClient {
     });
   }
 
-  createAssessment(accessToken: string | undefined, resumeId: string, guestId?: string): Promise<AssessmentResponse> {
+  createAssessment(
+    accessToken: string | undefined,
+    resumeId: string,
+    guestId?: string,
+  ): Promise<AssessmentResponse> {
     return this.request<AssessmentResponse>(
       `/api/v1/resumes/${resumeId}/assessments`,
       accessToken,
@@ -250,13 +295,25 @@ export class ApiClient {
     );
   }
 
-  listJobDescriptions(accessToken: string | undefined, guestId?: string): Promise<JobDescriptionResponse[]> {
-    return this.request<JobDescriptionResponse[]>("/api/v1/job-descriptions", accessToken, guestId, {
-      method: "GET",
-    });
+  listJobDescriptions(
+    accessToken: string | undefined,
+    guestId?: string,
+  ): Promise<JobDescriptionResponse[]> {
+    return this.request<JobDescriptionResponse[]>(
+      "/api/v1/job-descriptions",
+      accessToken,
+      guestId,
+      {
+        method: "GET",
+      },
+    );
   }
 
-  listMatches(accessToken: string | undefined, jobDescriptionId: string, guestId?: string): Promise<MatchResponse[]> {
+  listMatches(
+    accessToken: string | undefined,
+    jobDescriptionId: string,
+    guestId?: string,
+  ): Promise<MatchResponse[]> {
     return this.request<MatchResponse[]>(
       `/api/v1/job-descriptions/${jobDescriptionId}/matches`,
       accessToken,
@@ -281,9 +338,14 @@ export class ApiClient {
   }
 
   deleteJobDescription(accessToken: string, jobDescriptionId: string): Promise<void> {
-    return this.request<void>(`/api/v1/job-descriptions/${jobDescriptionId}`, accessToken, undefined, {
-      method: "DELETE",
-    });
+    return this.request<void>(
+      `/api/v1/job-descriptions/${jobDescriptionId}`,
+      accessToken,
+      undefined,
+      {
+        method: "DELETE",
+      },
+    );
   }
 
   /* ─── Coach ─── */
@@ -302,13 +364,20 @@ export class ApiClient {
     );
   }
 
-  listCoachThreads(accessToken: string | undefined, guestId?: string): Promise<CoachThreadResponse[]> {
+  listCoachThreads(
+    accessToken: string | undefined,
+    guestId?: string,
+  ): Promise<CoachThreadResponse[]> {
     return this.request<CoachThreadResponse[]>("/api/v1/coach/threads", accessToken, guestId, {
       method: "GET",
     });
   }
 
-  getCoachThread(accessToken: string | undefined, threadId: string, guestId?: string): Promise<CoachThreadDetailResponse> {
+  getCoachThread(
+    accessToken: string | undefined,
+    threadId: string,
+    guestId?: string,
+  ): Promise<CoachThreadDetailResponse> {
     return this.request<CoachThreadDetailResponse>(
       `/api/v1/coach/threads/${threadId}`,
       accessToken,
@@ -375,21 +444,35 @@ export class ApiClient {
 
   /* ─── Missions ─── */
 
-  listMissions(accessToken: string): Promise<MissionResponse[]> {
-    return this.request<MissionResponse[]>("/api/v1/missions", accessToken, undefined, { method: "GET" });
-  }
-
-  getMissionProgress(accessToken: string): Promise<MissionProgressResponse> {
-    return this.request<MissionProgressResponse>("/api/v1/missions/progress", accessToken, undefined, {
+  listMissions(accessToken: string | undefined, guestId?: string): Promise<MissionResponse[]> {
+    return this.request<MissionResponse[]>("/api/v1/missions", accessToken, guestId, {
       method: "GET",
     });
   }
 
-  completeMission(accessToken: string, missionKey: string): Promise<MissionCompleteResponse> {
+  getMissionProgress(
+    accessToken: string | undefined,
+    guestId?: string,
+  ): Promise<MissionProgressResponse> {
+    return this.request<MissionProgressResponse>(
+      "/api/v1/missions/progress",
+      accessToken,
+      guestId,
+      {
+        method: "GET",
+      },
+    );
+  }
+
+  completeMission(
+    accessToken: string | undefined,
+    missionKey: string,
+    guestId?: string,
+  ): Promise<MissionCompleteResponse> {
     return this.request<MissionCompleteResponse>(
       `/api/v1/missions/${missionKey}/complete`,
       accessToken,
-      undefined,
+      guestId,
       { method: "POST" },
     );
   }
@@ -407,7 +490,9 @@ export class ApiClient {
   /* ─── Wrapped ─── */
 
   getWrapped(accessToken: string | undefined, guestId?: string): Promise<WrappedResponse> {
-    return this.request<WrappedResponse>("/api/v1/wrapped", accessToken, guestId, { method: "GET" });
+    return this.request<WrappedResponse>("/api/v1/wrapped", accessToken, guestId, {
+      method: "GET",
+    });
   }
 
   /* ─── Interviews ─── */
@@ -416,8 +501,8 @@ export class ApiClient {
     accessToken: string | undefined,
     payload: { mode: string; resume_id?: string; target_job?: string; target_skills?: string[] },
     guestId?: string,
-  ): Promise<InterviewSessionResponse> {
-    return this.jsonRequest<InterviewSessionResponse>(
+  ): Promise<InterviewSessionDetailResponse> {
+    return this.jsonRequest<InterviewSessionDetailResponse>(
       "/api/v1/interviews/sessions",
       accessToken,
       guestId,
@@ -457,8 +542,8 @@ export class ApiClient {
     questionId: string,
     content: string,
     guestId?: string,
-  ): Promise<{ answer: { evaluation: InterviewEvaluationResponse } }> {
-    return this.jsonRequest(
+  ): Promise<InterviewAnswerResponse> {
+    return this.jsonRequest<InterviewAnswerResponse>(
       `/api/v1/interviews/sessions/${sessionId}/answers`,
       accessToken,
       guestId,
@@ -488,6 +573,12 @@ export class ApiClient {
     },
     guestId?: string,
   ): Promise<FeedbackResponse> {
-    return this.jsonRequest<FeedbackResponse>("/api/v1/feedback", accessToken, guestId, "POST", payload);
+    return this.jsonRequest<FeedbackResponse>(
+      "/api/v1/feedback",
+      accessToken,
+      guestId,
+      "POST",
+      payload,
+    );
   }
 }

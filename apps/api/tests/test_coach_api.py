@@ -336,3 +336,58 @@ def test_get_thread_detail_pagination() -> None:
     data = response.json()
     # 3 user + 3 assistant = 6 messages; limit 2 returns 2
     assert len(data["messages"]) == 2
+
+
+def test_guest_create_thread_and_message() -> None:
+    """Guests can create coach threads and send messages under their own id."""
+    import uuid
+
+    provider = FakeProvider()
+    client, clients = _make(provider)
+    guest_id = str(uuid.uuid4())
+    headers = {"X-Guest-Id": guest_id}
+
+    created = client.post(
+        f"{API_V1_PREFIX}/coach/threads", json={"title": "Guest chat"}, headers=headers
+    )
+    assert created.status_code == 201
+    thread_id = created.json()["id"]
+    assert clients.service_client._rows["guest_accounts"]  # ensure_guest_account ran
+
+    listed = client.get(f"{API_V1_PREFIX}/coach/threads", headers=headers)
+    assert listed.status_code == 200
+    assert [t["id"] for t in listed.json()] == [thread_id]
+
+    reply = client.post(
+        f"{API_V1_PREFIX}/coach/threads/{thread_id}/messages",
+        json={"content": "What should I improve?"},
+        headers=headers,
+    )
+    assert reply.status_code == 201
+    assert reply.json()["assistant_message"]["content"]
+
+    messages = clients.service_client._rows["coach_messages"]
+    assert all(row.get("guest_id") == guest_id for row in messages)
+    assert all(row.get("user_id") is None for row in messages)
+
+
+def test_guest_cannot_access_other_guest_thread() -> None:
+    import uuid
+
+    provider = FakeProvider()
+    client, _ = _make(provider)
+    guest_a = str(uuid.uuid4())
+    guest_b = str(uuid.uuid4())
+
+    created = client.post(
+        f"{API_V1_PREFIX}/coach/threads",
+        json={"title": "Private"},
+        headers={"X-Guest-Id": guest_a},
+    )
+    assert created.status_code == 201
+    thread_id = created.json()["id"]
+
+    detail = client.get(
+        f"{API_V1_PREFIX}/coach/threads/{thread_id}", headers={"X-Guest-Id": guest_b}
+    )
+    assert detail.status_code == 404

@@ -131,9 +131,7 @@ class FakeDelete(FakeQuery):
         # Cascade: if deleting from coach_threads, remove related coach_messages
         if self._fake.name == "coach_threads" and deleted_ids:
             msg_table = self._fake._client._rows.get("coach_messages", [])
-            msg_table[:] = [
-                m for m in msg_table if m.get("thread_id") not in deleted_ids
-            ]
+            msg_table[:] = [m for m in msg_table if m.get("thread_id") not in deleted_ids]
 
         return FakeResponse([])
 

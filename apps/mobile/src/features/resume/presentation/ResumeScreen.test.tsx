@@ -9,11 +9,17 @@ const mockPush = jest.fn();
 const mockBack = jest.fn();
 const mockImportResume = jest.fn();
 const mockCreateAssessment = jest.fn();
+const mockListResumes = jest.fn();
+const mockGetResume = jest.fn();
 const mockGetDocumentAsync = jest.fn();
 const mockHandleUnauthorized = jest.fn();
 
 jest.mock("expo-router", () => ({
   useRouter: () => ({ push: mockPush, back: mockBack }),
+  useFocusEffect: (callback: () => void) => {
+    const React = jest.requireActual("react");
+    React.useEffect(callback, [callback]);
+  },
 }));
 
 jest.mock("@/lib/auth", () => ({
@@ -35,6 +41,8 @@ jest.mock("@/services/api", () => ({
   ApiClient: jest.fn().mockImplementation(() => ({
     importResume: (...args: unknown[]) => mockImportResume(...args),
     createAssessment: (...args: unknown[]) => mockCreateAssessment(...args),
+    listResumes: (...args: unknown[]) => mockListResumes(...args),
+    getResume: (...args: unknown[]) => mockGetResume(...args),
   })),
 }));
 
@@ -58,7 +66,13 @@ const parsedResume = {
     },
   ],
   education: [
-    { institution: "Home studies", degree: null, field_of_study: "Mathematics", start_date: null, end_date: null },
+    {
+      institution: "Home studies",
+      degree: null,
+      field_of_study: "Mathematics",
+      start_date: null,
+      end_date: null,
+    },
   ],
   projects: [],
   certifications: [],
@@ -89,7 +103,11 @@ const assessmentResponse: AssessmentResponse = {
   id: "assessment-1",
   resume_id: "resume-1",
   scores: [
-    { dimension: "Impact", score: 70, explanation: "Quantified outcomes are present in some bullets." },
+    {
+      dimension: "Impact",
+      score: 70,
+      explanation: "Quantified outcomes are present in some bullets.",
+    },
     { dimension: "Keywords", score: 40, explanation: "A few role keywords are missing." },
   ],
   strengths: ["Clear structure"],
@@ -108,7 +126,9 @@ async function renderResume(): Promise<Screen> {
   );
 }
 
-function pickFile(overrides: Partial<{ name: string; size: number; uri: string; mimeType: string }> = {}) {
+function pickFile(
+  overrides: Partial<{ name: string; size: number; uri: string; mimeType: string }> = {},
+) {
   mockGetDocumentAsync.mockResolvedValueOnce({
     canceled: false,
     assets: [
@@ -128,8 +148,37 @@ describe("ResumeScreen", () => {
     mockBack.mockClear();
     mockImportResume.mockClear();
     mockCreateAssessment.mockClear();
+    mockListResumes.mockReset();
+    mockGetResume.mockReset();
+    mockListResumes.mockResolvedValue([]);
     mockGetDocumentAsync.mockClear();
     mockHandleUnauthorized.mockClear();
+  });
+
+  it("restores the latest parsed resume on mount", async () => {
+    mockListResumes.mockResolvedValue([
+      {
+        id: "resume-1",
+        title: "ada.pdf",
+        status: "ready",
+        current_version_id: "v1",
+        created_at: "2026-08-16T00:00:00Z",
+        updated_at: "2026-08-16T00:00:00Z",
+      },
+    ]);
+    mockGetResume.mockResolvedValue({
+      resume: importResponse.resume,
+      version: importResponse.version,
+      parsed: parsedResume,
+      file_url: null,
+    });
+
+    const screen = await renderResume();
+
+    expect(await screen.findByText(/Ada Lovelace/)).toBeOnTheScreen();
+    expect(mockListResumes).toHaveBeenCalledWith("test-token");
+    expect(mockGetResume).toHaveBeenCalledWith("test-token", "resume-1");
+    expect(screen.queryByLabelText("No resume yet")).not.toBeOnTheScreen();
   });
 
   it("renders the journey steps and empty state", async () => {

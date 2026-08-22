@@ -40,27 +40,37 @@ def _seed_resume(
     with_content: bool = True,
     guest_id: str | None = None,
 ) -> str:
-    resume = fake.service_client.table("resumes").insert(
-        {
-            "user_id": None if guest else "u-1",
-            "guest_id": guest_id if guest else None,
-            "title": "Ada Resume",
-        }
-    ).execute().data[0]
-    version = fake.service_client.table("resume_versions").insert(
-        {
-            "resume_id": resume["id"],
-            "user_id": None if guest else "u-1",
-            "version": 1,
-            "source": "import",
-            "structured_data": sample_resume_content().model_dump(mode="json")
-            if with_content
-            else None,
-        }
-    ).execute().data[0]
-    fake.service_client.table("resumes").update(
-        {"current_version_id": version["id"]}
-    ).eq("id", resume["id"]).execute()
+    resume = (
+        fake.service_client.table("resumes")
+        .insert(
+            {
+                "user_id": None if guest else "u-1",
+                "guest_id": guest_id if guest else None,
+                "title": "Ada Resume",
+            }
+        )
+        .execute()
+        .data[0]
+    )
+    version = (
+        fake.service_client.table("resume_versions")
+        .insert(
+            {
+                "resume_id": resume["id"],
+                "user_id": None if guest else "u-1",
+                "version": 1,
+                "source": "import",
+                "structured_data": sample_resume_content().model_dump(mode="json")
+                if with_content
+                else None,
+            }
+        )
+        .execute()
+        .data[0]
+    )
+    fake.service_client.table("resumes").update({"current_version_id": version["id"]}).eq(
+        "id", resume["id"]
+    ).execute()
     return resume["id"]
 
 

@@ -39,9 +39,7 @@ def _provider(
 
 def _ok_payload(raw: str) -> dict:
     return {
-        "candidates": [
-            {"content": {"parts": [{"text": raw}]}, "finishReason": "STOP"}
-        ],
+        "candidates": [{"content": {"parts": [{"text": raw}]}, "finishReason": "STOP"}],
         "modelVersion": "gemini-3.6-flash",
     }
 
@@ -88,9 +86,7 @@ def test_http_error_becomes_provider_error() -> None:
 
 
 def test_transport_error_becomes_provider_error() -> None:
-    provider, _ = _provider(
-        lambda request: (_ for _ in ()).throw(httpx.ConnectError("offline"))
-    )
+    provider, _ = _provider(lambda request: (_ for _ in ()).throw(httpx.ConnectError("offline")))
 
     with pytest.raises(ProviderError):
         provider.parse_resume("text")
@@ -132,9 +128,7 @@ def test_long_resume_is_truncated() -> None:
 def _assessment_raw() -> str:
     return json.dumps(
         {
-            "scores": [
-                {"dimension": "impact", "score": 72, "explanation": "Weak outcomes."}
-            ],
+            "scores": [{"dimension": "impact", "score": 72, "explanation": "Weak outcomes."}],
             "strengths": ["Clear contact details."],
             "gaps": [{"description": "No metrics.", "suggestion": "Quantify results."}],
             "evidence": ["Wrote the first algorithm."],

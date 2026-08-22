@@ -1,13 +1,6 @@
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
-import {
-  ActivityIndicator,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
+import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 
 import { t } from "../../../i18n";
 import { useAuth } from "@/lib/auth";
@@ -41,7 +34,9 @@ export default function RewritesScreen() {
   const { session, handleUnauthorized } = useAuth();
 
   const [resumeState, setResumeState] = useState<ResumeState>(
-    resumeIdParam === undefined ? { status: "error", message: t("rewrites.noResume") } : { status: "loading" },
+    resumeIdParam === undefined
+      ? { status: "error", message: t("rewrites.noResume") }
+      : { status: "loading" },
   );
   const [batchState, setBatchState] = useState<BatchState>({ status: "idle" });
   const [acceptMessage, setAcceptMessage] = useState<string | null>(null);
@@ -75,7 +70,7 @@ export default function RewritesScreen() {
           });
         }
       }
-    }
+    };
     void loadResume();
     return () => {
       cancelled = true;
@@ -102,7 +97,10 @@ export default function RewritesScreen() {
     }
   }
 
-  function applySuggestion(content: ResumeDetailResponse["parsed"], suggestion: RewriteBatchResponse["suggestions"][number]): ResumeDetailResponse["parsed"] {
+  function applySuggestion(
+    content: ResumeDetailResponse["parsed"],
+    suggestion: RewriteBatchResponse["suggestions"][number],
+  ): ResumeDetailResponse["parsed"] {
     if (content === null) {
       return content;
     }
@@ -155,7 +153,10 @@ export default function RewritesScreen() {
         updatedContent,
       );
       setBatchState({ status: "success", batch: batchState.batch });
-      setResumeState({ status: "success", detail: { ...resumeState.detail, parsed: updatedContent } });
+      setResumeState({
+        status: "success",
+        detail: { ...resumeState.detail, parsed: updatedContent },
+      });
       setAcceptMessage(t("rewrites.savedVersion", { n: result.version }));
     } catch (err) {
       if (err instanceof ApiError && err.status === 401) {
@@ -183,13 +184,15 @@ export default function RewritesScreen() {
           ]}
         >
           <Text style={[styles.backArrow, { color: colors.textPrimary }]}>‹</Text>
-          <Text style={[styles.backLabel, { color: colors.textPrimary }]}>{t("rewrites.resumeButton")}</Text>
+          <Text style={[styles.backLabel, { color: colors.textPrimary }]}>
+            {t("rewrites.resumeButton")}
+          </Text>
         </Pressable>
 
-        <Text style={[styles.eyebrow, { color: colors.primaryStrong }]}>{t("rewrites.eyebrow")}</Text>
-        <Text style={[styles.title, { color: colors.textPrimary }]}>
-          {t("rewrites.title")}
+        <Text style={[styles.eyebrow, { color: colors.primaryStrong }]}>
+          {t("rewrites.eyebrow")}
         </Text>
+        <Text style={[styles.title, { color: colors.textPrimary }]}>{t("rewrites.title")}</Text>
         <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
           {t("rewrites.subtitle")}
         </Text>
@@ -198,13 +201,21 @@ export default function RewritesScreen() {
           <ActivityIndicator color={colors.primary} accessibilityLabel="Loading resume" />
         )}
         {resumeState.status === "error" && (
-          <View style={[styles.notice, { backgroundColor: colors.danger }]} accessibilityRole="alert">
-            <Text style={[styles.noticeText, { color: colors.onDanger }]}>{resumeState.message}</Text>
+          <View
+            style={[styles.notice, { backgroundColor: colors.danger }]}
+            accessibilityRole="alert"
+          >
+            <Text style={[styles.noticeText, { color: colors.onDanger }]}>
+              {resumeState.message}
+            </Text>
           </View>
         )}
 
         {acceptMessage !== null && (
-          <View style={[styles.notice, { backgroundColor: colors.success }]} accessibilityRole="alert">
+          <View
+            style={[styles.notice, { backgroundColor: colors.success }]}
+            accessibilityRole="alert"
+          >
             <Text style={[styles.noticeText, { color: colors.onDanger }]}>{acceptMessage}</Text>
           </View>
         )}
@@ -243,34 +254,69 @@ export default function RewritesScreen() {
         )}
 
         {batchState.status === "error" && (
-          <View style={[styles.notice, { backgroundColor: colors.danger }]} accessibilityRole="alert">
-            <Text style={[styles.noticeText, { color: colors.onDanger }]}>{batchState.message}</Text>
+          <View
+            style={[styles.notice, { backgroundColor: colors.danger }]}
+            accessibilityRole="alert"
+          >
+            <Text style={[styles.noticeText, { color: colors.onDanger }]}>
+              {batchState.message}
+            </Text>
             <Pressable
               accessibilityRole="button"
               accessibilityLabel="Try generating suggestions again"
               onPress={() => void handleGenerate()}
               style={[styles.retryButton, { backgroundColor: colors.surfaceRaised }]}
             >
-              <Text style={[styles.retryText, { color: colors.textPrimary }]}>{t("common.tryAgain")}</Text>
+              <Text style={[styles.retryText, { color: colors.textPrimary }]}>
+                {t("common.tryAgain")}
+              </Text>
             </Pressable>
           </View>
         )}
 
-        {batchState.status === "success" && (
+        {batchState.status === "success" && batchState.batch.suggestions.length === 0 && (
+          <View
+            style={[styles.notice, { backgroundColor: colors.surfaceRaised }]}
+            accessibilityRole="alert"
+          >
+            <Text style={[styles.noticeText, { color: colors.textPrimary }]}>
+              {t("rewrites.noSuggestions")}
+            </Text>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Try generating suggestions again"
+              onPress={() => void handleGenerate()}
+              style={[styles.retryButton, { backgroundColor: colors.surface }]}
+            >
+              <Text style={[styles.retryText, { color: colors.textPrimary }]}>
+                {t("rewrites.generateButton")}
+              </Text>
+            </Pressable>
+          </View>
+        )}
+
+        {batchState.status === "success" && batchState.batch.suggestions.length > 0 && (
           <>
             {batchState.batch.suggestions.map((suggestion) => (
               <View
                 key={suggestion.id}
-                style={[styles.suggestionCard, { backgroundColor: colors.surface, borderColor: colors.border }]}
+                style={[
+                  styles.suggestionCard,
+                  { backgroundColor: colors.surface, borderColor: colors.border },
+                ]}
               >
                 <Text style={[styles.suggestionSection, { color: colors.primaryStrong }]}>
                   {suggestion.section}
                 </Text>
-                <Text style={[styles.suggestionLabel, { color: colors.textDisabled }]}>{t("rewrites.before")}</Text>
+                <Text style={[styles.suggestionLabel, { color: colors.textDisabled }]}>
+                  {t("rewrites.before")}
+                </Text>
                 <Text style={[styles.suggestionText, { color: colors.textSecondary }]}>
                   {suggestion.original}
                 </Text>
-                <Text style={[styles.suggestionLabel, { color: colors.textDisabled }]}>{t("rewrites.after")}</Text>
+                <Text style={[styles.suggestionLabel, { color: colors.textDisabled }]}>
+                  {t("rewrites.after")}
+                </Text>
                 <Text style={[styles.suggestionText, { color: colors.textPrimary }]}>
                   {suggestion.rewritten}
                 </Text>
@@ -287,7 +333,9 @@ export default function RewritesScreen() {
                     pressed && styles.pressed,
                   ]}
                 >
-                  <Text style={[styles.acceptText, { color: colors.onPrimary }]}>{t("rewrites.acceptButton")}</Text>
+                  <Text style={[styles.acceptText, { color: colors.onPrimary }]}>
+                    {t("rewrites.acceptButton")}
+                  </Text>
                 </Pressable>
               </View>
             ))}

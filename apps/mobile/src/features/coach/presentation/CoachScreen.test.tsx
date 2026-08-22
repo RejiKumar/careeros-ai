@@ -78,9 +78,7 @@ describe("CoachScreen", () => {
       </ThemeProvider>,
     );
 
-    await waitFor(() =>
-      expect(getByText(/No conversations yet/)).toBeOnTheScreen(),
-    );
+    await waitFor(() => expect(getByText(/No conversations yet/)).toBeOnTheScreen());
   });
 
   it("shows an error with retry when loading conversations fails", async () => {
@@ -104,8 +102,20 @@ describe("CoachScreen", () => {
     mockGetCoachThread.mockResolvedValue({
       thread,
       messages: [
-        { id: "m1", thread_id: "t1", role: "user", content: "Should I switch to AI?", created_at: "2026-08-19T00:00:00Z" },
-        { id: "m2", thread_id: "t1", role: "assistant", content: "It depends on your goals.", created_at: "2026-08-19T00:00:00Z" },
+        {
+          id: "m1",
+          thread_id: "t1",
+          role: "user",
+          content: "Should I switch to AI?",
+          created_at: "2026-08-19T00:00:00Z",
+        },
+        {
+          id: "m2",
+          thread_id: "t1",
+          role: "assistant",
+          content: "It depends on your goals.",
+          created_at: "2026-08-19T00:00:00Z",
+        },
       ],
     });
 
@@ -115,7 +125,9 @@ describe("CoachScreen", () => {
       </ThemeProvider>,
     );
 
-    await waitFor(() => expect(getByLabelText("Open conversation Career switch advice")).toBeOnTheScreen());
+    await waitFor(() =>
+      expect(getByLabelText("Open conversation Career switch advice")).toBeOnTheScreen(),
+    );
     fireEvent.press(getByLabelText("Open conversation Career switch advice"));
 
     await waitFor(() => expect(getByText("Should I switch to AI?")).toBeOnTheScreen());
@@ -125,8 +137,20 @@ describe("CoachScreen", () => {
   it("sends a message and appends the coach reply", async () => {
     mockGetCoachThread.mockResolvedValue({ thread, messages: [] });
     mockSendCoachMessage.mockResolvedValue({
-      user_message: { id: "u1", thread_id: "t1", role: "user", content: "What is a good next step?", created_at: "2026-08-19T00:00:00Z" },
-      assistant_message: { id: "a1", thread_id: "t1", role: "assistant", content: "Focus on measurable achievements.", created_at: "2026-08-19T00:00:00Z" },
+      user_message: {
+        id: "u1",
+        thread_id: "t1",
+        role: "user",
+        content: "What is a good next step?",
+        created_at: "2026-08-19T00:00:00Z",
+      },
+      assistant_message: {
+        id: "a1",
+        thread_id: "t1",
+        role: "assistant",
+        content: "Focus on measurable achievements.",
+        created_at: "2026-08-19T00:00:00Z",
+      },
     });
 
     const { getByLabelText, getByText } = await render(
@@ -136,7 +160,9 @@ describe("CoachScreen", () => {
     );
     const user = userEvent.setup();
 
-    await waitFor(() => expect(getByLabelText("Open conversation Career switch advice")).toBeOnTheScreen());
+    await waitFor(() =>
+      expect(getByLabelText("Open conversation Career switch advice")).toBeOnTheScreen(),
+    );
     await user.press(getByLabelText("Open conversation Career switch advice"));
     await waitFor(() => expect(getByLabelText("Ask your career question\u2026")).toBeOnTheScreen());
 
