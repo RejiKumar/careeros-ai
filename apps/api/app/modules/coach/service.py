@@ -195,9 +195,7 @@ class CoachService:
         return CoachThreadDetailResponse(thread=_to_thread_response(thread), messages=messages)
 
     def list_threads(self, actor: CurrentActor) -> list[CoachThreadResponse]:
-        rows = self._repository.list_threads(
-            actor_id=actor.id, is_guest=actor.kind == "guest"
-        )
+        rows = self._repository.list_threads(actor_id=actor.id, is_guest=actor.kind == "guest")
         return [_to_thread_response(row) for row in rows]
 
     def _build_context_str(self, actor: CurrentActor, context: dict | None) -> str | None:
@@ -245,4 +243,3 @@ def _to_message_response(row: dict) -> CoachMessageResponse:
         content=row["content"],
         created_at=row["created_at"],
     )
-

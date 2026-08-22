@@ -26,7 +26,9 @@ describe("ApiClient auth refresh", () => {
     setTokenRefresher(refresher);
 
     mockFetch
-      .mockResolvedValueOnce(jsonResponse(401, { error: { code: "token_expired", message: "Token expired." } }))
+      .mockResolvedValueOnce(
+        jsonResponse(401, { error: { code: "token_expired", message: "Token expired." } }),
+      )
       .mockResolvedValueOnce(jsonResponse(200, { id: "user-1" }));
 
     const client = new ApiClient("http://test");
@@ -42,7 +44,9 @@ describe("ApiClient auth refresh", () => {
     const refresher = jest.fn().mockResolvedValue(null);
     setTokenRefresher(refresher);
 
-    mockFetch.mockResolvedValueOnce(jsonResponse(401, { error: { code: "token_expired", message: "Token expired." } }));
+    mockFetch.mockResolvedValueOnce(
+      jsonResponse(401, { error: { code: "token_expired", message: "Token expired." } }),
+    );
 
     const client = new ApiClient("http://test");
     await expect(client.getMe("expired-token")).rejects.toMatchObject({

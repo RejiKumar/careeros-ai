@@ -88,14 +88,14 @@ export default function ProfileScreen() {
   }
 
   function confirmDeleteAccount() {
-    Alert.alert(
-      t("profile.deleteTitle"),
-      t("profile.deleteBody"),
-      [
-        { text: "Cancel", style: "cancel" },
-        { text: t("profile.deleteAccount"), style: "destructive", onPress: () => void handleDeleteAccount() },
-      ],
-    );
+    Alert.alert(t("profile.deleteTitle"), t("profile.deleteBody"), [
+      { text: "Cancel", style: "cancel" },
+      {
+        text: t("profile.deleteAccount"),
+        style: "destructive",
+        onPress: () => void handleDeleteAccount(),
+      },
+    ]);
   }
 
   async function handleDeleteAccount() {
@@ -116,7 +116,11 @@ export default function ProfileScreen() {
   if (state.status === "loading") {
     return (
       <View style={[styles.center, { backgroundColor: colors.background }]}>
-        <ActivityIndicator size="large" color={colors.primary} accessibilityLabel="Loading profile" />
+        <ActivityIndicator
+          size="large"
+          color={colors.primary}
+          accessibilityLabel="Loading profile"
+        />
       </View>
     );
   }
@@ -124,7 +128,9 @@ export default function ProfileScreen() {
   if (state.status === "error") {
     return (
       <View style={[styles.center, { backgroundColor: colors.background }]}>
-        <Text style={[styles.errorTitle, { color: colors.textPrimary }]}>{t("profile.errorTitle")}</Text>
+        <Text style={[styles.errorTitle, { color: colors.textPrimary }]}>
+          {t("profile.errorTitle")}
+        </Text>
         <Text style={[styles.errorText, { color: colors.textSecondary }]}>{state.message}</Text>
         <Pressable
           accessibilityRole="button"
@@ -132,7 +138,9 @@ export default function ProfileScreen() {
           onPress={() => void load()}
           style={[styles.retryButton, { backgroundColor: colors.primary }]}
         >
-          <Text style={[styles.retryText, { color: colors.onPrimary }]}>{t("common.tryAgain")}</Text>
+          <Text style={[styles.retryText, { color: colors.onPrimary }]}>
+            {t("common.tryAgain")}
+          </Text>
         </Pressable>
       </View>
     );
@@ -145,16 +153,28 @@ export default function ProfileScreen() {
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <ScreenHeader eyebrow={t("profile.eyebrow")} title={t("profile.title")} />
 
-        <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-          <Text style={[styles.cardLabel, { color: colors.textSecondary }]}>{t("profile.email")}</Text>
+        <View
+          style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}
+        >
+          <Text style={[styles.cardLabel, { color: colors.textSecondary }]}>
+            {t("profile.email")}
+          </Text>
           <Text style={[styles.cardValue, { color: colors.textPrimary }]}>{user.email ?? "—"}</Text>
-          <Text style={[styles.cardLabel, { color: colors.textSecondary }]}>{t("profile.role")}</Text>
-          <Text style={[styles.cardValue, { color: colors.textPrimary }]}>{user.role ?? "member"}</Text>
+          <Text style={[styles.cardLabel, { color: colors.textSecondary }]}>
+            {t("profile.role")}
+          </Text>
+          <Text style={[styles.cardValue, { color: colors.textPrimary }]}>
+            {user.role ?? "member"}
+          </Text>
         </View>
 
         {entitlements !== null && (
-          <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-            <Text style={[styles.cardLabel, { color: colors.textSecondary }]}>{t("profile.plan")}</Text>
+          <View
+            style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}
+          >
+            <Text style={[styles.cardLabel, { color: colors.textSecondary }]}>
+              {t("profile.plan")}
+            </Text>
             <Text style={[styles.cardValue, { color: colors.textPrimary }]}>
               {entitlements.plan} · {entitlements.status}
             </Text>
@@ -162,7 +182,9 @@ export default function ProfileScreen() {
               const limit = entitlements.limits[feature] ?? null;
               return (
                 <View key={feature} style={styles.usageRow}>
-                  <Text style={[styles.usageLabel, { color: colors.textSecondary }]}>{feature}</Text>
+                  <Text style={[styles.usageLabel, { color: colors.textSecondary }]}>
+                    {feature}
+                  </Text>
                   <Text style={[styles.usageValue, { color: colors.textPrimary }]}>
                     {used}
                     {limit !== null ? ` / ${limit}` : ""}
@@ -176,7 +198,10 @@ export default function ProfileScreen() {
         <AchievementsSection />
 
         {resetMessage !== null && (
-          <View style={[styles.notice, { backgroundColor: colors.primarySoft }]} accessibilityRole="alert">
+          <View
+            style={[styles.notice, { backgroundColor: colors.primarySoft }]}
+            accessibilityRole="alert"
+          >
             <Text style={[styles.noticeText, { color: colors.primaryStrong }]}>{resetMessage}</Text>
           </View>
         )}
@@ -212,7 +237,9 @@ export default function ProfileScreen() {
             pressed && styles.pressed,
           ]}
         >
-          <Text style={[styles.secondaryButtonText, { color: colors.textPrimary }]}>{t("profile.signOut")}</Text>
+          <Text style={[styles.secondaryButtonText, { color: colors.textPrimary }]}>
+            {t("profile.signOut")}
+          </Text>
         </Pressable>
 
         <Pressable
@@ -230,7 +257,9 @@ export default function ProfileScreen() {
           {deleting ? (
             <ActivityIndicator color={colors.onDanger} accessibilityLabel="Deleting account" />
           ) : (
-            <Text style={[styles.dangerButtonText, { color: colors.onDanger }]}>{t("profile.deleteAccount")}</Text>
+            <Text style={[styles.dangerButtonText, { color: colors.onDanger }]}>
+              {t("profile.deleteAccount")}
+            </Text>
           )}
         </Pressable>
 
@@ -238,33 +267,53 @@ export default function ProfileScreen() {
           <Pressable
             accessibilityRole="link"
             accessibilityLabel="Open Privacy Policy"
-            onPress={() => void Linking.openURL("https://careeros.ai/privacy")}
+            onPress={() =>
+              void Linking.openURL(
+                process.env.EXPO_PUBLIC_PRIVACY_URL ?? "https://careerosai.app/privacy",
+              )
+            }
           >
-            <Text style={[styles.legalLink, { color: colors.textSecondary }]}>{t("profile.privacyPolicy")}</Text>
+            <Text style={[styles.legalLink, { color: colors.textSecondary }]}>
+              {t("profile.privacyPolicy")}
+            </Text>
           </Pressable>
           <Text style={[styles.legalDot, { color: colors.textSecondary }]}>·</Text>
           <Pressable
             accessibilityRole="link"
             accessibilityLabel="Open Terms of Service"
-            onPress={() => void Linking.openURL("https://careeros.ai/terms")}
+            onPress={() =>
+              void Linking.openURL(
+                process.env.EXPO_PUBLIC_TERMS_URL ?? "https://careerosai.app/terms",
+              )
+            }
           >
-            <Text style={[styles.legalLink, { color: colors.textSecondary }]}>{t("profile.termsOfService")}</Text>
+            <Text style={[styles.legalLink, { color: colors.textSecondary }]}>
+              {t("profile.termsOfService")}
+            </Text>
           </Pressable>
           <Text style={[styles.legalDot, { color: colors.textSecondary }]}>·</Text>
           <Pressable
             accessibilityRole="link"
             accessibilityLabel="Open Support"
-            onPress={() => void Linking.openURL("https://careeros.ai/support")}
+            onPress={() =>
+              void Linking.openURL(
+                process.env.EXPO_PUBLIC_SUPPORT_URL ?? "https://careerosai.app/support",
+              )
+            }
           >
-            <Text style={[styles.legalLink, { color: colors.textSecondary }]}>{t("profile.support")}</Text>
+            <Text style={[styles.legalLink, { color: colors.textSecondary }]}>
+              {t("profile.support")}
+            </Text>
           </Pressable>
           <Text style={[styles.legalDot, { color: colors.textSecondary }]}>·</Text>
           <Pressable
             accessibilityRole="link"
             accessibilityLabel="Open account deletion guide"
-            onPress={() => void Linking.openURL("https://careeros.ai/delete-account")}
+            onPress={() => void Linking.openURL("https://careerosai.app/delete-account")}
           >
-            <Text style={[styles.legalLink, { color: colors.textSecondary }]}>{t("profile.deleteAccountGuide")}</Text>
+            <Text style={[styles.legalLink, { color: colors.textSecondary }]}>
+              {t("profile.deleteAccountGuide")}
+            </Text>
           </Pressable>
         </View>
       </ScrollView>

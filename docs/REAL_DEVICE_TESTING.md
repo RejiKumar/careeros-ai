@@ -7,6 +7,7 @@ Run the app on a physical Android device using only Expo Go. No dev build, no EA
 ## Prerequisites (One-Time Setup)
 
 ### On your computer
+
 1. Install Node.js ≥ 20 (`node -v`)
 2. Install pnpm: `npm i -g pnpm@11.21.0`
 3. Install ADB: part of Android SDK Platform Tools (add to PATH)
@@ -15,6 +16,7 @@ Run the app on a physical Android device using only Expo Go. No dev build, no EA
 6. Create `apps/mobile/.env` from `.env.example` with your Supabase URL + anon key
 
 ### On your Android device
+
 1. Enable **Developer Options** (tap Build Number 7 times)
 2. Enable **USB Debugging** (or **Wireless Debugging** for WiFi)
 3. Install **Expo Go** from Play Store (SDK 57 compatible)
@@ -46,6 +48,7 @@ npx expo start
 ## Test Checklist
 
 ### Auth Flow
+
 - [ ] Auth screen renders (logo, email fields, Google button, guest button)
 - [ ] Sign up with new email → account created → lands on dashboard
 - [ ] Sign in with existing email → session restored
@@ -56,6 +59,7 @@ npx expo start
 - [ ] "Continue as guest" → lands on guest dashboard with banner
 
 ### Guest Mode
+
 - [ ] Guest banner visible ("Browsing as a guest")
 - [ ] Dashboard loads with resume score, XP, missions
 - [ ] Navigate all tabs (Home, Resume, Match, Coach, Profile)
@@ -63,6 +67,7 @@ npx expo start
 - [ ] Sign in from guest banner → migrates guest data → shows account data
 
 ### Dashboard
+
 - [ ] Resume score card displays
 - [ ] XP and level display
 - [ ] Day streak counter
@@ -73,6 +78,7 @@ npx expo start
 - [ ] Quick actions (New resume, Job match, Coach, Roast, Wrapped, Interview)
 
 ### Resume
+
 - [ ] Upload resume (PDF) → processing indicator → score appears
 - [ ] Upload resume (DOCX) → works
 - [ ] Upload resume (TXT) → works
@@ -82,6 +88,7 @@ npx expo start
 - [ ] Voice input mic button visible in text fields
 
 ### Job Match
+
 - [ ] Paste job description → "Analyze" button
 - [ ] AI match score displays after analysis
 - [ ] Match strengths/weaknesses listed
@@ -91,6 +98,7 @@ npx expo start
 - [ ] Voice mic button on title/company/JD fields
 
 ### AI Coach
+
 - [ ] Start new conversation
 - [ ] Suggested prompts display
 - [ ] Send message → AI response appears
@@ -101,22 +109,26 @@ npx expo start
 - [ ] Voice mic button in composer
 
 ### Rewrites
+
 - [ ] Generate rewrites from resume → suggestions list
 - [ ] Accept a rewrite → creates new resume version
 - [ ] Empty state: "No improvements" message with re-generate button
 
 ### Resume Roast
+
 - [ ] 5 mode buttons render (Gentle, Brutal, Coach, Interviewer, Recruiter)
 - [ ] Select mode → "Roast me" → content appears
 - [ ] Different modes give different tone
 - [ ] Requires parsed resume content (error if none)
 
 ### Career Wrapped
+
 - [ ] Summary screen renders with stats
 - [ ] Toggles to customize display
 - [ ] Share button → system share sheet
 
 ### Mock Interview
+
 - [ ] Setup screen: select mode + question count
 - [ ] Start interview → questions appear one by one
 - [ ] Type answer → submit → next question
@@ -126,12 +138,14 @@ npx expo start
 - [ ] Session history listed
 
 ### Missions
+
 - [ ] Daily missions list loads
 - [ ] Complete a mission → XP awarded
 - [ ] Streak counter increments
 - [ ] "View all" shows complete mission history
 
 ### Profile
+
 - [ ] Account info displays (email, plan)
 - [ ] Achievement badges display
 - [ ] Sign out button works
@@ -139,6 +153,7 @@ npx expo start
 - [ ] Password reset (if email account)
 
 ### UI / UX
+
 - [ ] Status bar color matches theme (white in light, dark in dark)
 - [ ] Tab bar icons visible and tappable
 - [ ] All screens scroll properly
@@ -149,6 +164,7 @@ npx expo start
 - [ ] Voice mic icon visible on supported screens
 
 ### Network / Edge Cases
+
 - [ ] Kill app and reopen → session restored
 - [ ] Airplane mode → error state with retry
 - [ ] Slow network → loading indicator persists
@@ -160,16 +176,16 @@ npx expo start
 
 These features require a **dev build** (`npx expo run:android`) or **production build**:
 
-| Feature | Expo Go | Dev Build |
-|---|---|---|
-| Custom app icon | Shows Expo Go icon | Shows careerosai_icon |
-| Custom splash screen | Shows Expo splash | Shows custom splash |
-| Voice-to-text | Falls back gracefully | Full speech recognition |
-| Google sign-in | May not complete callback | Works fully |
-| Push notifications | Not available | Available |
-| AdMob | Not available | Available |
-| In-app purchases | Not available | Available |
-| Status bar color | Set via runtime API | Set via config |
+| Feature              | Expo Go                   | Dev Build               |
+| -------------------- | ------------------------- | ----------------------- |
+| Custom app icon      | Shows Expo Go icon        | Shows careerosai_icon   |
+| Custom splash screen | Shows Expo splash         | Shows custom splash     |
+| Voice-to-text        | Falls back gracefully     | Full speech recognition |
+| Google sign-in       | May not complete callback | Works fully             |
+| Push notifications   | Not available             | Available               |
+| AdMob                | Not available             | Available               |
+| In-app purchases     | Not available             | Available               |
+| Status bar color     | Set via runtime API       | Set via config          |
 
 ---
 

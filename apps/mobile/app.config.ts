@@ -71,16 +71,29 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     experiments: {
       typedRoutes: false,
     },
+    extra: {
+      eas: {
+        projectId: "49fb8f3d-8cde-4870-b988-14f3b707a47c",
+      },
+    },
     plugins: [
       "expo-router",
       "expo-speech-recognition",
+      "./plugins/withAdMobManifest",
       [
         "expo-splash-screen",
         {
-          image: "./assets/careerosai_icon.png",
+          image: "./assets/splash-icon.png",
           imageWidth: 200,
           resizeMode: "contain",
           backgroundColor: "#000000",
+        },
+      ],
+      [
+        "react-native-google-mobile-ads",
+        {
+          user_tracking_usage_description:
+            "This identifier will be used to deliver personalized ads to you.",
         },
       ],
     ],

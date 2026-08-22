@@ -1,4 +1,5 @@
 """Missions and dashboard API tests using in-memory fakes."""
+
 from __future__ import annotations
 
 from app.ai.provider import get_ai_provider
@@ -23,20 +24,29 @@ def _make() -> tuple[TestClient, FakeClients]:
 def _seed_missions(clients: FakeClients) -> None:
     clients.service_client.table("missions").insert(
         {
-            "key": "import_resume", "title": "Import a resume",
-            "xp_reward": 50, "cadence": "once", "is_active": True,
+            "key": "import_resume",
+            "title": "Import a resume",
+            "xp_reward": 50,
+            "cadence": "once",
+            "is_active": True,
         }
     )
     clients.service_client.table("missions").insert(
         {
-            "key": "run_assessment", "title": "Run a health assessment",
-            "xp_reward": 30, "cadence": "daily", "is_active": True,
+            "key": "run_assessment",
+            "title": "Run a health assessment",
+            "xp_reward": 30,
+            "cadence": "daily",
+            "is_active": True,
         }
     )
     clients.service_client.table("missions").insert(
         {
-            "key": "run_match", "title": "Match a job description",
-            "xp_reward": 30, "cadence": "daily", "is_active": True,
+            "key": "run_match",
+            "title": "Match a job description",
+            "xp_reward": 30,
+            "cadence": "daily",
+            "is_active": True,
         }
     )
 
@@ -150,9 +160,7 @@ def test_guest_dashboard_and_mission_completion() -> None:
     assert dashboard.status_code == 200
     assert dashboard.json()["total_xp"] == 0
 
-    completion = client.post(
-        f"{API_V1_PREFIX}/missions/import_resume/complete", headers=headers
-    )
+    completion = client.post(f"{API_V1_PREFIX}/missions/import_resume/complete", headers=headers)
     assert completion.status_code == 201
     assert completion.json()["xp_awarded"] == 50
     assert completion.json()["new_total_xp"] == 50
@@ -182,9 +190,7 @@ def test_guest_missions_are_isolated_from_users() -> None:
         f"{API_V1_PREFIX}/missions/import_resume/complete",
         headers={"X-Guest-Id": guest_a},
     )
-    progress_b = client.get(
-        f"{API_V1_PREFIX}/missions/progress", headers={"X-Guest-Id": guest_b}
-    )
+    progress_b = client.get(f"{API_V1_PREFIX}/missions/progress", headers={"X-Guest-Id": guest_b})
 
     assert progress_b.status_code == 200
     assert progress_b.json()["total_xp"] == 0

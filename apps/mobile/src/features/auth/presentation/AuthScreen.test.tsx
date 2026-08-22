@@ -130,9 +130,7 @@ describe("AuthScreen", () => {
     await user.type(screen.getByLabelText("Password"), "password123");
     await user.press(screen.getByLabelText("Create account"));
 
-    await waitFor(() =>
-      expect(mockSignUp).toHaveBeenCalledWith("new@example.com", "password123"),
-    );
+    await waitFor(() => expect(mockSignUp).toHaveBeenCalledWith("new@example.com", "password123"));
     expect(mockReplace).toHaveBeenCalledWith("/");
   });
 });

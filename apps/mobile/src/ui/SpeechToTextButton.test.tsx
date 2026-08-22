@@ -8,8 +8,7 @@ type Listener = (event: { results: { transcript?: string }[] }) => void;
 
 const speechListeners = (): Map<string, (payload: unknown) => void> =>
   ((globalThis as unknown as Record<string, unknown>).__speechListeners as
-    | Map<string, (payload: unknown) => void>
-    | undefined) ?? new Map();
+    Map<string, (payload: unknown) => void> | undefined) ?? new Map();
 
 describe("SpeechToTextButton", () => {
   const onResult = jest.fn();
@@ -21,7 +20,12 @@ describe("SpeechToTextButton", () => {
 
   it("renders the mic button with the accessibility label", async () => {
     const { getByLabelText } = await render(
-      <SpeechToTextButton onResult={onResult} color="#666" activeColor="#123456" label="Voice input" />,
+      <SpeechToTextButton
+        onResult={onResult}
+        color="#666"
+        activeColor="#123456"
+        label="Voice input"
+      />,
     );
 
     expect(getByLabelText("Voice input")).toBeOnTheScreen();
@@ -29,7 +33,12 @@ describe("SpeechToTextButton", () => {
 
   it("starts recognition after permission is granted", async () => {
     const { getByLabelText } = await render(
-      <SpeechToTextButton onResult={onResult} color="#666" activeColor="#123456" label="Voice input" />,
+      <SpeechToTextButton
+        onResult={onResult}
+        color="#666"
+        activeColor="#123456"
+        label="Voice input"
+      />,
     );
     const user = userEvent.setup();
 
@@ -46,7 +55,12 @@ describe("SpeechToTextButton", () => {
   it("does not start when permission is denied", async () => {
     (ExpoSpeechRecognitionModule.requestPermissionsAsync as jest.Mock).mockResolvedValueOnce(false);
     const { getByLabelText, getByText } = await render(
-      <SpeechToTextButton onResult={onResult} color="#666" activeColor="#123456" label="Voice input" />,
+      <SpeechToTextButton
+        onResult={onResult}
+        color="#666"
+        activeColor="#123456"
+        label="Voice input"
+      />,
     );
     const user = userEvent.setup();
 
@@ -58,7 +72,12 @@ describe("SpeechToTextButton", () => {
 
   it("delivers the transcript through onResult when the result event fires", async () => {
     const { getByLabelText } = await render(
-      <SpeechToTextButton onResult={onResult} color="#666" activeColor="#123456" label="Voice input" />,
+      <SpeechToTextButton
+        onResult={onResult}
+        color="#666"
+        activeColor="#123456"
+        label="Voice input"
+      />,
     );
     const user = userEvent.setup();
 

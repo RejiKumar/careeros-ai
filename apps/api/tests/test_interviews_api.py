@@ -22,21 +22,29 @@ def _make_client(provider: FakeProvider) -> tuple[TestClient, FakeClients]:
 
 
 def _seed_resume(fake: FakeClients) -> str:
-    resume = fake.service_client.table("resumes").insert(
-        {"user_id": "u-1", "title": "Ada Resume"}
-    ).execute().data[0]
-    version = fake.service_client.table("resume_versions").insert(
-        {
-            "resume_id": resume["id"],
-            "user_id": "u-1",
-            "version": 1,
-            "source": "import",
-            "structured_data": None,
-        }
-    ).execute().data[0]
-    fake.service_client.table("resumes").update(
-        {"current_version_id": version["id"]}
-    ).eq("id", resume["id"]).execute()
+    resume = (
+        fake.service_client.table("resumes")
+        .insert({"user_id": "u-1", "title": "Ada Resume"})
+        .execute()
+        .data[0]
+    )
+    version = (
+        fake.service_client.table("resume_versions")
+        .insert(
+            {
+                "resume_id": resume["id"],
+                "user_id": "u-1",
+                "version": 1,
+                "source": "import",
+                "structured_data": None,
+            }
+        )
+        .execute()
+        .data[0]
+    )
+    fake.service_client.table("resumes").update({"current_version_id": version["id"]}).eq(
+        "id", resume["id"]
+    ).execute()
     return resume["id"]
 
 

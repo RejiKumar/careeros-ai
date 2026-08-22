@@ -1,6 +1,7 @@
 # CareerOS AI — Milestone Execution Plan
 
 ## Milestone 0 — Foundation
+
 - [x] Product specification
 - [x] AGENTS.md
 - [x] OpenCode orchestration prompt
@@ -9,6 +10,7 @@
 - [x] Git strategy
 
 ## Milestone 1 — Mobile Foundation
+
 - [x] Expo project
 - [x] TypeScript
 - [x] Expo Router
@@ -18,6 +20,7 @@
 - [x] Error boundary
 
 ## Milestone 2 — Backend Foundation
+
 - [x] FastAPI
 - [x] Pydantic
 - [x] Supabase (replaces SQLAlchemy/Alembic/PostgreSQL/Redis)
@@ -26,6 +29,7 @@
 - [x] Request IDs
 
 ## Milestone 3 — Design System
+
 - [x] Aurora background
 - [x] Glass components
 - [x] Typography
@@ -38,6 +42,7 @@
 - [ ] Haptics
 
 ## Milestone 4 — Authentication
+
 - [x] Guest
 - [x] Email
 - [x] Google
@@ -48,6 +53,7 @@
 - [x] Guest migration
 
 ## Milestone 5 — Home
+
 - [x] Career dashboard
 - [x] Resume score
 - [x] Career level
@@ -56,6 +62,7 @@
 - [x] Quick actions
 
 ## Milestone 6 — Resume
+
 - [x] PDF upload
 - [x] File validation
 - [x] Secure storage
@@ -65,6 +72,7 @@
 - [x] Analysis results
 
 ## Milestone 7 — ATS / Job Match
+
 - [x] JD input
 - [x] Compatibility estimate
 - [x] Matched skills
@@ -72,6 +80,7 @@
 - [x] Recommendations
 
 ## Milestone 8 — AI Career Chat
+
 - [x] Chat sessions
 - [ ] Streaming (non-streaming works)
 - [x] Resume context
@@ -80,6 +89,7 @@
 - [x] Feedback
 
 ## Milestone 9 — AI Improvements
+
 - [x] Rewrite section
 - [x] Accept suggestion
 - [ ] Regenerate
@@ -87,6 +97,7 @@
 - [x] Versioning
 
 ## Milestone 10 — Fun / Engagement
+
 - [x] Roast (5 modes)
 - [x] XP
 - [x] Levels
@@ -95,6 +106,7 @@
 - [x] Wrapped
 
 ## Milestone 11 — Interview
+
 - [x] Session
 - [x] Question generation
 - [x] Answer submission
@@ -103,6 +115,7 @@
 - [ ] Interview score (evaluation scores serve this purpose)
 
 ## Milestone 12 — Monetization
+
 - [ ] AdMob
 - [ ] Free limits
 - [ ] Pro entitlement
@@ -111,6 +124,7 @@
 - [ ] Server verification
 
 ## Milestone 13 — Analytics
+
 - [ ] Firebase Analytics
 - [ ] Crashlytics
 - [ ] Product funnels
@@ -118,6 +132,7 @@
 - [ ] Error monitoring
 
 ## Milestone 14 — Notifications
+
 - [ ] FCM
 - [ ] Permission flow
 - [ ] Preferences
@@ -125,6 +140,7 @@
 - [ ] Mission reminders
 
 ## Milestone 15 — Testing
+
 - [x] Unit (mobile: 40 tests, API: 192 tests)
 - [x] Component (mobile component tests)
 - [x] API (backend API tests)
@@ -133,6 +149,7 @@
 - [ ] Regression
 
 ## Milestone 16 — CI/CD
+
 - [ ] GitHub Actions
 - [ ] dev
 - [ ] qa
@@ -143,6 +160,7 @@
 - [ ] Docker
 
 ## Milestone 17 — Performance
+
 - [ ] Startup profiling
 - [ ] Render profiling
 - [ ] Memory checks
@@ -152,6 +170,7 @@
 - [ ] List optimization
 
 ## Milestone 18 — Security / Privacy
+
 - [x] Upload security (MIME/size validation)
 - [x] Rate limiting (guest rate limit)
 - [x] RLS (Supabase row-level security)
@@ -162,6 +181,7 @@
 - [ ] Terms
 
 ## Milestone 19 — Play Store
+
 - [ ] Application ID
 - [ ] Icon
 - [ ] Splash
@@ -174,6 +194,7 @@
 - [ ] Production release
 
 ## Milestone 20 — Post Launch
+
 - [ ] Crash analysis
 - [ ] Funnel analysis
 - [ ] Retention analysis

@@ -1,4 +1,5 @@
 """Billing and usage persistence backed by Supabase (service-role client)."""
+
 from __future__ import annotations
 
 from supabase import Client
@@ -27,11 +28,7 @@ class BillingRepository:
 
     def get_entitlement(self, *, user_id: str) -> dict | None:
         rows = (
-            self._client.table(ENTITLEMENTS_TABLE)
-            .select("*")
-            .eq("user_id", user_id)
-            .execute()
-            .data
+            self._client.table(ENTITLEMENTS_TABLE).select("*").eq("user_id", user_id).execute().data
         )
         return rows[0] if rows else None
 

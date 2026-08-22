@@ -16,6 +16,7 @@ The app now covers auth, resume health, job match, coach chat, missions and prof
 ## Capabilities
 
 ### New Capabilities
+
 - `guest-mode`: anonymous local session, protected-route access without an account, and transactional guest-to-account migration.
 - `ai-feedback`: Helpful/Not helpful ratings with optional reason, stored per AI output without unnecessary sensitive content, surfaced in the coach, match, roast and rewrites experiences.
 - `resume-roast`: five-mode resume critique that stays constructive and always ends with actionable improvements.
@@ -25,6 +26,7 @@ The app now covers auth, resume health, job match, coach chat, missions and prof
 - `chat-experience`: suggested prompts, copy, regenerate and AI-guidance disclosure for coach conversations.
 
 ### Modified Capabilities
+
 <!-- No existing specs yet; none modified. -->
 
 ## Impact

@@ -187,12 +187,14 @@ export default function CoachScreen() {
     }
   }
 
+  const [isSending, setIsSending] = useState(false);
+
   async function handleSend(contentOverride?: string) {
     const content = (contentOverride ?? draft).trim();
     if (content === "" || activeThread === null) {
       return;
     }
-    if (chatState.status === "loading") {
+    if (chatState.status === "loading" || isSending) {
       return;
     }
     const optimistic: CoachMessageResponse[] =
@@ -207,9 +209,15 @@ export default function CoachScreen() {
     };
     setChatState({ status: "success", messages: [...optimistic, userMessage] });
     setDraft("");
+    setIsSending(true);
     try {
       const pair = isGuest
-        ? await apiClient.sendCoachMessage(undefined, activeThread.id, content, guestId ?? undefined)
+        ? await apiClient.sendCoachMessage(
+            undefined,
+            activeThread.id,
+            content,
+            guestId ?? undefined,
+          )
         : await apiClient.sendCoachMessage(accessToken, activeThread.id, content);
       setChatState({
         status: "success",
@@ -224,23 +232,30 @@ export default function CoachScreen() {
           message: err instanceof Error ? err.message : t("coach.errorReply"),
         });
       }
+    } finally {
+      setIsSending(false);
     }
   }
 
   async function handleRegenerate() {
-    if (chatState.status !== "success" || chatState.messages.length < 2) {
+    if (chatState.status !== "success" || chatState.messages.length < 2 || isSending) {
       return;
     }
     const lastUserMsg = [...chatState.messages].reverse().find((m) => m.role === "user");
     if (lastUserMsg === undefined) {
       return;
     }
-    // Remove the last assistant message, resend user message
     const messagesWithoutLastReply = chatState.messages.slice(0, chatState.messages.length - 1);
     setChatState({ status: "success", messages: messagesWithoutLastReply });
+    setIsSending(true);
     try {
       const pair = isGuest
-        ? await apiClient.sendCoachMessage(undefined, activeThread!.id, lastUserMsg.content, guestId ?? undefined)
+        ? await apiClient.sendCoachMessage(
+            undefined,
+            activeThread!.id,
+            lastUserMsg.content,
+            guestId ?? undefined,
+          )
         : await apiClient.sendCoachMessage(accessToken, activeThread!.id, lastUserMsg.content);
       setChatState({
         status: "success",
@@ -255,6 +270,8 @@ export default function CoachScreen() {
           message: err instanceof Error ? err.message : t("coach.errorRegenerate"),
         });
       }
+    } finally {
+      setIsSending(false);
     }
   }
 
@@ -269,7 +286,12 @@ export default function CoachScreen() {
         style={[styles.container, { backgroundColor: colors.background }]}
         behavior={Platform.OS === "ios" ? "padding" : undefined}
       >
-        <View style={[styles.chatHeader, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+        <View
+          style={[
+            styles.chatHeader,
+            { backgroundColor: colors.surface, borderColor: colors.border },
+          ]}
+        >
           <Pressable
             accessibilityRole="button"
             accessibilityLabel={t("coach.chatBack")}
@@ -277,14 +299,21 @@ export default function CoachScreen() {
             style={[styles.backButton, { backgroundColor: colors.surfaceRaised }]}
           >
             <Text style={[styles.backArrow, { color: colors.textPrimary }]}>‹</Text>
-            <Text style={[styles.backLabel, { color: colors.textPrimary }]}>{t("coach.chatBack")}</Text>
+            <Text style={[styles.backLabel, { color: colors.textPrimary }]}>
+              {t("coach.chatBack")}
+            </Text>
           </Pressable>
           <Text numberOfLines={1} style={[styles.chatTitle, { color: colors.textPrimary }]}>
             {activeThread.title ?? t("coach.chatHeader")}
           </Text>
         </View>
 
-        <View style={[styles.guideDisclosureBar, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+        <View
+          style={[
+            styles.guideDisclosureBar,
+            { backgroundColor: colors.surface, borderColor: colors.border },
+          ]}
+        >
           <Text style={[styles.guideDisclosureText, { color: colors.textDisabled }]}>
             {t("coach.disclosure")}
           </Text>
@@ -296,11 +325,19 @@ export default function CoachScreen() {
           onContentSizeChange={() => scrollRef.current?.scrollToEnd({ animated: true })}
         >
           {chatState.status === "loading" && (
-            <ActivityIndicator color={colors.primary} accessibilityLabel={t("coach.conversations")} />
+            <ActivityIndicator
+              color={colors.primary}
+              accessibilityLabel={t("coach.conversations")}
+            />
           )}
           {chatState.status === "error" && (
-            <View style={[styles.notice, { backgroundColor: colors.danger }]} accessibilityRole="alert">
-              <Text style={[styles.noticeText, { color: colors.onDanger }]}>{chatState.message}</Text>
+            <View
+              style={[styles.notice, { backgroundColor: colors.danger }]}
+              accessibilityRole="alert"
+            >
+              <Text style={[styles.noticeText, { color: colors.onDanger }]}>
+                {chatState.message}
+              </Text>
             </View>
           )}
           {(chatState.status === "idle" ||
@@ -315,9 +352,14 @@ export default function CoachScreen() {
                   accessibilityRole="button"
                   accessibilityLabel={`Suggested prompt: ${prompt}`}
                   onPress={() => void handleSend(prompt)}
-                  style={[styles.suggestedPrompt, { backgroundColor: colors.surface, borderColor: colors.border }]}
+                  style={[
+                    styles.suggestedPrompt,
+                    { backgroundColor: colors.surface, borderColor: colors.border },
+                  ]}
                 >
-                  <Text style={[styles.suggestedPromptText, { color: colors.primaryStrong }]}>{prompt}</Text>
+                  <Text style={[styles.suggestedPromptText, { color: colors.primaryStrong }]}>
+                    {prompt}
+                  </Text>
                 </Pressable>
               ))}
             </>
@@ -330,7 +372,10 @@ export default function CoachScreen() {
                   styles.messageBubble,
                   message.role === "user"
                     ? [styles.userBubble, { backgroundColor: colors.primary }]
-                    : [styles.assistantBubble, { backgroundColor: colors.surface, borderColor: colors.border }],
+                    : [
+                        styles.assistantBubble,
+                        { backgroundColor: colors.surface, borderColor: colors.border },
+                      ],
                 ]}
               >
                 <Text
@@ -351,7 +396,9 @@ export default function CoachScreen() {
                       }}
                       style={[styles.actionLink]}
                     >
-                      <Text style={[styles.actionLinkText, { color: colors.primaryStrong }]}>{t("common.copy")}</Text>
+                      <Text style={[styles.actionLinkText, { color: colors.primaryStrong }]}>
+                        {t("common.copy")}
+                      </Text>
                     </Pressable>
                     {message.id === lastAssistantMsg?.id && (
                       <Pressable
@@ -360,16 +407,31 @@ export default function CoachScreen() {
                         onPress={() => void handleRegenerate()}
                         style={[styles.actionLink]}
                       >
-                        <Text style={[styles.actionLinkText, { color: colors.primaryStrong }]}>{t("common.regenerate")}</Text>
+                        <Text style={[styles.actionLinkText, { color: colors.primaryStrong }]}>
+                          {t("common.regenerate")}
+                        </Text>
                       </Pressable>
                     )}
                   </View>
                 )}
               </View>
             ))}
+          {isSending && (
+            <View
+              style={[
+                styles.messageBubble,
+                styles.assistantBubble,
+                { backgroundColor: colors.surface, borderColor: colors.border },
+              ]}
+            >
+              <ActivityIndicator size="small" color={colors.primary} />
+            </View>
+          )}
         </ScrollView>
 
-        <View style={[styles.composer, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+        <View
+          style={[styles.composer, { backgroundColor: colors.surface, borderColor: colors.border }]}
+        >
           <TextInput
             value={draft}
             onChangeText={setDraft}
@@ -389,15 +451,17 @@ export default function CoachScreen() {
             accessibilityRole="button"
             accessibilityLabel={t("common.send")}
             onPress={() => void handleSend()}
-            disabled={draft.trim() === "" || chatState.status === "loading"}
+            disabled={draft.trim() === "" || isSending}
             style={({ pressed }) => [
               styles.sendButton,
               { backgroundColor: colors.primary },
               pressed && styles.pressed,
-              (draft.trim() === "" || chatState.status === "loading") && styles.disabled,
+              (draft.trim() === "" || isSending) && styles.disabled,
             ]}
           >
-            <Text style={[styles.sendButtonText, { color: colors.onPrimary }]}>{t("common.send")}</Text>
+            <Text style={[styles.sendButtonText, { color: colors.onPrimary }]}>
+              {t("common.send")}
+            </Text>
           </Pressable>
         </View>
       </KeyboardAvoidingView>
@@ -407,7 +471,9 @@ export default function CoachScreen() {
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       <ScrollView contentContainerStyle={styles.scrollContent}>
-        <Text style={[styles.eyebrow, { color: colors.primaryStrong }]}>{t("coach.listEyebrow")}</Text>
+        <Text style={[styles.eyebrow, { color: colors.primaryStrong }]}>
+          {t("coach.listEyebrow")}
+        </Text>
         <Text style={[styles.title, { color: colors.textPrimary }]}>{t("coach.listTitle")}</Text>
         <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
           {t("coach.listSubtitle")}
@@ -456,7 +522,10 @@ export default function CoachScreen() {
           ]}
         >
           {creating ? (
-            <ActivityIndicator color={colors.onPrimary} accessibilityLabel={t("coach.newConversation")} />
+            <ActivityIndicator
+              color={colors.onPrimary}
+              accessibilityLabel={t("coach.newConversation")}
+            />
           ) : (
             <Text style={[styles.primaryButtonLabel, { color: colors.onPrimary }]}>
               {t("coach.newConversation")}
@@ -464,20 +533,29 @@ export default function CoachScreen() {
           )}
         </Pressable>
 
-        <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>{t("coach.conversations")}</Text>
+        <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>
+          {t("coach.conversations")}
+        </Text>
         {threadsState.status === "loading" && (
           <ActivityIndicator color={colors.primary} accessibilityLabel={t("common.loading")} />
         )}
         {threadsState.status === "error" && (
-          <View style={[styles.notice, { backgroundColor: colors.danger }]} accessibilityRole="alert">
-            <Text style={[styles.noticeText, { color: colors.onDanger }]}>{threadsState.message}</Text>
+          <View
+            style={[styles.notice, { backgroundColor: colors.danger }]}
+            accessibilityRole="alert"
+          >
+            <Text style={[styles.noticeText, { color: colors.onDanger }]}>
+              {threadsState.message}
+            </Text>
             <Pressable
               accessibilityRole="button"
               accessibilityLabel={t("common.tryAgain")}
               onPress={() => void loadThreads()}
               style={[styles.retryButton, { backgroundColor: colors.surfaceRaised }]}
             >
-              <Text style={[styles.retryText, { color: colors.textPrimary }]}>{t("common.tryAgain")}</Text>
+              <Text style={[styles.retryText, { color: colors.textPrimary }]}>
+                {t("common.tryAgain")}
+              </Text>
             </Pressable>
           </View>
         )}
@@ -490,7 +568,10 @@ export default function CoachScreen() {
           threadsState.items.map((thread) => (
             <View
               key={thread.id}
-              style={[styles.threadCard, { backgroundColor: colors.surface, borderColor: colors.border }]}
+              style={[
+                styles.threadCard,
+                { backgroundColor: colors.surface, borderColor: colors.border },
+              ]}
             >
               <Pressable
                 accessibilityRole="button"
@@ -511,7 +592,9 @@ export default function CoachScreen() {
                 onPress={() => void handleDeleteThread(thread.id)}
                 style={[styles.deleteButton, { backgroundColor: colors.danger }]}
               >
-                <Text style={[styles.deleteText, { color: colors.onDanger }]}>{t("coach.delete")}</Text>
+                <Text style={[styles.deleteText, { color: colors.onDanger }]}>
+                  {t("coach.delete")}
+                </Text>
               </Pressable>
             </View>
           ))}
@@ -533,7 +616,7 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     letterSpacing: 1.2,
     textTransform: "uppercase",
-    marginTop: 24,
+    marginTop: 0,
   },
   title: {
     fontSize: 28,

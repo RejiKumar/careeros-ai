@@ -73,9 +73,7 @@ class JobDescriptionRepository:
         if not updates:
             return self.get(actor=actor, job_description_id=job_description_id)
         query = (
-            self._client.table(JOB_DESCRIPTIONS_TABLE)
-            .update(updates)
-            .eq("id", job_description_id)
+            self._client.table(JOB_DESCRIPTIONS_TABLE).update(updates).eq("id", job_description_id)
         )
         rows = owner_eq(query, actor).execute().data
         return rows[0] if rows else None

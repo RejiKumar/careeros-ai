@@ -1,12 +1,5 @@
 import { useState } from "react";
-import {
-  ActivityIndicator,
-  Pressable,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-} from "react-native";
+import { ActivityIndicator, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 
 import { useAuth } from "@/lib/auth";
 import { useTheme } from "@/lib/theme";
@@ -54,7 +47,7 @@ export default function FeedbackControl({ outputType, outputId }: FeedbackContro
         await apiClient.submitFeedback(
           accessToken,
           { output_type: outputType, output_id: outputId, rating: "helpful" },
-          isGuest ? guestId ?? undefined : undefined,
+          isGuest ? (guestId ?? undefined) : undefined,
         );
         setSubmitted(true);
       } catch {
@@ -84,7 +77,7 @@ export default function FeedbackControl({ outputType, outputId }: FeedbackContro
           reason: reason,
           reason_detail: reasonDetail,
         },
-        isGuest ? guestId ?? undefined : undefined,
+        isGuest ? (guestId ?? undefined) : undefined,
       );
       setSubmitted(true);
     } catch {
@@ -97,7 +90,9 @@ export default function FeedbackControl({ outputType, outputId }: FeedbackContro
   if (submitted) {
     return (
       <View style={[styles.thankYou, { backgroundColor: colors.primarySoft }]}>
-        <Text style={[styles.thankYouText, { color: colors.primaryStrong }]}>{t("feedback.thankYou")}</Text>
+        <Text style={[styles.thankYouText, { color: colors.primaryStrong }]}>
+          {t("feedback.thankYou")}
+        </Text>
       </View>
     );
   }
@@ -122,7 +117,12 @@ export default function FeedbackControl({ outputType, outputId }: FeedbackContro
               pressed && styles.pressed,
             ]}
           >
-            <Text style={[styles.rateButtonText, { color: rating === "helpful" ? colors.onPrimary : colors.textPrimary }]}>
+            <Text
+              style={[
+                styles.rateButtonText,
+                { color: rating === "helpful" ? colors.onPrimary : colors.textPrimary },
+              ]}
+            >
               {t("feedback.helpful")}
             </Text>
           </Pressable>
@@ -141,7 +141,12 @@ export default function FeedbackControl({ outputType, outputId }: FeedbackContro
               pressed && styles.pressed,
             ]}
           >
-            <Text style={[styles.rateButtonText, { color: rating === "not_helpful" ? colors.onPrimary : colors.textPrimary }]}>
+            <Text
+              style={[
+                styles.rateButtonText,
+                { color: rating === "not_helpful" ? colors.onPrimary : colors.textPrimary },
+              ]}
+            >
               {t("feedback.notHelpful")}
             </Text>
           </Pressable>
@@ -151,8 +156,12 @@ export default function FeedbackControl({ outputType, outputId }: FeedbackContro
   }
 
   return (
-    <View style={[styles.reasonCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-      <Text style={[styles.reasonTitle, { color: colors.textPrimary }]}>{t("feedback.whyNotHelpful")}</Text>
+    <View
+      style={[styles.reasonCard, { backgroundColor: colors.surface, borderColor: colors.border }]}
+    >
+      <Text style={[styles.reasonTitle, { color: colors.textPrimary }]}>
+        {t("feedback.whyNotHelpful")}
+      </Text>
       <View style={styles.reasonRow}>
         {REASONS.map((r) => (
           <Pressable
@@ -169,7 +178,12 @@ export default function FeedbackControl({ outputType, outputId }: FeedbackContro
               },
             ]}
           >
-            <Text style={[styles.reasonChipText, { color: selectedReason === r.key ? colors.primaryStrong : colors.textPrimary }]}>
+            <Text
+              style={[
+                styles.reasonChipText,
+                { color: selectedReason === r.key ? colors.primaryStrong : colors.textPrimary },
+              ]}
+            >
               {r.label}
             </Text>
           </Pressable>
@@ -183,7 +197,14 @@ export default function FeedbackControl({ outputType, outputId }: FeedbackContro
           accessibilityLabel="Other reason"
           placeholder={t("feedback.placeholder")}
           placeholderTextColor={colors.textDisabled}
-          style={[styles.otherInput, { backgroundColor: colors.background, borderColor: colors.border, color: colors.textPrimary }]}
+          style={[
+            styles.otherInput,
+            {
+              backgroundColor: colors.background,
+              borderColor: colors.border,
+              color: colors.textPrimary,
+            },
+          ]}
         />
       )}
 
@@ -216,7 +237,9 @@ export default function FeedbackControl({ outputType, outputId }: FeedbackContro
           {submitting ? (
             <ActivityIndicator color={colors.onPrimary} accessibilityLabel="Submitting" />
           ) : (
-            <Text style={[styles.submitText, { color: colors.onPrimary }]}>{t("common.submit")}</Text>
+            <Text style={[styles.submitText, { color: colors.onPrimary }]}>
+              {t("common.submit")}
+            </Text>
           )}
         </Pressable>
       </View>
@@ -239,7 +262,13 @@ const styles = StyleSheet.create({
   reasonRow: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
   reasonChip: { borderRadius: 9999, borderWidth: 1, paddingHorizontal: 12, paddingVertical: 8 },
   reasonChipText: { fontSize: 12, fontWeight: "600" },
-  otherInput: { borderWidth: 1, borderRadius: 10, paddingHorizontal: 12, paddingVertical: 10, fontSize: 14 },
+  otherInput: {
+    borderWidth: 1,
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    fontSize: 14,
+  },
   reasonActions: { flexDirection: "row", justifyContent: "flex-end", gap: 8 },
   skipButton: { borderRadius: 10, paddingHorizontal: 14, paddingVertical: 8 },
   skipText: { fontSize: 13, fontWeight: "600" },

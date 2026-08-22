@@ -19,9 +19,15 @@ export default function GlassCard({ children, style, elevated = false }: GlassCa
           backgroundColor: colors.surface,
           borderColor: colors.border,
           shadowColor: theme.shadows.card.shadowColor,
-          shadowOpacity: elevated ? theme.shadows.elevated.shadowOpacity : theme.shadows.card.shadowOpacity,
-          shadowRadius: elevated ? theme.shadows.elevated.shadowRadius : theme.shadows.card.shadowRadius,
-          shadowOffset: elevated ? theme.shadows.elevated.shadowOffset : theme.shadows.card.shadowOffset,
+          shadowOpacity: elevated
+            ? theme.shadows.elevated.shadowOpacity
+            : theme.shadows.card.shadowOpacity,
+          shadowRadius: elevated
+            ? theme.shadows.elevated.shadowRadius
+            : theme.shadows.card.shadowRadius,
+          shadowOffset: elevated
+            ? theme.shadows.elevated.shadowOffset
+            : theme.shadows.card.shadowOffset,
           elevation: elevated ? theme.shadows.elevated.elevation : theme.shadows.card.elevation,
         },
         style,

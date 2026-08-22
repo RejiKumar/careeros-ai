@@ -5,12 +5,14 @@ See proposal.md — Why. Current state: mobile app has a themed shell (Home, Res
 ## Goals / Non-Goals
 
 **Goals:**
+
 - Add `@supabase/supabase-js` email/password auth with secure session persistence and a route-level auth gate.
 - Add a typed API client with Bearer auth and explicit state handling.
 - Wire the Resume screen to pick, validate, upload and review a resume, then request and display the health score.
 - Keep the design token / theme system, accessibility and test conventions already established in the app.
 
 **Non-Goals:**
+
 - No backend changes (endpoints consumed as-is).
 - No social/SSO sign-in, no password reset flow, no guest mode (backend requires a user everywhere).
 - No resume editing/rewrites/job-match/coach UI in this change.

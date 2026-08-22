@@ -53,7 +53,11 @@ export default function AchievementsSection() {
   if (state.status === "loading") {
     return (
       <View style={styles.loadingWrap}>
-        <ActivityIndicator size="small" color={colors.primary} accessibilityLabel="Loading achievements" />
+        <ActivityIndicator
+          size="small"
+          color={colors.primary}
+          accessibilityLabel="Loading achievements"
+        />
       </View>
     );
   }
@@ -66,18 +70,30 @@ export default function AchievementsSection() {
   const unearned = state.items.filter((a) => a.earned_at === null);
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+    <View
+      style={[styles.container, { backgroundColor: colors.surface, borderColor: colors.border }]}
+    >
       <Text style={[styles.title, { color: colors.textPrimary }]}>{t("achievements.title")}</Text>
       {state.items.length === 0 ? (
-        <Text style={[styles.emptyText, { color: colors.textDisabled }]}>{t("achievements.empty")}</Text>
+        <Text style={[styles.emptyText, { color: colors.textDisabled }]}>
+          {t("achievements.empty")}
+        </Text>
       ) : (
         <>
           {earned.length > 0 && (
             <View style={styles.grid}>
               {earned.map((a) => (
-                <View key={a.key} style={[styles.achievementCard, { backgroundColor: colors.primarySoft, borderColor: colors.primary }]}>
+                <View
+                  key={a.key}
+                  style={[
+                    styles.achievementCard,
+                    { backgroundColor: colors.primarySoft, borderColor: colors.primary },
+                  ]}
+                >
                   <Text style={styles.achievementEmoji}>🏆</Text>
-                  <Text style={[styles.achievementTitle, { color: colors.primaryStrong }]}>{a.title}</Text>
+                  <Text style={[styles.achievementTitle, { color: colors.primaryStrong }]}>
+                    {a.title}
+                  </Text>
                   <Text style={[styles.achievementDate, { color: colors.textSecondary }]}>
                     {new Date(a.earned_at!).toLocaleDateString()}
                   </Text>
@@ -88,10 +104,20 @@ export default function AchievementsSection() {
           {unearned.length > 0 && (
             <View style={styles.grid}>
               {unearned.map((a) => (
-                <View key={a.key} style={[styles.achievementCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+                <View
+                  key={a.key}
+                  style={[
+                    styles.achievementCard,
+                    { backgroundColor: colors.surface, borderColor: colors.border },
+                  ]}
+                >
                   <Text style={styles.achievementEmoji}>🔒</Text>
-                  <Text style={[styles.achievementTitle, { color: colors.textSecondary }]}>{a.title}</Text>
-                  <Text style={[styles.achievementCondition, { color: colors.textDisabled }]}>{a.condition}</Text>
+                  <Text style={[styles.achievementTitle, { color: colors.textSecondary }]}>
+                    {a.title}
+                  </Text>
+                  <Text style={[styles.achievementCondition, { color: colors.textDisabled }]}>
+                    {a.condition}
+                  </Text>
                 </View>
               ))}
             </View>

@@ -149,9 +149,7 @@ class RewriteService:
             status=STATUS_ACCEPTED,
         )
 
-    def get_batch(
-        self, user: CurrentUser, resume_id: str, rewrite_id: str
-    ) -> RewriteBatchResponse:
+    def get_batch(self, user: CurrentUser, resume_id: str, rewrite_id: str) -> RewriteBatchResponse:
         resume = self._resume_repository.get_resume(actor=user, resume_id=resume_id)
         if resume is None:
             raise ResumeNotFoundError()
@@ -199,14 +197,10 @@ def _to_batch_response(row: dict, *, resume_id: str) -> RewriteBatchResponse:
         id=row["id"],
         resume_id=resume_id,
         status=row["status"],
-        suggestions=[
-            RewriteSuggestion.model_validate(s) for s in (row.get("suggestions") or [])
-        ],
+        suggestions=[RewriteSuggestion.model_validate(s) for s in (row.get("suggestions") or [])],
         resume_version_id=row["resume_version_id"],
         source_version_number=row.get("source_version_number", 1),
         accepted_version_id=row.get("accepted_version_id"),
         model_version=row.get("model_version"),
         created_at=row["created_at"],
     )
-
-

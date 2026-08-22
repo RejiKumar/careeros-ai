@@ -1,13 +1,6 @@
 import { useFocusEffect } from "expo-router";
 import { useCallback, useState } from "react";
-import {
-  ActivityIndicator,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
+import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 
 import { useAuth } from "@/lib/auth";
 import { useTheme } from "@/lib/theme";
@@ -76,7 +69,11 @@ export default function RoastScreen() {
     setRoastState({ status: "loading" });
     try {
       const data = isGuest
-        ? await apiClient.createRoast(undefined, { resume_id: resumeId, mode: selectedMode }, guestId ?? undefined)
+        ? await apiClient.createRoast(
+            undefined,
+            { resume_id: resumeId, mode: selectedMode },
+            guestId ?? undefined,
+          )
         : await apiClient.createRoast(accessToken, { resume_id: resumeId, mode: selectedMode });
       setRoastState({ status: "success", data });
     } catch (err) {
@@ -103,15 +100,24 @@ export default function RoastScreen() {
         />
 
         {!hasResume ? (
-          <View style={[styles.emptyCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-            <Text style={[styles.emptyTitle, { color: colors.textPrimary }]}>{t("roast.noResume")}</Text>
+          <View
+            style={[
+              styles.emptyCard,
+              { backgroundColor: colors.surface, borderColor: colors.border },
+            ]}
+          >
+            <Text style={[styles.emptyTitle, { color: colors.textPrimary }]}>
+              {t("roast.noResume")}
+            </Text>
             <Text style={[styles.emptyText, { color: colors.textSecondary }]}>
               {t("roast.noResumeDesc")}
             </Text>
           </View>
         ) : (
           <>
-            <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>{t("roast.chooseResume")}</Text>
+            <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>
+              {t("roast.chooseResume")}
+            </Text>
             <View style={styles.chipRow}>
               {resumes.map((r) => (
                 <Pressable
@@ -119,7 +125,10 @@ export default function RoastScreen() {
                   accessibilityRole="button"
                   accessibilityLabel={`Use resume ${r.title}`}
                   accessibilityState={{ selected: resumeId === r.id }}
-                  onPress={() => { setResumeId(r.id); setRoastState({ status: "idle" }); }}
+                  onPress={() => {
+                    setResumeId(r.id);
+                    setRoastState({ status: "idle" });
+                  }}
                   style={[
                     styles.chip,
                     {
@@ -140,7 +149,9 @@ export default function RoastScreen() {
               ))}
             </View>
 
-            <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>{t("roast.pickMode")}</Text>
+            <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>
+              {t("roast.pickMode")}
+            </Text>
             <View style={styles.modeGrid}>
               {ROAST_MODES.map((mode) => (
                 <Pressable
@@ -148,11 +159,15 @@ export default function RoastScreen() {
                   accessibilityRole="button"
                   accessibilityLabel={`${t("roast.pickMode")}: ${t(mode.labelKey)}`}
                   accessibilityState={{ selected: selectedMode === mode.key }}
-                  onPress={() => { setSelectedMode(mode.key); setRoastState({ status: "idle" }); }}
+                  onPress={() => {
+                    setSelectedMode(mode.key);
+                    setRoastState({ status: "idle" });
+                  }}
                   style={[
                     styles.modeCard,
                     {
-                      backgroundColor: selectedMode === mode.key ? colors.primarySoft : colors.surface,
+                      backgroundColor:
+                        selectedMode === mode.key ? colors.primarySoft : colors.surface,
                       borderColor: selectedMode === mode.key ? colors.primary : colors.border,
                     },
                   ]}
@@ -161,7 +176,10 @@ export default function RoastScreen() {
                   <Text
                     style={[
                       styles.modeLabel,
-                      { color: selectedMode === mode.key ? colors.primaryStrong : colors.textPrimary },
+                      {
+                        color:
+                          selectedMode === mode.key ? colors.primaryStrong : colors.textPrimary,
+                      },
                     ]}
                   >
                     {t(mode.labelKey)}
@@ -174,33 +192,55 @@ export default function RoastScreen() {
               accessibilityRole="button"
               accessibilityLabel={t("roast.generateButton")}
               onPress={() => void handleGenerateRoast()}
-              disabled={resumeId === null || selectedMode === null || roastState.status === "loading"}
+              disabled={
+                resumeId === null || selectedMode === null || roastState.status === "loading"
+              }
               style={({ pressed }) => [
                 styles.primaryButton,
                 { backgroundColor: colors.primary },
                 pressed && styles.pressed,
-                (resumeId === null || selectedMode === null || roastState.status === "loading") && styles.disabled,
+                (resumeId === null || selectedMode === null || roastState.status === "loading") &&
+                  styles.disabled,
               ]}
             >
               {roastState.status === "loading" ? (
-                <ActivityIndicator color={colors.onPrimary} accessibilityLabel={t("roast.generateButton")} />
+                <ActivityIndicator
+                  color={colors.onPrimary}
+                  accessibilityLabel={t("roast.generateButton")}
+                />
               ) : (
-                <Text style={[styles.primaryButtonText, { color: colors.onPrimary }]}>{t("roast.generateButton")}</Text>
+                <Text style={[styles.primaryButtonText, { color: colors.onPrimary }]}>
+                  {t("roast.generateButton")}
+                </Text>
               )}
             </Pressable>
 
             {roastState.status === "error" && (
-              <View style={[styles.errorCard, { backgroundColor: colors.danger }]} accessibilityRole="alert">
-                <Text style={[styles.errorText, { color: colors.onDanger }]}>{roastState.message}</Text>
+              <View
+                style={[styles.errorCard, { backgroundColor: colors.danger }]}
+                accessibilityRole="alert"
+              >
+                <Text style={[styles.errorText, { color: colors.onDanger }]}>
+                  {roastState.message}
+                </Text>
               </View>
             )}
 
             {roastState.status === "success" && (
-              <View style={[styles.roastResult, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+              <View
+                style={[
+                  styles.roastResult,
+                  { backgroundColor: colors.surface, borderColor: colors.border },
+                ]}
+              >
                 {roastState.data.sections.map((section, i) => (
                   <View key={i} style={styles.roastSection}>
-                    <Text style={[styles.roastSectionTitle, { color: colors.primaryStrong }]}>{section.title}</Text>
-                    <Text style={[styles.roastSectionContent, { color: colors.textPrimary }]}>{section.content}</Text>
+                    <Text style={[styles.roastSectionTitle, { color: colors.primaryStrong }]}>
+                      {section.title}
+                    </Text>
+                    <Text style={[styles.roastSectionContent, { color: colors.textPrimary }]}>
+                      {section.content}
+                    </Text>
                   </View>
                 ))}
 
@@ -212,7 +252,9 @@ export default function RoastScreen() {
                     {roastState.data.improvements.map((tip, i) => (
                       <View key={i} style={styles.improvementRow}>
                         <Text style={[styles.improvementBullet, { color: colors.primary }]}>•</Text>
-                        <Text style={[styles.improvementText, { color: colors.textSecondary }]}>{tip}</Text>
+                        <Text style={[styles.improvementText, { color: colors.textSecondary }]}>
+                          {tip}
+                        </Text>
                       </View>
                     ))}
                   </View>
@@ -229,7 +271,13 @@ export default function RoastScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1 },
   scrollContent: { padding: 24, paddingBottom: 48 },
-  eyebrow: { fontSize: 13, fontWeight: "700", letterSpacing: 1.2, textTransform: "uppercase", marginTop: 24 },
+  eyebrow: {
+    fontSize: 13,
+    fontWeight: "700",
+    letterSpacing: 1.2,
+    textTransform: "uppercase",
+    marginTop: 24,
+  },
   title: { fontSize: 28, lineHeight: 36, fontWeight: "700", marginTop: 8 },
   subtitle: { fontSize: 15, lineHeight: 22, marginTop: 8, marginBottom: 16 },
   sectionTitle: { fontSize: 16, fontWeight: "700", marginTop: 16, marginBottom: 8 },

@@ -1,7 +1,6 @@
 import { generateUuidV4, getOrCreateGuestId } from "./sessionStore";
 
-const UUID_V4_RE =
-  /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
+const UUID_V4_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
 
 const mockGetItem = jest.fn();
 const mockSetItem = jest.fn();
@@ -27,9 +26,7 @@ describe("sessionStore guest id", () => {
   it("returns a stored valid UUID", async () => {
     mockGetItem.mockResolvedValue("0a2c8e4f-3b1d-4e6a-9f8b-1c2d3e4f5a6b");
 
-    await expect(getOrCreateGuestId()).resolves.toBe(
-      "0a2c8e4f-3b1d-4e6a-9f8b-1c2d3e4f5a6b",
-    );
+    await expect(getOrCreateGuestId()).resolves.toBe("0a2c8e4f-3b1d-4e6a-9f8b-1c2d3e4f5a6b");
     expect(mockSetItem).not.toHaveBeenCalled();
   });
 

@@ -22,7 +22,7 @@ class FeedbackService:
     def upsert(self, actor: CurrentActor, payload: FeedbackRequest) -> FeedbackResponse:
         if actor.kind == "guest":
             ensure_guest_account(self._clients, actor.id)
-        
+
         new_row = {
             "output_type": payload.output_type,
             "output_id": payload.output_id,
@@ -50,9 +50,7 @@ class FeedbackService:
         for prior in existing.execute().data:
             self._client.table(FEEDBACK_TABLE).delete().eq("id", prior["id"]).execute()
 
-        created = (
-            self._client.table(FEEDBACK_TABLE).insert(new_row).execute().data[0]
-        )
+        created = self._client.table(FEEDBACK_TABLE).insert(new_row).execute().data[0]
         return FeedbackResponse(
             id=created["id"],
             output_type=created["output_type"],

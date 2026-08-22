@@ -20,6 +20,7 @@ import GlassCard from "@/ui/GlassCard";
 import IconChip, { type IconName } from "@/ui/IconChip";
 import ScreenHeader from "@/ui/ScreenHeader";
 import ScoreRing from "@/ui/ScoreRing";
+import AdBanner from "@/ui/AdBanner";
 import en, { t } from "../../../i18n";
 
 const LEVEL_NAMES = en.levels;
@@ -100,7 +101,14 @@ export default function DashboardScreen() {
   const router = useRouter();
   const { theme } = useTheme();
   const { colors } = theme;
-  const { session, guestId, status: authStatus, handleUnauthorized, signIn, migrateGuest } = useAuth();
+  const {
+    session,
+    guestId,
+    status: authStatus,
+    handleUnauthorized,
+    signIn,
+    migrateGuest,
+  } = useAuth();
 
   const [state, setState] = useState<DashboardState>({ status: "loading" });
   const [migrating, setMigrating] = useState(false);
@@ -175,7 +183,11 @@ export default function DashboardScreen() {
     return (
       <AppBackground>
         <View style={styles.center}>
-          <ActivityIndicator size="large" color={colors.primary} accessibilityLabel="Loading dashboard" />
+          <ActivityIndicator
+            size="large"
+            color={colors.primary}
+            accessibilityLabel="Loading dashboard"
+          />
         </View>
       </AppBackground>
     );
@@ -186,7 +198,9 @@ export default function DashboardScreen() {
       <AppBackground>
         <View style={styles.center}>
           <Ionicons name="cloud-offline-outline" size={48} color={colors.textDisabled} />
-          <Text style={[styles.errorTitle, { color: colors.textPrimary }]}>{t("dashboard.errorTitle")}</Text>
+          <Text style={[styles.errorTitle, { color: colors.textPrimary }]}>
+            {t("dashboard.errorTitle")}
+          </Text>
           <Text style={[styles.errorText, { color: colors.textSecondary }]}>{state.message}</Text>
           <Pressable
             accessibilityRole="button"
@@ -194,7 +208,9 @@ export default function DashboardScreen() {
             onPress={() => void load()}
             style={[styles.retryButton, { backgroundColor: colors.primary }]}
           >
-            <Text style={[styles.retryText, { color: colors.onPrimary }]}>{t("common.tryAgain")}</Text>
+            <Text style={[styles.retryText, { color: colors.onPrimary }]}>
+              {t("common.tryAgain")}
+            </Text>
           </Pressable>
         </View>
       </AppBackground>
@@ -208,6 +224,7 @@ export default function DashboardScreen() {
       <ScrollView
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
       >
         <ScreenHeader
           eyebrow={t("dashboard.eyebrow")}
@@ -244,7 +261,11 @@ export default function DashboardScreen() {
                 placeholderTextColor={colors.textDisabled}
                 style={[
                   styles.migrateInput,
-                  { backgroundColor: colors.background, borderColor: colors.border, color: colors.textPrimary },
+                  {
+                    backgroundColor: colors.background,
+                    borderColor: colors.border,
+                    color: colors.textPrimary,
+                  },
                 ]}
               />
               <TextInput
@@ -258,11 +279,18 @@ export default function DashboardScreen() {
                 placeholderTextColor={colors.textDisabled}
                 style={[
                   styles.migrateInput,
-                  { backgroundColor: colors.background, borderColor: colors.border, color: colors.textPrimary },
+                  {
+                    backgroundColor: colors.background,
+                    borderColor: colors.border,
+                    color: colors.textPrimary,
+                  },
                 ]}
               />
               {migrateError !== null && (
-                <Text style={[styles.migrateError, { color: colors.danger }]} accessibilityRole="alert">
+                <Text
+                  style={[styles.migrateError, { color: colors.danger }]}
+                  accessibilityRole="alert"
+                >
                   {migrateError}
                 </Text>
               )}
@@ -307,18 +335,28 @@ export default function DashboardScreen() {
               )}
               <View style={styles.heroMiniRow}>
                 <View style={styles.heroMini}>
-                  <Text style={[styles.heroMiniValue, { color: colors.textPrimary }]}>{data.total_xp}</Text>
-                  <Text style={[styles.heroMiniLabel, { color: colors.textSecondary }]}>{t("dashboard.xp")}</Text>
+                  <Text style={[styles.heroMiniValue, { color: colors.textPrimary }]}>
+                    {data.total_xp}
+                  </Text>
+                  <Text style={[styles.heroMiniLabel, { color: colors.textSecondary }]}>
+                    {t("dashboard.xp")}
+                  </Text>
                 </View>
                 <View style={styles.heroMini}>
-                  <Text style={[styles.heroMiniValue, { color: colors.textPrimary }]}>{data.current_streak}</Text>
-                  <Text style={[styles.heroMiniLabel, { color: colors.textSecondary }]}>{t("dashboard.dayStreak")}</Text>
+                  <Text style={[styles.heroMiniValue, { color: colors.textPrimary }]}>
+                    {data.current_streak}
+                  </Text>
+                  <Text style={[styles.heroMiniLabel, { color: colors.textSecondary }]}>
+                    {t("dashboard.dayStreak")}
+                  </Text>
                 </View>
                 <View style={styles.heroMini}>
                   <Text style={[styles.heroMiniValue, { color: colors.textPrimary }]}>
                     {data.latest_match_score ?? "—"}
                   </Text>
-                  <Text style={[styles.heroMiniLabel, { color: colors.textSecondary }]}>{t("dashboard.match")}</Text>
+                  <Text style={[styles.heroMiniLabel, { color: colors.textSecondary }]}>
+                    {t("dashboard.match")}
+                  </Text>
                 </View>
               </View>
             </View>
@@ -333,34 +371,44 @@ export default function DashboardScreen() {
         {data.active_missions.length > 0 && (
           <GlassCard style={styles.missionCard}>
             <View style={styles.sectionHeaderRow}>
-              <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>{t("dashboard.todayMissions")}</Text>
+              <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>
+                {t("dashboard.todayMissions")}
+              </Text>
               <Pressable
                 accessibilityRole="button"
                 accessibilityLabel="View all missions"
                 onPress={() => router.push("/missions")}
                 style={styles.sectionLink}
               >
-                <Text style={[styles.sectionLinkText, { color: colors.primaryStrong }]}>{t("dashboard.viewAll")}</Text>
+                <Text style={[styles.sectionLinkText, { color: colors.primaryStrong }]}>
+                  {t("dashboard.viewAll")}
+                </Text>
               </Pressable>
             </View>
             {data.active_missions.map((mission) => (
               <View key={mission.id} style={styles.missionRow}>
                 <IconChip name="flag" size={36} />
                 <View style={styles.missionBody}>
-                  <Text style={[styles.missionTitle, { color: colors.textPrimary }]}>{mission.title}</Text>
+                  <Text style={[styles.missionTitle, { color: colors.textPrimary }]}>
+                    {mission.title}
+                  </Text>
                   {mission.description !== null && (
                     <Text style={[styles.missionDescription, { color: colors.textSecondary }]}>
                       {mission.description}
                     </Text>
                   )}
                 </View>
-                <Text style={[styles.missionXp, { color: colors.primaryStrong }]}>+{mission.xp_reward} XP</Text>
+                <Text style={[styles.missionXp, { color: colors.primaryStrong }]}>
+                  +{mission.xp_reward} XP
+                </Text>
               </View>
             ))}
           </GlassCard>
         )}
 
-        <Text style={[styles.actionsTitle, { color: colors.textPrimary }]}>{t("dashboard.explore")}</Text>
+        <Text style={[styles.actionsTitle, { color: colors.textPrimary }]}>
+          {t("dashboard.explore")}
+        </Text>
         <View style={styles.actions}>
           {QUICK_ACTIONS.map((action) => (
             <Pressable
@@ -368,22 +416,25 @@ export default function DashboardScreen() {
               accessibilityRole="button"
               accessibilityLabel={`Open ${action.title}`}
               onPress={() => router.push(action.route)}
-              style={({ pressed }) => [
-                styles.actionCard,
-                pressed && styles.pressed,
-              ]}
+              style={({ pressed }) => [styles.actionCard, pressed && styles.pressed]}
             >
               <GlassCard style={styles.actionInner}>
                 <IconChip name={action.icon} size={46} gradient={action.gradient} />
                 <View style={styles.actionBody}>
-                  <Text style={[styles.actionTitle, { color: colors.textPrimary }]}>{action.title}</Text>
-                  <Text style={[styles.actionText, { color: colors.textSecondary }]}>{action.text}</Text>
+                  <Text style={[styles.actionTitle, { color: colors.textPrimary }]}>
+                    {action.title}
+                  </Text>
+                  <Text style={[styles.actionText, { color: colors.textSecondary }]}>
+                    {action.text}
+                  </Text>
                 </View>
                 <Ionicons name="chevron-forward" size={20} color={colors.textDisabled} />
               </GlassCard>
             </Pressable>
           ))}
         </View>
+
+        <AdBanner />
       </ScrollView>
     </AppBackground>
   );
@@ -601,4 +652,3 @@ const styles = StyleSheet.create({
     fontWeight: "700",
   },
 });
-

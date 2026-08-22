@@ -60,7 +60,13 @@ describe("InterviewScreen", () => {
   });
 
   it("shows the session-creation error message when starting fails", async () => {
-    mockCreateInterviewSession.mockRejectedValue(new ApiError(502, "The interview could not be prepared right now. Please try again.", "ai_provider_error"));
+    mockCreateInterviewSession.mockRejectedValue(
+      new ApiError(
+        502,
+        "The interview could not be prepared right now. Please try again.",
+        "ai_provider_error",
+      ),
+    );
 
     const { getByText, getByLabelText } = await render(
       <ThemeProvider>
@@ -74,7 +80,9 @@ describe("InterviewScreen", () => {
     await user.press(getByLabelText("Start session"));
 
     await waitFor(() =>
-      expect(getByText("The interview could not be prepared right now. Please try again.")).toBeOnTheScreen(),
+      expect(
+        getByText("The interview could not be prepared right now. Please try again."),
+      ).toBeOnTheScreen(),
     );
     expect(mockHandleUnauthorized).not.toHaveBeenCalled();
   });

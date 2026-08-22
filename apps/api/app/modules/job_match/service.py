@@ -253,5 +253,3 @@ def _to_match_response(row: dict) -> MatchResponse:
         model_version=row.get("model_version"),
         created_at=row["created_at"],
     )
-
-

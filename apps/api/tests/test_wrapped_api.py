@@ -105,9 +105,7 @@ def test_wrapped_guest_gets_basic_data() -> None:
         }
     ).execute()
 
-    response = client.get(
-        f"{API_V1_PREFIX}/wrapped", headers={"X-Guest-Id": guest_id}
-    )
+    response = client.get(f"{API_V1_PREFIX}/wrapped", headers={"X-Guest-Id": guest_id})
 
     assert response.status_code == 200
     body = response.json()

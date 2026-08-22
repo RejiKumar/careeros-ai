@@ -32,9 +32,8 @@ export default function SpeechToTextButton({
     if (moduleRef.current !== null) {
       return moduleRef.current;
     }
-    const runtimeModules = (
-      globalThis as { expo?: { modules?: Record<string, unknown> } }
-    ).expo?.modules;
+    const runtimeModules = (globalThis as { expo?: { modules?: Record<string, unknown> } }).expo
+      ?.modules;
     if (runtimeModules?.["ExpoSpeechRecognition"] === undefined) {
       moduleRef.current = null;
       return null;

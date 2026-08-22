@@ -259,9 +259,7 @@ def test_list_versions_returns_newest_first() -> None:
         {"structured_data": {"contact": {"full_name": "Ada Lovelace"}}},
     )
 
-    response = client.get(
-        f"{API_V1_PREFIX}/resumes/{resume_id}/versions", headers=_AUTH
-    )
+    response = client.get(f"{API_V1_PREFIX}/resumes/{resume_id}/versions", headers=_AUTH)
 
     assert response.status_code == 200
     body = response.json()
@@ -273,9 +271,7 @@ def test_list_versions_returns_newest_first() -> None:
 def test_list_versions_requires_ownership() -> None:
     client, _ = _make(FakeProvider())
 
-    response = client.get(
-        f"{API_V1_PREFIX}/resumes/unknown-id/versions", headers=_AUTH
-    )
+    response = client.get(f"{API_V1_PREFIX}/resumes/unknown-id/versions", headers=_AUTH)
 
     assert response.status_code == 404
     assert response.json()["error"]["code"] == "not_found"

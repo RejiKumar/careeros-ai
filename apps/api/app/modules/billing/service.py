@@ -1,4 +1,5 @@
 """Billing and entitlement use cases."""
+
 from __future__ import annotations
 
 from fastapi import status
@@ -31,9 +32,7 @@ class BillingService:
         plan = (row or {}).get("plan", "free")
         entitle_status = (row or {}).get("status", "active")
         usage = self._repository.get_usage(user_id=user.id)
-        limits = (
-            PRO_LIMITS if plan == "pro" and entitle_status == "active" else FREE_LIMITS
-        )
+        limits = PRO_LIMITS if plan == "pro" and entitle_status == "active" else FREE_LIMITS
         return EntitlementResponse(
             plan=plan,
             status=entitle_status,
@@ -47,9 +46,7 @@ class BillingService:
         row = self._repository.get_entitlement(user_id=user.id)
         plan = (row or {}).get("plan", "free")
         entitle_status = (row or {}).get("status", "active")
-        limits = (
-            PRO_LIMITS if plan == "pro" and entitle_status == "active" else FREE_LIMITS
-        )
+        limits = PRO_LIMITS if plan == "pro" and entitle_status == "active" else FREE_LIMITS
         limit = limits.get(feature)
         if limit is not None and current >= limit:
             raise QuotaExceededError(feature)

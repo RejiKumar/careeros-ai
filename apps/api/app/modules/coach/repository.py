@@ -107,9 +107,7 @@ class CoachRepository:
             "guest_id" if is_guest else "user_id", actor_id
         ).execute()
 
-    def list_messages(
-        self, *, thread_id: str, limit: int = 50, offset: int = 0
-    ) -> list[dict]:
+    def list_messages(self, *, thread_id: str, limit: int = 50, offset: int = 0) -> list[dict]:
         rows = (
             self._client.table(COACH_MESSAGES_TABLE)
             .select("*")

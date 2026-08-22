@@ -1,7 +1,13 @@
 import { Stack, usePathname, useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useEffect } from "react";
-import { ActivityIndicator, Platform, StatusBar as RNStatusBar, StyleSheet, View } from "react-native";
+import {
+  ActivityIndicator,
+  Platform,
+  StatusBar as RNStatusBar,
+  StyleSheet,
+  View,
+} from "react-native";
 
 import { AuthProvider, useAuth } from "@/lib/auth";
 import { ThemeProvider, useTheme } from "@/lib/theme";

@@ -11,11 +11,7 @@ import {
   saveSession,
 } from "@/services/sessionStore";
 import { setTokenRefresher } from "@/services/api";
-import {
-  exchangeOAuthCode,
-  getOAuthRedirectUri,
-  getSupabaseClient,
-} from "@/services/supabase";
+import { exchangeOAuthCode, getOAuthRedirectUri, getSupabaseClient } from "@/services/supabase";
 
 export type AuthStatus = "restoring" | "signedOut" | "guest" | "signedIn";
 
@@ -83,7 +79,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (stored !== null) {
           let sess = stored;
           const isExpired =
-            stored.expires_at === undefined || stored.expires_at === null || stored.expires_at * 1000 <= Date.now();
+            stored.expires_at === undefined ||
+            stored.expires_at === null ||
+            stored.expires_at * 1000 <= Date.now();
           if (isExpired) {
             const refreshed = await refreshToken();
             if (refreshed === null) {
@@ -230,7 +228,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       signOut,
       handleUnauthorized,
     }),
-    [status, session, guestId, signIn, signUp, googleSignIn, signInAsGuest, migrateGuest, signOut, handleUnauthorized],
+    [
+      status,
+      session,
+      guestId,
+      signIn,
+      signUp,
+      googleSignIn,
+      signInAsGuest,
+      migrateGuest,
+      signOut,
+      handleUnauthorized,
+    ],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

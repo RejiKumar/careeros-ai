@@ -1,4 +1,5 @@
 """Mission and dashboard use cases."""
+
 from __future__ import annotations
 
 from datetime import UTC, date, datetime
@@ -57,9 +58,7 @@ class MissionService:
             completions=[_to_completion_response(c) for c in completions],
         )
 
-    def complete_mission(
-        self, actor: CurrentActor, mission_key: str
-    ) -> MissionCompleteResponse:
+    def complete_mission(self, actor: CurrentActor, mission_key: str) -> MissionCompleteResponse:
         if actor.kind == "guest":
             ensure_guest_account(self._clients, actor.id)
         mission = self._repository.get_by_key(mission_key=mission_key)
@@ -130,8 +129,8 @@ class MissionService:
     def _condition_met(self, actor: CurrentActor, condition: str) -> bool:
         if condition == "first_assessment":
             return (
-            self._repository.count_completed_assessments(actor_id=actor.id, is_guest=False) >= 1
-        )
+                self._repository.count_completed_assessments(actor_id=actor.id, is_guest=False) >= 1
+            )
         if condition == "assessment_score_gte_80":
             score = self._repository.get_best_assessment_score(actor_id=actor.id, is_guest=False)
             return score is not None and score >= 80
@@ -139,9 +138,7 @@ class MissionService:
             score = self._repository.get_best_assessment_score(actor_id=actor.id, is_guest=False)
             return score is not None and score >= 95
         if condition == "first_interview":
-            return (
-            self._repository.count_interview_sessions(actor_id=actor.id, is_guest=False) >= 1
-        )
+            return self._repository.count_interview_sessions(actor_id=actor.id, is_guest=False) >= 1
         if condition == "streak_days_gte_7":
             dates = self._repository.get_completion_dates(actor_id=actor.id, is_guest=False)
             return _streak(dates) >= 7
@@ -217,6 +214,7 @@ def _streak(dates: list[date]) -> int:
 
 def _prev_date(d: date) -> date:
     from datetime import timedelta
+
     return d - timedelta(days=1)
 
 

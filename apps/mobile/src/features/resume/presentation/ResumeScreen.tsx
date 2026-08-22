@@ -198,13 +198,13 @@ export default function ResumeScreen() {
           ]}
         >
           <Text style={[styles.backArrow, { color: colors.textPrimary }]}>‹</Text>
-          <Text style={[styles.backLabel, { color: colors.textPrimary }]}>{t("resume.homeButton")}</Text>
+          <Text style={[styles.backLabel, { color: colors.textPrimary }]}>
+            {t("resume.homeButton")}
+          </Text>
         </Pressable>
 
         <Text style={[styles.eyebrow, { color: colors.primaryStrong }]}>{t("resume.eyebrow")}</Text>
-        <Text style={[styles.title, { color: colors.textPrimary }]}>
-          {t("resume.title")}
-        </Text>
+        <Text style={[styles.title, { color: colors.textPrimary }]}>{t("resume.title")}</Text>
         <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
           {t("resume.subtitle")}
         </Text>
@@ -220,7 +220,9 @@ export default function ResumeScreen() {
             <Pressable
               accessibilityRole="button"
               accessibilityLabel="Improve my resume"
-              onPress={() => router.push({ pathname: "/rewrites", params: { resumeId: importState.resumeId } })}
+              onPress={() =>
+                router.push({ pathname: "/rewrites", params: { resumeId: importState.resumeId } })
+              }
               style={({ pressed }) => [
                 styles.primaryButton,
                 { backgroundColor: colors.secondary },
@@ -298,7 +300,9 @@ export default function ResumeScreen() {
                 pressed && styles.pressed,
               ]}
             >
-              <Text style={[styles.retryText, { color: colors.textPrimary }]}>{t("common.tryAgain")}</Text>
+              <Text style={[styles.retryText, { color: colors.textPrimary }]}>
+                {t("common.tryAgain")}
+              </Text>
             </Pressable>
           </View>
         )}
@@ -360,9 +364,17 @@ function ParsedResumeView({ parsed, scoreState, onGetScore, colors }: ParsedResu
             <Row label={t("resume.nameLabel")} value={parsed.contact.full_name} colors={colors} />
             <Row label={t("resume.emailLabel")} value={parsed.contact.email} colors={colors} />
             <Row label={t("resume.phoneLabel")} value={parsed.contact.phone} colors={colors} />
-            <Row label={t("resume.locationLabel")} value={parsed.contact.location} colors={colors} />
+            <Row
+              label={t("resume.locationLabel")}
+              value={parsed.contact.location}
+              colors={colors}
+            />
             {parsed.contact.links.length > 0 && (
-              <Row label={t("resume.linksLabel")} value={parsed.contact.links.join(" · ")} colors={colors} />
+              <Row
+                label={t("resume.linksLabel")}
+                value={parsed.contact.links.join(" · ")}
+                colors={colors}
+              />
             )}
           </>
         }
@@ -372,7 +384,9 @@ function ParsedResumeView({ parsed, scoreState, onGetScore, colors }: ParsedResu
         <Section
           title={t("resume.summary")}
           colors={colors}
-          renderContent={<Text style={[styles.bodyText, { color: colors.textPrimary }]}>{parsed.summary}</Text>}
+          renderContent={
+            <Text style={[styles.bodyText, { color: colors.textPrimary }]}>{parsed.summary}</Text>
+          }
         />
       )}
 
@@ -380,7 +394,11 @@ function ParsedResumeView({ parsed, scoreState, onGetScore, colors }: ParsedResu
         <Section
           title={t("resume.skills")}
           colors={colors}
-          renderContent={<Text style={[styles.bodyText, { color: colors.textPrimary }]}>{parsed.skills.join(", ")}</Text>}
+          renderContent={
+            <Text style={[styles.bodyText, { color: colors.textPrimary }]}>
+              {parsed.skills.join(", ")}
+            </Text>
+          }
         />
       )}
 
@@ -392,7 +410,12 @@ function ParsedResumeView({ parsed, scoreState, onGetScore, colors }: ParsedResu
           renderContent={
             <>
               <Text style={[styles.entryOrg, { color: colors.textSecondary }]}>
-                {[entry.organization, entry.start_date && entry.end_date ? `${entry.start_date} – ${entry.end_date}` : null]
+                {[
+                  entry.organization,
+                  entry.start_date && entry.end_date
+                    ? `${entry.start_date} – ${entry.end_date}`
+                    : null,
+                ]
                   .filter(Boolean)
                   .join(" · ")}
               </Text>
@@ -458,12 +481,16 @@ function ParsedResumeView({ parsed, scoreState, onGetScore, colors }: ParsedResu
               pressed && styles.pressed,
             ]}
           >
-            <Text style={[styles.retryText, { color: colors.textPrimary }]}>{t("common.tryAgain")}</Text>
+            <Text style={[styles.retryText, { color: colors.textPrimary }]}>
+              {t("common.tryAgain")}
+            </Text>
           </Pressable>
         </View>
       )}
 
-      {scoreState.status === "success" && <ScoreView assessment={scoreState.assessment} colors={colors} />}
+      {scoreState.status === "success" && (
+        <ScoreView assessment={scoreState.assessment} colors={colors} />
+      )}
     </>
   );
 }
@@ -477,7 +504,9 @@ function ScoreView({
 }) {
   const overall =
     assessment.scores.length > 0
-      ? Math.round(assessment.scores.reduce((sum, s) => sum + s.score, 0) / assessment.scores.length)
+      ? Math.round(
+          assessment.scores.reduce((sum, s) => sum + s.score, 0) / assessment.scores.length,
+        )
       : null;
 
   return (
@@ -501,7 +530,13 @@ function ScoreView({
       )}
 
       {assessment.scores.map((dimension) => (
-        <View key={dimension.dimension} style={[styles.dimensionCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+        <View
+          key={dimension.dimension}
+          style={[
+            styles.dimensionCard,
+            { backgroundColor: colors.surface, borderColor: colors.border },
+          ]}
+        >
           <View style={styles.dimensionHeader}>
             <Text style={[styles.dimensionTitle, { color: colors.textPrimary }]}>
               {dimension.dimension}
@@ -533,10 +568,13 @@ function ScoreView({
             <>
               {assessment.gaps.map((gap) => (
                 <View key={gap.description} style={styles.gapBlock}>
-                  <Text style={[styles.bullet, { color: colors.textPrimary }]}>• {gap.description}</Text>
+                  <Text style={[styles.bullet, { color: colors.textPrimary }]}>
+                    • {gap.description}
+                  </Text>
                   {gap.suggestion !== null && (
                     <Text style={[styles.gapSuggestion, { color: colors.textSecondary }]}>
-                      {t("resume.suggestionPrefix")}{gap.suggestion}
+                      {t("resume.suggestionPrefix")}
+                      {gap.suggestion}
                     </Text>
                   )}
                 </View>
