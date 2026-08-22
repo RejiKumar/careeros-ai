@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { ActivityIndicator, Platform, View } from "react-native";
+import { Platform, View } from "react-native";
 
 let BannerAdComponent: React.ComponentType<{ size?: unknown }> | null = null;
 let adAvailable = false;
