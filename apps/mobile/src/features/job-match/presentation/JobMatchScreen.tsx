@@ -344,7 +344,7 @@ export default function JobMatchScreen() {
           />
         )}
 
-        <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>{t("jobMatch.savedJobs")}</Text>
+        <Text style={[styles.sectionTitle, { color: colors.textPrimary, marginTop: 32 }]}>{t("jobMatch.savedJobs")}</Text>
         {listState.status === "loading" && (
           <ActivityIndicator color={colors.primary} accessibilityLabel="Loading job descriptions" />
         )}

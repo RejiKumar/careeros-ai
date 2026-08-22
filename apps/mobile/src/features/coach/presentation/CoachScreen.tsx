@@ -187,12 +187,14 @@ export default function CoachScreen() {
     }
   }
 
+  const [isSending, setIsSending] = useState(false);
+
   async function handleSend(contentOverride?: string) {
     const content = (contentOverride ?? draft).trim();
     if (content === "" || activeThread === null) {
       return;
     }
-    if (chatState.status === "loading") {
+    if (chatState.status === "loading" || isSending) {
       return;
     }
     const optimistic: CoachMessageResponse[] =
@@ -207,6 +209,7 @@ export default function CoachScreen() {
     };
     setChatState({ status: "success", messages: [...optimistic, userMessage] });
     setDraft("");
+    setIsSending(true);
     try {
       const pair = isGuest
         ? await apiClient.sendCoachMessage(undefined, activeThread.id, content, guestId ?? undefined)
@@ -224,20 +227,22 @@ export default function CoachScreen() {
           message: err instanceof Error ? err.message : t("coach.errorReply"),
         });
       }
+    } finally {
+      setIsSending(false);
     }
   }
 
   async function handleRegenerate() {
-    if (chatState.status !== "success" || chatState.messages.length < 2) {
+    if (chatState.status !== "success" || chatState.messages.length < 2 || isSending) {
       return;
     }
     const lastUserMsg = [...chatState.messages].reverse().find((m) => m.role === "user");
     if (lastUserMsg === undefined) {
       return;
     }
-    // Remove the last assistant message, resend user message
     const messagesWithoutLastReply = chatState.messages.slice(0, chatState.messages.length - 1);
     setChatState({ status: "success", messages: messagesWithoutLastReply });
+    setIsSending(true);
     try {
       const pair = isGuest
         ? await apiClient.sendCoachMessage(undefined, activeThread!.id, lastUserMsg.content, guestId ?? undefined)
@@ -255,6 +260,8 @@ export default function CoachScreen() {
           message: err instanceof Error ? err.message : t("coach.errorRegenerate"),
         });
       }
+    } finally {
+      setIsSending(false);
     }
   }
 
@@ -367,6 +374,11 @@ export default function CoachScreen() {
                 )}
               </View>
             ))}
+          {isSending && (
+            <View style={[styles.messageBubble, styles.assistantBubble, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+              <ActivityIndicator size="small" color={colors.primary} />
+            </View>
+          )}
         </ScrollView>
 
         <View style={[styles.composer, { backgroundColor: colors.surface, borderColor: colors.border }]}>
@@ -389,12 +401,12 @@ export default function CoachScreen() {
             accessibilityRole="button"
             accessibilityLabel={t("common.send")}
             onPress={() => void handleSend()}
-            disabled={draft.trim() === "" || chatState.status === "loading"}
+            disabled={draft.trim() === "" || isSending}
             style={({ pressed }) => [
               styles.sendButton,
               { backgroundColor: colors.primary },
               pressed && styles.pressed,
-              (draft.trim() === "" || chatState.status === "loading") && styles.disabled,
+              (draft.trim() === "" || isSending) && styles.disabled,
             ]}
           >
             <Text style={[styles.sendButtonText, { color: colors.onPrimary }]}>{t("common.send")}</Text>
@@ -533,7 +545,7 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     letterSpacing: 1.2,
     textTransform: "uppercase",
-    marginTop: 24,
+    marginTop: 0,
   },
   title: {
     fontSize: 28,

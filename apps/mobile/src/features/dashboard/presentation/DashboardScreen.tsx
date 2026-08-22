@@ -209,6 +209,7 @@ export default function DashboardScreen() {
       <ScrollView
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
       >
         <ScreenHeader
           eyebrow={t("dashboard.eyebrow")}

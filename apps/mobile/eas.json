@@ -18,14 +18,17 @@
       "channel": "qa",
       "env": {
         "EXPO_PUBLIC_APP_ENV": "qa",
-        "EXPO_PUBLIC_API_URL": "https://qa-api.careeros.ai"
+        "EXPO_PUBLIC_API_URL": "https://qa-api.careerosai.app"
       }
     },
     "production": {
       "channel": "prod",
       "env": {
         "EXPO_PUBLIC_APP_ENV": "prod",
-        "EXPO_PUBLIC_API_URL": "https://api.careeros.ai"
+        "EXPO_PUBLIC_API_URL": "https://api.careerosai.app",
+        "EXPO_PUBLIC_PRIVACY_URL": "https://careerosai.app/privacy",
+        "EXPO_PUBLIC_TERMS_URL": "https://careerosai.app/terms",
+        "EXPO_PUBLIC_SUPPORT_URL": "https://careerosai.app/support"
       }
     }
   },

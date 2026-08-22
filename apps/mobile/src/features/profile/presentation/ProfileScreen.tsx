@@ -238,7 +238,7 @@ export default function ProfileScreen() {
           <Pressable
             accessibilityRole="link"
             accessibilityLabel="Open Privacy Policy"
-            onPress={() => void Linking.openURL("https://careeros.ai/privacy")}
+            onPress={() => void Linking.openURL(process.env.EXPO_PUBLIC_PRIVACY_URL ?? "https://careerosai.app/privacy")}
           >
             <Text style={[styles.legalLink, { color: colors.textSecondary }]}>{t("profile.privacyPolicy")}</Text>
           </Pressable>
@@ -246,7 +246,7 @@ export default function ProfileScreen() {
           <Pressable
             accessibilityRole="link"
             accessibilityLabel="Open Terms of Service"
-            onPress={() => void Linking.openURL("https://careeros.ai/terms")}
+            onPress={() => void Linking.openURL(process.env.EXPO_PUBLIC_TERMS_URL ?? "https://careerosai.app/terms")}
           >
             <Text style={[styles.legalLink, { color: colors.textSecondary }]}>{t("profile.termsOfService")}</Text>
           </Pressable>
@@ -254,7 +254,7 @@ export default function ProfileScreen() {
           <Pressable
             accessibilityRole="link"
             accessibilityLabel="Open Support"
-            onPress={() => void Linking.openURL("https://careeros.ai/support")}
+            onPress={() => void Linking.openURL(process.env.EXPO_PUBLIC_SUPPORT_URL ?? "https://careerosai.app/support")}
           >
             <Text style={[styles.legalLink, { color: colors.textSecondary }]}>{t("profile.support")}</Text>
           </Pressable>
@@ -262,7 +262,7 @@ export default function ProfileScreen() {
           <Pressable
             accessibilityRole="link"
             accessibilityLabel="Open account deletion guide"
-            onPress={() => void Linking.openURL("https://careeros.ai/delete-account")}
+            onPress={() => void Linking.openURL("https://careerosai.app/delete-account")}
           >
             <Text style={[styles.legalLink, { color: colors.textSecondary }]}>{t("profile.deleteAccountGuide")}</Text>
           </Pressable>

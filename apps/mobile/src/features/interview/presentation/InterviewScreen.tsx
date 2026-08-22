@@ -165,7 +165,7 @@ export default function InterviewScreen() {
   if (viewMode === "setup") {
     return (
       <AppBackground>
-        <ScrollView contentContainerStyle={styles.scrollContent}>
+        <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
           <ScreenHeader
             eyebrow={t("interview.eyebrow")}
             title={t("interview.title")}
@@ -287,7 +287,7 @@ export default function InterviewScreen() {
 
   return (
     <AppBackground>
-      <ScrollView contentContainerStyle={styles.scrollContent}>
+      <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
         <Pressable
           accessibilityRole="button"
           accessibilityLabel={t("common.back")}
