@@ -7,7 +7,6 @@
     "development": {
       "developmentClient": true,
       "distribution": "internal",
-      "channel": "dev",
       "env": {
         "EXPO_PUBLIC_APP_ENV": "dev",
         "EXPO_PUBLIC_API_URL": "http://localhost:8000"
@@ -15,14 +14,12 @@
     },
     "qa": {
       "distribution": "internal",
-      "channel": "qa",
       "env": {
         "EXPO_PUBLIC_APP_ENV": "qa",
         "EXPO_PUBLIC_API_URL": "https://qa-api.careerosai.app"
       }
     },
     "production": {
-      "channel": "prod",
       "env": {
         "EXPO_PUBLIC_APP_ENV": "prod",
         "EXPO_PUBLIC_API_URL": "https://api.careerosai.app",
