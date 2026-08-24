@@ -80,6 +80,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
       "expo-router",
       "expo-speech-recognition",
       "./plugins/withAdMobManifest",
+      "./plugins/withNewArchDisabled",
       [
         "expo-splash-screen",
         {
