@@ -9,7 +9,6 @@ on:
         default: "production"
         type: choice
         options:
-          - qa
           - production
   push:
     branches: [prod]
@@ -47,6 +46,7 @@ jobs:
         working-directory: apps/mobile
         env:
           EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+          EAS_PROJECT_ID: 49fb8f3d-8cde-4870-b988-14f3b707a47c
         run: |
           PROFILE="${{ inputs.profile || 'production' }}"
           echo "Starting EAS build for profile: $PROFILE"
@@ -60,6 +60,7 @@ jobs:
         working-directory: apps/mobile
         env:
           EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+          EAS_PROJECT_ID: 49fb8f3d-8cde-4870-b988-14f3b707a47c
         run: |
           echo "Waiting for build $BUILD_ID..."
           while true; do

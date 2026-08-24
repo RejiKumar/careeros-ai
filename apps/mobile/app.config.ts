@@ -1,6 +1,6 @@
 import type { ConfigContext, ExpoConfig } from "expo/config";
 
-export type AppEnvironment = "dev" | "qa" | "prod";
+export type AppEnvironment = "dev" | "prod";
 
 const APP_ENV = (process.env.EXPO_PUBLIC_APP_ENV ?? "dev") as AppEnvironment;
 
@@ -16,20 +16,6 @@ const profiles: Record<AppEnvironment, Partial<ExpoConfig>> = {
     },
     ios: {
       bundleIdentifier: "ai.careeros.app.dev",
-      supportsTablet: false,
-    },
-  },
-  qa: {
-    name: "CareerOS AI (QA)",
-    slug: "careeros-ai",
-    scheme: "careerosqa",
-    version: "1.0.0",
-    android: {
-      package: "ai.careeros.app.qa",
-      versionCode: 1,
-    },
-    ios: {
-      bundleIdentifier: "ai.careeros.app.qa",
       supportsTablet: false,
     },
   },

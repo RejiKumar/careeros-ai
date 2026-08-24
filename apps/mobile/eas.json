@@ -3,7 +3,6 @@
     "appVersionSource": "remote",
     "promptToConfigurePushNotifications": false
   },
-  "project": "49fb8f3d-8cde-4870-b988-14f3b707a47c",
   "build": {
     "development": {
       "developmentClient": true,
@@ -11,13 +10,6 @@
       "env": {
         "EXPO_PUBLIC_APP_ENV": "dev",
         "EXPO_PUBLIC_API_URL": "http://localhost:8000"
-      }
-    },
-    "qa": {
-      "distribution": "internal",
-      "env": {
-        "EXPO_PUBLIC_APP_ENV": "qa",
-        "EXPO_PUBLIC_API_URL": "https://qa-api.careerosai.app"
       }
     },
     "production": {
