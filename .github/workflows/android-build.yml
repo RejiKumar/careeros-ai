@@ -1,25 +1,16 @@
-name: Android Build
+name: Android Build (EAS)
 
 on:
   workflow_dispatch:
     inputs:
-      environment:
-        description: "Build environment"
+      profile:
+        description: "EAS build profile"
         required: true
         default: "production"
         type: choice
         options:
-          - dev
           - qa
           - production
-      build_type:
-        description: "Build output"
-        required: true
-        default: "split-apk"
-        type: choice
-        options:
-          - split-apk
-          - app-bundle
   push:
     branches: [prod]
 
@@ -29,7 +20,7 @@ concurrency:
 
 jobs:
   build:
-    name: Build Android (${{ inputs.environment || 'production' }})
+    name: Build Android (${{ inputs.profile || 'production' }})
     runs-on: ubuntu-latest
     timeout-minutes: 60
     steps:
@@ -46,55 +37,51 @@ jobs:
           node-version: 22
           cache: pnpm
 
-      - name: Setup Java
-        uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: 17
-
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Generate Expo prebuild
-        working-directory: apps/mobile
+      - name: Setup EAS CLI
+        run: npm install -g eas-cli
+
+      - name: Build on EAS
         env:
-          EXPO_PUBLIC_APP_ENV: ${{ inputs.environment || 'production' }}
-          EXPO_PUBLIC_SUPABASE_URL: ${{ secrets.EXPO_PUBLIC_SUPABASE_URL }}
-          EXPO_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.EXPO_PUBLIC_SUPABASE_ANON_KEY }}
-        run: npx expo prebuild --platform android --clean
-
-      - name: Build split APKs (per-ABI)
-        if: ${{ (inputs.build_type || 'split-apk') == 'split-apk' }}
-        working-directory: apps/mobile/android
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
         run: |
-          chmod +x gradlew
-          ./gradlew assembleRelease -PenableSeparateBuildPerCPUArchitecture=true
+          PROFILE="${{ inputs.profile || 'production' }}"
+          echo "Starting EAS build for profile: $PROFILE"
+          BUILD_ID=$(eas build --profile "$PROFILE" --platform android --non-interactive --json | jq -r '.id')
+          echo "BUILD_ID=$BUILD_ID" >> "$GITHUB_ENV"
+          echo "Build started: https://expo.dev/accounts/reji_rark/projects/careeros-ai/builds/$BUILD_ID"
 
-      - name: Build App Bundle
-        if: ${{ inputs.build_type == 'app-bundle' }}
-        working-directory: apps/mobile/android
+      - name: Wait for build to finish
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
         run: |
-          chmod +x gradlew
-          ./gradlew bundleRelease
+          echo "Waiting for build $BUILD_ID..."
+          eas build:view "$BUILD_ID" --json | jq -r '.status'
+          while true; do
+            STATUS=$(eas build:view "$BUILD_ID" --json | jq -r '.status')
+            echo "Status: $STATUS"
+            case "$STATUS" in
+              finished)
+                echo "Build completed successfully"
+                break
+                ;;
+              errored)
+                echo "Build failed"
+                exit 1
+                ;;
+              *)
+                sleep 60
+                ;;
+            esac
+          done
 
-      - name: Collect APK artifacts
-        if: ${{ (inputs.build_type || 'split-apk') == 'split-apk' }}
+      - name: Summary
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
         run: |
-          mkdir -p artifacts
-          find apps/mobile/android/app/build/outputs/apk/release -name "*.apk" -exec cp {} artifacts/ \;
-          ls -lh artifacts/
-
-      - name: Collect AAB artifact
-        if: ${{ inputs.build_type == 'app-bundle' }}
-        run: |
-          mkdir -p artifacts
-          find apps/mobile/android/app/build/outputs/bundle/release -name "*.aab" -exec cp {} artifacts/ \;
-          ls -lh artifacts/
-
-      - name: Upload artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: android-${{ inputs.environment || 'production' }}-${{ inputs.build_type || 'split-apk' }}
-          path: artifacts/
-          retention-days: 14
-          if-no-files-found: error
+          echo "## Build Complete" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "- **Profile:** ${{ inputs.profile || 'production' }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "- **Build:** https://expo.dev/accounts/reji_rark/projects/careeros-ai/builds/$BUILD_ID" >> "$GITHUB_STEP_SUMMARY"
