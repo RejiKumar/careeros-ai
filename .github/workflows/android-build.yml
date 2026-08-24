@@ -52,7 +52,7 @@ jobs:
           echo "Starting EAS build for profile: $PROFILE"
           BUILD_OUTPUT=$(eas build --profile "$PROFILE" --platform android --non-interactive --json)
           echo "$BUILD_OUTPUT"
-          BUILD_ID=$(echo "$BUILD_OUTPUT" | jq -r '.id')
+          BUILD_ID=$(echo "$BUILD_OUTPUT" | jq -r '.[0].id')
           echo "BUILD_ID=$BUILD_ID" >> "$GITHUB_ENV"
           echo "Build started: https://expo.dev/accounts/reji_rark/projects/careeros-ai/builds/$BUILD_ID"
 
