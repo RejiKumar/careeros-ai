@@ -44,21 +44,24 @@ jobs:
         run: npm install -g eas-cli
 
       - name: Build on EAS
+        working-directory: apps/mobile
         env:
           EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
         run: |
           PROFILE="${{ inputs.profile || 'production' }}"
           echo "Starting EAS build for profile: $PROFILE"
-          BUILD_ID=$(eas build --profile "$PROFILE" --platform android --non-interactive --json | jq -r '.id')
+          BUILD_OUTPUT=$(eas build --profile "$PROFILE" --platform android --non-interactive --json)
+          echo "$BUILD_OUTPUT"
+          BUILD_ID=$(echo "$BUILD_OUTPUT" | jq -r '.id')
           echo "BUILD_ID=$BUILD_ID" >> "$GITHUB_ENV"
           echo "Build started: https://expo.dev/accounts/reji_rark/projects/careeros-ai/builds/$BUILD_ID"
 
       - name: Wait for build to finish
+        working-directory: apps/mobile
         env:
           EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
         run: |
           echo "Waiting for build $BUILD_ID..."
-          eas build:view "$BUILD_ID" --json | jq -r '.status'
           while true; do
             STATUS=$(eas build:view "$BUILD_ID" --json | jq -r '.status')
             echo "Status: $STATUS"
@@ -78,8 +81,6 @@ jobs:
           done
 
       - name: Summary
-        env:
-          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
         run: |
           echo "## Build Complete" >> "$GITHUB_STEP_SUMMARY"
           echo "" >> "$GITHUB_STEP_SUMMARY"

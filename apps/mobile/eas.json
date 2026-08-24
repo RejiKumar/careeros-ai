@@ -3,6 +3,7 @@
     "appVersionSource": "remote",
     "promptToConfigurePushNotifications": false
   },
+  "project": "49fb8f3d-8cde-4870-b988-14f3b707a47c",
   "build": {
     "development": {
       "developmentClient": true,
