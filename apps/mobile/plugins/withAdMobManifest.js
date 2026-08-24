@@ -18,7 +18,8 @@ module.exports = function withAdMobAndCleartext(config) {
     const entry = {
       $: {
         "android:name": "com.google.android.gms.ads.APPLICATION_ID",
-        "android:value": process.env.EXPO_PUBLIC_ADMOB_APP_ID_ANDROID || "ca-app-pub-3940256099942544~3347511713",
+        "android:value":
+          process.env.EXPO_PUBLIC_ADMOB_APP_ID_ANDROID || "ca-app-pub-3940256099942544~3347511713",
         "tools:node": "replace",
       },
     };
