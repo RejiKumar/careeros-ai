@@ -16,6 +16,8 @@
       "env": {
         "EXPO_PUBLIC_APP_ENV": "prod",
         "EXPO_PUBLIC_API_URL": "https://careeros-ai-production.up.railway.app",
+        "EXPO_PUBLIC_SUPABASE_URL": "https://puxnptidnwdhjpzjrjrp.supabase.co",
+        "EXPO_PUBLIC_SUPABASE_ANON_KEY": "sb_publishable_vI0F_nMYJzIMMGYeen-1Mg_9Zd3F0-I",
         "EXPO_PUBLIC_PRIVACY_URL": "https://careerosai.app/privacy",
         "EXPO_PUBLIC_TERMS_URL": "https://careerosai.app/terms",
         "EXPO_PUBLIC_SUPPORT_URL": "https://careerosai.app/support",
