@@ -436,9 +436,11 @@ const styles = StyleSheet.create({
   },
   legalLinks: {
     flexDirection: "row",
+    flexWrap: "wrap",
     justifyContent: "center",
     alignItems: "center",
     marginTop: 24,
+    paddingHorizontal: 8,
     gap: 8,
   },
   legalLink: {
