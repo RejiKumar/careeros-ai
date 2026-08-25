@@ -64,7 +64,7 @@ jobs:
         run: |
           echo "Waiting for build $BUILD_ID..."
           while true; do
-            STATUS=$(eas build:view "$BUILD_ID" --json | jq -r '.status')
+            STATUS=$(eas build:view "$BUILD_ID" --json | jq -r '.status' | tr '[:upper:]' '[:lower:]')
             echo "Status: $STATUS"
             case "$STATUS" in
               finished)
