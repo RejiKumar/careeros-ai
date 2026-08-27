@@ -26,6 +26,7 @@ jest.mock("@/lib/auth", () => ({
   useAuth: () => ({
     status: "signedIn",
     session: { access_token: "test-token" },
+    guestId: null,
     signIn: jest.fn(),
     signUp: jest.fn(),
     signOut: jest.fn(),
@@ -176,8 +177,8 @@ describe("ResumeScreen", () => {
     const screen = await renderResume();
 
     expect(await screen.findByText(/Ada Lovelace/)).toBeOnTheScreen();
-    expect(mockListResumes).toHaveBeenCalledWith("test-token");
-    expect(mockGetResume).toHaveBeenCalledWith("test-token", "resume-1");
+    expect(mockListResumes).toHaveBeenCalledWith("test-token", undefined);
+    expect(mockGetResume).toHaveBeenCalledWith("test-token", "resume-1", undefined);
     expect(screen.queryByLabelText("No resume yet")).not.toBeOnTheScreen();
   });
 
@@ -235,6 +236,7 @@ describe("ResumeScreen", () => {
     expect(mockImportResume).toHaveBeenCalledWith(
       "test-token",
       expect.objectContaining({ name: "resume.pdf" }),
+      undefined,
     );
     expect(screen.getByText(/AI-extracted content/i)).toBeOnTheScreen();
   });
@@ -273,7 +275,7 @@ describe("ResumeScreen", () => {
     expect(screen.getByText("70/100")).toBeOnTheScreen();
     expect(screen.getByText(/Clear structure/)).toBeOnTheScreen();
     expect(screen.getByText(/Limited metrics/)).toBeOnTheScreen();
-    expect(mockCreateAssessment).toHaveBeenCalledWith("test-token", "resume-1");
+    expect(mockCreateAssessment).toHaveBeenCalledWith("test-token", "resume-1", undefined);
   });
 
   it("handles a session expiry during upload", async () => {
