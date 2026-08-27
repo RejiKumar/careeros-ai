@@ -339,21 +339,27 @@ function CompanyCard({
 
       {company.industry !== null && (
         <View style={styles.infoRow}>
-          <Text style={[styles.infoLabel, { color: colors.textSecondary }]}>{t("company.industry")}</Text>
+          <Text style={[styles.infoLabel, { color: colors.textSecondary }]}>
+            {t("company.industry")}
+          </Text>
           <Text style={[styles.infoValue, { color: colors.textPrimary }]}>{company.industry}</Text>
         </View>
       )}
 
       {company.team_size !== null && (
         <View style={styles.infoRow}>
-          <Text style={[styles.infoLabel, { color: colors.textSecondary }]}>{t("company.teamSize")}</Text>
+          <Text style={[styles.infoLabel, { color: colors.textSecondary }]}>
+            {t("company.teamSize")}
+          </Text>
           <Text style={[styles.infoValue, { color: colors.textPrimary }]}>{company.team_size}</Text>
         </View>
       )}
 
       {company.tech_stack.length > 0 && (
         <View style={styles.infoSection}>
-          <Text style={[styles.infoLabel, { color: colors.textSecondary }]}>{t("company.techStack")}</Text>
+          <Text style={[styles.infoLabel, { color: colors.textSecondary }]}>
+            {t("company.techStack")}
+          </Text>
           <View style={styles.badgeRow}>
             {company.tech_stack.map((tech) => (
               <View key={tech} style={[styles.badge, { backgroundColor: colors.primarySoft }]}>
@@ -366,7 +372,9 @@ function CompanyCard({
 
       {company.culture_signals.length > 0 && (
         <View style={styles.infoSection}>
-          <Text style={[styles.infoLabel, { color: colors.textSecondary }]}>{t("company.cultureSignals")}</Text>
+          <Text style={[styles.infoLabel, { color: colors.textSecondary }]}>
+            {t("company.cultureSignals")}
+          </Text>
           {company.culture_signals.map((signal) => (
             <Text key={signal} style={[styles.bullet, { color: colors.textPrimary }]}>
               • {signal}
@@ -376,8 +384,12 @@ function CompanyCard({
       )}
 
       <View style={styles.infoRow}>
-        <Text style={[styles.infoLabel, { color: colors.textSecondary }]}>{t("company.recentJobs")}</Text>
-        <Text style={[styles.infoValue, { color: colors.textPrimary }]}>{company.recent_job_count}</Text>
+        <Text style={[styles.infoLabel, { color: colors.textSecondary }]}>
+          {t("company.recentJobs")}
+        </Text>
+        <Text style={[styles.infoValue, { color: colors.textPrimary }]}>
+          {company.recent_job_count}
+        </Text>
       </View>
 
       <View style={styles.cardActions}>
@@ -437,14 +449,21 @@ function CompanyCard({
             jobsState.jobs.map((job) => (
               <View
                 key={job.id}
-                style={[styles.jobCard, { backgroundColor: colors.surfaceRaised, borderColor: colors.border }]}
+                style={[
+                  styles.jobCard,
+                  { backgroundColor: colors.surfaceRaised, borderColor: colors.border },
+                ]}
               >
                 <Text style={[styles.jobTitle, { color: colors.textPrimary }]}>{job.title}</Text>
                 {job.location !== null && (
-                  <Text style={[styles.jobMeta, { color: colors.textSecondary }]}>{job.location}</Text>
+                  <Text style={[styles.jobMeta, { color: colors.textSecondary }]}>
+                    {job.location}
+                  </Text>
                 )}
                 {job.posted_date !== null && (
-                  <Text style={[styles.jobMeta, { color: colors.textDisabled }]}>{job.posted_date}</Text>
+                  <Text style={[styles.jobMeta, { color: colors.textDisabled }]}>
+                    {job.posted_date}
+                  </Text>
                 )}
               </View>
             ))
@@ -453,13 +472,8 @@ function CompanyCard({
       )}
 
       {isSelected && jobsState.status === "error" && (
-        <View
-          style={[styles.notice, { backgroundColor: colors.danger }]}
-          accessibilityRole="alert"
-        >
-          <Text style={[styles.noticeText, { color: colors.onDanger }]}>
-            {jobsState.message}
-          </Text>
+        <View style={[styles.notice, { backgroundColor: colors.danger }]} accessibilityRole="alert">
+          <Text style={[styles.noticeText, { color: colors.onDanger }]}>{jobsState.message}</Text>
         </View>
       )}
     </View>

@@ -62,9 +62,7 @@ const pulse: MarketPulseResponse = {
   salary_ranges: [
     { role: "Mobile Engineer", location: "Bangalore", min: 600000, max: 2200000, median: 1400000 },
   ],
-  top_companies: [
-    { name: "Acme Corp", job_count: 220, tech_stack: ["React", "TypeScript"] },
-  ],
+  top_companies: [{ name: "Acme Corp", job_count: 220, tech_stack: ["React", "TypeScript"] }],
   recommended_skills: ["GraphQL", "Kubernetes"],
 };
 

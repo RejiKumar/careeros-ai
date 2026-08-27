@@ -209,13 +209,19 @@ export default function JobMatchScreen() {
     }
     setMatchState({ status: "loading" });
     try {
-      const match = isGuest && guestId !== null
-        ? await apiClient.runMatch(undefined, jobDescriptionId, {
-            resume_id: resumeId,
-          }, guestId)
-        : await apiClient.runMatch(accessToken, jobDescriptionId, {
-            resume_id: resumeId,
-          });
+      const match =
+        isGuest && guestId !== null
+          ? await apiClient.runMatch(
+              undefined,
+              jobDescriptionId,
+              {
+                resume_id: resumeId,
+              },
+              guestId,
+            )
+          : await apiClient.runMatch(accessToken, jobDescriptionId, {
+              resume_id: resumeId,
+            });
       const jobDescription =
         listState.status === "success"
           ? (listState.items.find((item) => item.id === jobDescriptionId) ?? null)
@@ -260,243 +266,256 @@ export default function JobMatchScreen() {
         behavior={Platform.OS === "ios" ? "padding" : undefined}
         style={{ flex: 1 }}
       >
-      <ScrollView
-        contentContainerStyle={[styles.scrollContent, { paddingTop: insets.top + 24 }]}
-        keyboardShouldPersistTaps="handled"
-      >
-        <Text style={[styles.eyebrow, { color: colors.primaryStrong }]}>
-          {t("jobMatch.eyebrow")}
-        </Text>
-        <Text style={[styles.title, { color: colors.textPrimary }]}>{t("jobMatch.title")}</Text>
-        <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
-          {t("jobMatch.subtitle")}
-        </Text>
-
-        <Text style={[styles.label, { color: colors.textSecondary }]}>
-          {t("jobMatch.resumeLabel")}
-        </Text>
-        {resumes.length === 0 ? (
-          <Text style={[styles.emptyText, { color: colors.textDisabled }]}>
-            No resume imported yet — import one from the Resume tab first.
+        <ScrollView
+          contentContainerStyle={[styles.scrollContent, { paddingTop: insets.top + 24 }]}
+          keyboardShouldPersistTaps="handled"
+        >
+          <Text style={[styles.eyebrow, { color: colors.primaryStrong }]}>
+            {t("jobMatch.eyebrow")}
           </Text>
-        ) : (
-          <View style={styles.chipRow}>
-            {resumes.map((resume) => (
-              <Pressable
-                key={resume.id}
-                accessibilityRole="button"
-                accessibilityLabel={`Use resume ${resume.title}`}
-                accessibilityState={{ selected: resumeId === resume.id }}
-                onPress={() => setResumeId(resume.id)}
-                style={[
-                  styles.chip,
-                  {
-                    backgroundColor: resumeId === resume.id ? colors.primary : colors.surface,
-                    borderColor: resumeId === resume.id ? colors.primary : colors.border,
-                  },
-                ]}
-              >
-                <Text
+          <Text style={[styles.title, { color: colors.textPrimary }]}>{t("jobMatch.title")}</Text>
+          <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
+            {t("jobMatch.subtitle")}
+          </Text>
+
+          <Text style={[styles.label, { color: colors.textSecondary }]}>
+            {t("jobMatch.resumeLabel")}
+          </Text>
+          {resumes.length === 0 ? (
+            <Text style={[styles.emptyText, { color: colors.textDisabled }]}>
+              No resume imported yet — import one from the Resume tab first.
+            </Text>
+          ) : (
+            <View style={styles.chipRow}>
+              {resumes.map((resume) => (
+                <Pressable
+                  key={resume.id}
+                  accessibilityRole="button"
+                  accessibilityLabel={`Use resume ${resume.title}`}
+                  accessibilityState={{ selected: resumeId === resume.id }}
+                  onPress={() => setResumeId(resume.id)}
                   style={[
-                    styles.chipText,
-                    { color: resumeId === resume.id ? colors.onPrimary : colors.textPrimary },
+                    styles.chip,
+                    {
+                      backgroundColor: resumeId === resume.id ? colors.primary : colors.surface,
+                      borderColor: resumeId === resume.id ? colors.primary : colors.border,
+                    },
                   ]}
                 >
-                  {resume.title}
-                </Text>
-              </Pressable>
-            ))}
+                  <Text
+                    style={[
+                      styles.chipText,
+                      { color: resumeId === resume.id ? colors.onPrimary : colors.textPrimary },
+                    ]}
+                  >
+                    {resume.title}
+                  </Text>
+                </Pressable>
+              ))}
+            </View>
+          )}
+
+          <Text style={[styles.label, { color: colors.textSecondary }]}>
+            {t("jobMatch.jobTitle")}
+          </Text>
+          <View style={styles.fieldRow}>
+            <TextInput
+              value={title}
+              onChangeText={setTitle}
+              accessibilityLabel={t("jobMatch.jobTitle")}
+              placeholder={t("jobMatch.jobTitlePlaceholder")}
+              placeholderTextColor={colors.textDisabled}
+              style={[
+                styles.input,
+                styles.inputWithMic,
+                {
+                  backgroundColor: colors.surface,
+                  borderColor: colors.border,
+                  color: colors.textPrimary,
+                },
+              ]}
+            />
+            <SpeechToTextButton
+              onResult={(text) => setTitle((prev) => (prev === "" ? text : `${prev} ${text}`))}
+              color={colors.textDisabled}
+              activeColor={colors.primaryStrong}
+              label={t("jobMatch.voiceInput")}
+            />
           </View>
-        )}
 
-        <Text style={[styles.label, { color: colors.textSecondary }]}>
-          {t("jobMatch.jobTitle")}
-        </Text>
-        <View style={styles.fieldRow}>
-          <TextInput
-            value={title}
-            onChangeText={setTitle}
-            accessibilityLabel={t("jobMatch.jobTitle")}
-            placeholder={t("jobMatch.jobTitlePlaceholder")}
-            placeholderTextColor={colors.textDisabled}
-            style={[
-              styles.input,
-              styles.inputWithMic,
-              {
-                backgroundColor: colors.surface,
-                borderColor: colors.border,
-                color: colors.textPrimary,
-              },
+          <Text style={[styles.label, { color: colors.textSecondary }]}>
+            {t("jobMatch.company")}
+          </Text>
+          <View style={styles.fieldRow}>
+            <TextInput
+              value={company}
+              onChangeText={setCompany}
+              accessibilityLabel={t("jobMatch.company")}
+              placeholder={t("jobMatch.companyPlaceholder")}
+              placeholderTextColor={colors.textDisabled}
+              style={[
+                styles.input,
+                styles.inputWithMic,
+                {
+                  backgroundColor: colors.surface,
+                  borderColor: colors.border,
+                  color: colors.textPrimary,
+                },
+              ]}
+            />
+            <SpeechToTextButton
+              onResult={(text) => setCompany((prev) => (prev === "" ? text : `${prev} ${text}`))}
+              color={colors.textDisabled}
+              activeColor={colors.primaryStrong}
+              label={t("jobMatch.voiceInput")}
+            />
+          </View>
+
+          <Text style={[styles.label, { color: colors.textSecondary }]}>
+            {t("jobMatch.jobDescription")}
+          </Text>
+          <View style={styles.fieldRow}>
+            <TextInput
+              value={rawText}
+              onChangeText={setRawText}
+              accessibilityLabel={t("jobMatch.jobDescription")}
+              placeholder={t("jobMatch.jobDescriptionPlaceholder")}
+              placeholderTextColor={colors.textDisabled}
+              multiline
+              numberOfLines={6}
+              style={[
+                styles.input,
+                styles.jdInput,
+                styles.inputWithMic,
+                {
+                  backgroundColor: colors.surface,
+                  borderColor: colors.border,
+                  color: colors.textPrimary,
+                },
+              ]}
+            />
+            <SpeechToTextButton
+              onResult={(text) => setRawText((prev) => (prev === "" ? text : `${prev} ${text}`))}
+              color={colors.textDisabled}
+              activeColor={colors.primaryStrong}
+              label={t("jobMatch.voiceInput")}
+            />
+          </View>
+
+          {matchState.status === "error" && (
+            <View
+              style={[styles.notice, { backgroundColor: colors.danger }]}
+              accessibilityRole="alert"
+            >
+              <Text style={[styles.noticeText, { color: colors.onDanger }]}>
+                {matchState.message}
+              </Text>
+            </View>
+          )}
+
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={t("jobMatch.match")}
+            onPress={() => void handleMatch()}
+            disabled={matchState.status === "loading"}
+            style={({ pressed }) => [
+              styles.primaryButton,
+              { backgroundColor: colors.primary },
+              pressed && styles.pressed,
+              matchState.status === "loading" && styles.disabled,
             ]}
-          />
-          <SpeechToTextButton
-            onResult={(text) => setTitle((prev) => (prev === "" ? text : `${prev} ${text}`))}
-            color={colors.textDisabled}
-            activeColor={colors.primaryStrong}
-            label={t("jobMatch.voiceInput")}
-          />
-        </View>
-
-        <Text style={[styles.label, { color: colors.textSecondary }]}>{t("jobMatch.company")}</Text>
-        <View style={styles.fieldRow}>
-          <TextInput
-            value={company}
-            onChangeText={setCompany}
-            accessibilityLabel={t("jobMatch.company")}
-            placeholder={t("jobMatch.companyPlaceholder")}
-            placeholderTextColor={colors.textDisabled}
-            style={[
-              styles.input,
-              styles.inputWithMic,
-              {
-                backgroundColor: colors.surface,
-                borderColor: colors.border,
-                color: colors.textPrimary,
-              },
-            ]}
-          />
-          <SpeechToTextButton
-            onResult={(text) => setCompany((prev) => (prev === "" ? text : `${prev} ${text}`))}
-            color={colors.textDisabled}
-            activeColor={colors.primaryStrong}
-            label={t("jobMatch.voiceInput")}
-          />
-        </View>
-
-        <Text style={[styles.label, { color: colors.textSecondary }]}>
-          {t("jobMatch.jobDescription")}
-        </Text>
-        <View style={styles.fieldRow}>
-          <TextInput
-            value={rawText}
-            onChangeText={setRawText}
-            accessibilityLabel={t("jobMatch.jobDescription")}
-            placeholder={t("jobMatch.jobDescriptionPlaceholder")}
-            placeholderTextColor={colors.textDisabled}
-            multiline
-            numberOfLines={6}
-            style={[
-              styles.input,
-              styles.jdInput,
-              styles.inputWithMic,
-              {
-                backgroundColor: colors.surface,
-                borderColor: colors.border,
-                color: colors.textPrimary,
-              },
-            ]}
-          />
-          <SpeechToTextButton
-            onResult={(text) => setRawText((prev) => (prev === "" ? text : `${prev} ${text}`))}
-            color={colors.textDisabled}
-            activeColor={colors.primaryStrong}
-            label={t("jobMatch.voiceInput")}
-          />
-        </View>
-
-        {matchState.status === "error" && (
-          <View
-            style={[styles.notice, { backgroundColor: colors.danger }]}
-            accessibilityRole="alert"
           >
-            <Text style={[styles.noticeText, { color: colors.onDanger }]}>
-              {matchState.message}
-            </Text>
-          </View>
-        )}
+            {matchState.status === "loading" ? (
+              <ActivityIndicator
+                color={colors.onPrimary}
+                accessibilityLabel={t("jobMatch.match")}
+              />
+            ) : (
+              <Text style={[styles.primaryButtonLabel, { color: colors.onPrimary }]}>
+                {t("jobMatch.match")}
+              </Text>
+            )}
+          </Pressable>
 
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel={t("jobMatch.match")}
-          onPress={() => void handleMatch()}
-          disabled={matchState.status === "loading"}
-          style={({ pressed }) => [
-            styles.primaryButton,
-            { backgroundColor: colors.primary },
-            pressed && styles.pressed,
-            matchState.status === "loading" && styles.disabled,
-          ]}
-        >
-          {matchState.status === "loading" ? (
-            <ActivityIndicator color={colors.onPrimary} accessibilityLabel={t("jobMatch.match")} />
-          ) : (
-            <Text style={[styles.primaryButtonLabel, { color: colors.onPrimary }]}>
-              {t("jobMatch.match")}
+          {matchState.status === "success" && (
+            <MatchResultView
+              match={matchState.match}
+              jobDescription={matchState.jobDescription}
+              colors={colors}
+              onRerun={() => void handleRerun(matchState.jobDescription.id)}
+            />
+          )}
+
+          <Text style={[styles.sectionTitle, { color: colors.textPrimary, marginTop: 32 }]}>
+            {t("jobMatch.savedJobs")}
+          </Text>
+          {listState.status === "loading" && (
+            <ActivityIndicator
+              color={colors.primary}
+              accessibilityLabel="Loading job descriptions"
+            />
+          )}
+          {listState.status === "error" && (
+            <View
+              style={[styles.notice, { backgroundColor: colors.danger }]}
+              accessibilityRole="alert"
+            >
+              <Text style={[styles.noticeText, { color: colors.onDanger }]}>
+                {listState.message}
+              </Text>
+            </View>
+          )}
+          {listState.status === "success" && listState.items.length === 0 && (
+            <Text style={[styles.emptyText, { color: colors.textDisabled }]}>
+              {t("jobMatch.noSavedJobs")}
             </Text>
           )}
-        </Pressable>
-
-        {matchState.status === "success" && (
-          <MatchResultView
-            match={matchState.match}
-            jobDescription={matchState.jobDescription}
-            colors={colors}
-            onRerun={() => void handleRerun(matchState.jobDescription.id)}
-          />
-        )}
-
-        <Text style={[styles.sectionTitle, { color: colors.textPrimary, marginTop: 32 }]}>
-          {t("jobMatch.savedJobs")}
-        </Text>
-        {listState.status === "loading" && (
-          <ActivityIndicator color={colors.primary} accessibilityLabel="Loading job descriptions" />
-        )}
-        {listState.status === "error" && (
-          <View
-            style={[styles.notice, { backgroundColor: colors.danger }]}
-            accessibilityRole="alert"
-          >
-            <Text style={[styles.noticeText, { color: colors.onDanger }]}>{listState.message}</Text>
-          </View>
-        )}
-        {listState.status === "success" && listState.items.length === 0 && (
-          <Text style={[styles.emptyText, { color: colors.textDisabled }]}>
-            {t("jobMatch.noSavedJobs")}
-          </Text>
-        )}
-        {listState.status === "success" &&
-          listState.items.map((item) => (
-            <View
-              key={item.id}
-              style={[
-                styles.savedCard,
-                { backgroundColor: colors.surface, borderColor: colors.border },
-              ]}
-            >
-              <View style={styles.savedBody}>
-                <Text style={[styles.savedTitle, { color: colors.textPrimary }]}>
-                  {item.title ?? t("jobMatch.untitledRole")}
-                  {item.company !== null ? ` · ${item.company}` : ""}
-                </Text>
-                <Text numberOfLines={2} style={[styles.savedText, { color: colors.textSecondary }]}>
-                  {item.raw_text}
-                </Text>
-              </View>
-              <View style={styles.savedActions}>
-                <Pressable
-                  accessibilityRole="button"
-                  accessibilityLabel={`${t("jobMatch.match")} ${item.title ?? t("jobMatch.thisRole")}`}
-                  onPress={() => void handleRerun(item.id)}
-                  style={[styles.smallButton, { backgroundColor: colors.primary }]}
-                >
-                  <Text style={[styles.smallButtonText, { color: colors.onPrimary }]}>
-                    {t("jobMatch.match")}
+          {listState.status === "success" &&
+            listState.items.map((item) => (
+              <View
+                key={item.id}
+                style={[
+                  styles.savedCard,
+                  { backgroundColor: colors.surface, borderColor: colors.border },
+                ]}
+              >
+                <View style={styles.savedBody}>
+                  <Text style={[styles.savedTitle, { color: colors.textPrimary }]}>
+                    {item.title ?? t("jobMatch.untitledRole")}
+                    {item.company !== null ? ` · ${item.company}` : ""}
                   </Text>
-                </Pressable>
-                <Pressable
-                  accessibilityRole="button"
-                  accessibilityLabel={`${t("common.delete")} ${item.title ?? t("jobMatch.untitledRole")}`}
-                  onPress={() => void handleDelete(item.id)}
-                  style={[styles.smallButton, { backgroundColor: colors.danger }]}
-                >
-                  <Text style={[styles.smallButtonText, { color: colors.onDanger }]}>
-                    {t("common.delete")}
+                  <Text
+                    numberOfLines={2}
+                    style={[styles.savedText, { color: colors.textSecondary }]}
+                  >
+                    {item.raw_text}
                   </Text>
-                </Pressable>
+                </View>
+                <View style={styles.savedActions}>
+                  <Pressable
+                    accessibilityRole="button"
+                    accessibilityLabel={`${t("jobMatch.match")} ${item.title ?? t("jobMatch.thisRole")}`}
+                    onPress={() => void handleRerun(item.id)}
+                    style={[styles.smallButton, { backgroundColor: colors.primary }]}
+                  >
+                    <Text style={[styles.smallButtonText, { color: colors.onPrimary }]}>
+                      {t("jobMatch.match")}
+                    </Text>
+                  </Pressable>
+                  <Pressable
+                    accessibilityRole="button"
+                    accessibilityLabel={`${t("common.delete")} ${item.title ?? t("jobMatch.untitledRole")}`}
+                    onPress={() => void handleDelete(item.id)}
+                    style={[styles.smallButton, { backgroundColor: colors.danger }]}
+                  >
+                    <Text style={[styles.smallButtonText, { color: colors.onDanger }]}>
+                      {t("common.delete")}
+                    </Text>
+                  </Pressable>
+                </View>
               </View>
-            </View>
-          ))}
-      </ScrollView>
+            ))}
+        </ScrollView>
       </KeyboardAvoidingView>
     </View>
   );

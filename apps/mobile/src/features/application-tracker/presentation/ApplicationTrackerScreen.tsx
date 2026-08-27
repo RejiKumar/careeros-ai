@@ -242,7 +242,10 @@ export default function ApplicationTrackerScreen() {
         {statsState.status === "success" && (
           <View style={styles.statsRow}>
             <View
-              style={[styles.statCard, { backgroundColor: colors.surface, borderColor: colors.border }]}
+              style={[
+                styles.statCard,
+                { backgroundColor: colors.surface, borderColor: colors.border },
+              ]}
             >
               <Text style={[styles.statValue, { color: colors.primaryStrong }]}>
                 {statsState.data.total}
@@ -252,7 +255,10 @@ export default function ApplicationTrackerScreen() {
               </Text>
             </View>
             <View
-              style={[styles.statCard, { backgroundColor: colors.surface, borderColor: colors.border }]}
+              style={[
+                styles.statCard,
+                { backgroundColor: colors.surface, borderColor: colors.border },
+              ]}
             >
               <Text style={[styles.statValue, { color: colors.primaryStrong }]}>
                 {statsState.data.total > 0
@@ -266,7 +272,10 @@ export default function ApplicationTrackerScreen() {
               </Text>
             </View>
             <View
-              style={[styles.statCard, { backgroundColor: colors.surface, borderColor: colors.border }]}
+              style={[
+                styles.statCard,
+                { backgroundColor: colors.surface, borderColor: colors.border },
+              ]}
             >
               <Text style={[styles.statValue, { color: colors.success }]}>
                 {statsState.data.by_status.offered}
@@ -311,8 +320,10 @@ export default function ApplicationTrackerScreen() {
               style={[
                 styles.filterChip,
                 {
-                  backgroundColor: activeFilter === status ? colors[STATUS_COLOR_KEY[status]] : colors.surface,
-                  borderColor: activeFilter === status ? colors[STATUS_COLOR_KEY[status]] : colors.border,
+                  backgroundColor:
+                    activeFilter === status ? colors[STATUS_COLOR_KEY[status]] : colors.surface,
+                  borderColor:
+                    activeFilter === status ? colors[STATUS_COLOR_KEY[status]] : colors.border,
                 },
               ]}
             >
@@ -353,7 +364,10 @@ export default function ApplicationTrackerScreen() {
         )}
 
         {listState.status === "error" && (
-          <View style={[styles.notice, { backgroundColor: colors.danger }]} accessibilityRole="alert">
+          <View
+            style={[styles.notice, { backgroundColor: colors.danger }]}
+            accessibilityRole="alert"
+          >
             <Text style={[styles.noticeText, { color: colors.onDanger }]}>{listState.message}</Text>
           </View>
         )}
@@ -390,7 +404,9 @@ export default function ApplicationTrackerScreen() {
           >
             {STATUSES.map((status) => (
               <View key={status} style={styles.kanbanColumn}>
-                <Text style={[styles.kanbanColumnTitle, { color: colors[STATUS_COLOR_KEY[status]] }]}>
+                <Text
+                  style={[styles.kanbanColumnTitle, { color: colors[STATUS_COLOR_KEY[status]] }]}
+                >
                   {t(`applications.${status}`)} ({itemsByStatus[status].length})
                 </Text>
                 {itemsByStatus[status].length === 0 && (
@@ -412,12 +428,7 @@ export default function ApplicationTrackerScreen() {
         )}
       </ScrollView>
 
-      <Modal
-        visible={modalVisible}
-        animationType="slide"
-        transparent
-        onRequestClose={closeModal}
-      >
+      <Modal visible={modalVisible} animationType="slide" transparent onRequestClose={closeModal}>
         <KeyboardAvoidingView
           behavior={Platform.OS === "ios" ? "padding" : undefined}
           style={styles.modalOverlay}
@@ -440,7 +451,11 @@ export default function ApplicationTrackerScreen() {
                 placeholderTextColor={colors.textDisabled}
                 style={[
                   styles.input,
-                  { backgroundColor: colors.background, borderColor: colors.border, color: colors.textPrimary },
+                  {
+                    backgroundColor: colors.background,
+                    borderColor: colors.border,
+                    color: colors.textPrimary,
+                  },
                 ]}
               />
 
@@ -455,7 +470,11 @@ export default function ApplicationTrackerScreen() {
                 placeholderTextColor={colors.textDisabled}
                 style={[
                   styles.input,
-                  { backgroundColor: colors.background, borderColor: colors.border, color: colors.textPrimary },
+                  {
+                    backgroundColor: colors.background,
+                    borderColor: colors.border,
+                    color: colors.textPrimary,
+                  },
                 ]}
               />
 
@@ -473,8 +492,12 @@ export default function ApplicationTrackerScreen() {
                     style={[
                       styles.statusChip,
                       {
-                        backgroundColor: formStatus === status ? colors[STATUS_COLOR_KEY[status]] : colors.background,
-                        borderColor: formStatus === status ? colors[STATUS_COLOR_KEY[status]] : colors.border,
+                        backgroundColor:
+                          formStatus === status
+                            ? colors[STATUS_COLOR_KEY[status]]
+                            : colors.background,
+                        borderColor:
+                          formStatus === status ? colors[STATUS_COLOR_KEY[status]] : colors.border,
                       },
                     ]}
                   >
@@ -501,7 +524,11 @@ export default function ApplicationTrackerScreen() {
                 placeholderTextColor={colors.textDisabled}
                 style={[
                   styles.input,
-                  { backgroundColor: colors.background, borderColor: colors.border, color: colors.textPrimary },
+                  {
+                    backgroundColor: colors.background,
+                    borderColor: colors.border,
+                    color: colors.textPrimary,
+                  },
                 ]}
               />
 
@@ -516,7 +543,11 @@ export default function ApplicationTrackerScreen() {
                 placeholderTextColor={colors.textDisabled}
                 style={[
                   styles.input,
-                  { backgroundColor: colors.background, borderColor: colors.border, color: colors.textPrimary },
+                  {
+                    backgroundColor: colors.background,
+                    borderColor: colors.border,
+                    color: colors.textPrimary,
+                  },
                 ]}
               />
 
@@ -534,7 +565,11 @@ export default function ApplicationTrackerScreen() {
                 style={[
                   styles.input,
                   styles.textArea,
-                  { backgroundColor: colors.background, borderColor: colors.border, color: colors.textPrimary },
+                  {
+                    backgroundColor: colors.background,
+                    borderColor: colors.border,
+                    color: colors.textPrimary,
+                  },
                 ]}
               />
 

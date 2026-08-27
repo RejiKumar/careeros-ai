@@ -32,10 +32,11 @@ try {
     const appEnv = (process.env.EXPO_PUBLIC_APP_ENV ?? "dev") as "dev" | "prod";
     const ids = BANNER_IDS[appEnv];
 
-    const bannerUnitId = Platform.select({
-      android: ids.android,
-      ios: ids.ios,
-    }) ?? TestIds.BANNER;
+    const bannerUnitId =
+      Platform.select({
+        android: ids.android,
+        ios: ids.ios,
+      }) ?? TestIds.BANNER;
 
     function BannerInner({ size }: { size?: (typeof BannerAdSize)[keyof typeof BannerAdSize] }) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any

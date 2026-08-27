@@ -1,13 +1,6 @@
 import { useFocusEffect } from "expo-router";
 import { useCallback, useState } from "react";
-import {
-  ActivityIndicator,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
+import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 
 import { useAuth } from "@/lib/auth";
 import { useTheme } from "@/lib/theme";
@@ -124,8 +117,7 @@ export default function ResumeTailorScreen() {
             resume_id: resumeId,
             job_description_id: jobDescriptionId,
           });
-      const jd =
-        jobDescriptions.find((j) => j.id === jobDescriptionId) ?? result.job_description;
+      const jd = jobDescriptions.find((j) => j.id === jobDescriptionId) ?? result.job_description;
       setTailorState({ status: "success", tailor: result.tailor, jobDescription: jd });
       setShowOriginal(false);
     } catch (err) {
@@ -281,8 +273,7 @@ export default function ResumeTailorScreen() {
                       {
                         backgroundColor:
                           jobDescriptionId === jd.id ? colors.primary : colors.surface,
-                        borderColor:
-                          jobDescriptionId === jd.id ? colors.primary : colors.border,
+                        borderColor: jobDescriptionId === jd.id ? colors.primary : colors.border,
                       },
                     ]}
                   >
@@ -290,8 +281,7 @@ export default function ResumeTailorScreen() {
                       style={[
                         styles.chipText,
                         {
-                          color:
-                            jobDescriptionId === jd.id ? colors.onPrimary : colors.textPrimary,
+                          color: jobDescriptionId === jd.id ? colors.onPrimary : colors.textPrimary,
                         },
                       ]}
                     >
@@ -315,7 +305,10 @@ export default function ResumeTailorScreen() {
               ]}
             >
               {tailorState.status === "loading" ? (
-                <ActivityIndicator color={colors.onPrimary} accessibilityLabel={t("tailor.tailoring")} />
+                <ActivityIndicator
+                  color={colors.onPrimary}
+                  accessibilityLabel={t("tailor.tailoring")}
+                />
               ) : (
                 <Text style={[styles.primaryButtonText, { color: colors.onPrimary }]}>
                   {t("tailor.tailorButton")}

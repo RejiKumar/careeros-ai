@@ -16,11 +16,7 @@ import { useTheme } from "@/lib/theme";
 import { ApiClient } from "@/services/api";
 import { t } from "../../../i18n";
 import ScreenHeader from "@/ui/ScreenHeader";
-import {
-  ApiError,
-  type MarketPulseResponse,
-  type SkillTrendResponse,
-} from "@/services/contract";
+import { ApiError, type MarketPulseResponse, type SkillTrendResponse } from "@/services/contract";
 
 const LOCATIONS = ["", "Bangalore", "Hyderabad", "Mumbai", "Delhi", "Chennai", "Pune"];
 
@@ -56,7 +52,7 @@ export default function MarketPulseScreen() {
       }
       try {
         const token = isGuest ? undefined : accessToken;
-        const guest = isGuest ? guestId ?? undefined : undefined;
+        const guest = isGuest ? (guestId ?? undefined) : undefined;
         const [data, trends] = await Promise.all([
           apiClient.getMarketPulse(token, location || undefined, undefined, guest),
           apiClient.getSkillTrends(token, undefined, location || undefined, guest),
@@ -91,12 +87,9 @@ export default function MarketPulseScreen() {
     }, [load]),
   );
 
-  const handleLocationChange = useCallback(
-    (next: string) => {
-      setLocation(next);
-    },
-    [],
-  );
+  const handleLocationChange = useCallback((next: string) => {
+    setLocation(next);
+  }, []);
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
@@ -187,34 +180,28 @@ export default function MarketPulseScreen() {
           </View>
         )}
 
-        {pulseState.status === "success" &&
-          isEmpty(pulseState.data, pulseState.trends) && (
-            <View
-              style={[styles.emptyCard, { backgroundColor: colors.surface, borderColor: colors.border }]}
-            >
-              <Text style={[styles.emptyText, { color: colors.textSecondary }]}>
-                {t("marketPulse.noData")}
-              </Text>
-            </View>
-          )}
+        {pulseState.status === "success" && isEmpty(pulseState.data, pulseState.trends) && (
+          <View
+            style={[
+              styles.emptyCard,
+              { backgroundColor: colors.surface, borderColor: colors.border },
+            ]}
+          >
+            <Text style={[styles.emptyText, { color: colors.textSecondary }]}>
+              {t("marketPulse.noData")}
+            </Text>
+          </View>
+        )}
 
-        {pulseState.status === "success" &&
-          !isEmpty(pulseState.data, pulseState.trends) && (
-            <MarketPulseView
-              data={pulseState.data}
-              trends={pulseState.trends}
-              colors={colors}
-            />
-          )}
+        {pulseState.status === "success" && !isEmpty(pulseState.data, pulseState.trends) && (
+          <MarketPulseView data={pulseState.data} trends={pulseState.trends} colors={colors} />
+        )}
       </ScrollView>
     </View>
   );
 }
 
-function isEmpty(
-  data: MarketPulseResponse,
-  trends: SkillTrendResponse,
-): boolean {
+function isEmpty(data: MarketPulseResponse, trends: SkillTrendResponse): boolean {
   return (
     data.skill_demand.length === 0 &&
     data.salary_ranges.length === 0 &&
@@ -224,13 +211,7 @@ function isEmpty(
   );
 }
 
-function ChangeBadge({
-  changePct,
-  colors,
-}: {
-  changePct: number;
-  colors: ThemeColors;
-}) {
+function ChangeBadge({ changePct, colors }: { changePct: number; colors: ThemeColors }) {
   const positive = changePct > 0;
   const negative = changePct < 0;
   const color = positive ? colors.success : negative ? colors.danger : colors.textSecondary;
@@ -262,9 +243,7 @@ function MarketPulseView({
               style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}
             >
               <View style={styles.skillDemandHeader}>
-                <Text style={[styles.skillName, { color: colors.textPrimary }]}>
-                  {item.skill}
-                </Text>
+                <Text style={[styles.skillName, { color: colors.textPrimary }]}>{item.skill}</Text>
                 <ChangeBadge changePct={item.change_pct} colors={colors} />
               </View>
               <View style={[styles.barTrack, { backgroundColor: colors.border }]}>
@@ -324,10 +303,7 @@ function MarketPulseView({
               </View>
               <View style={styles.badgeRow}>
                 {company.tech_stack.map((tech) => (
-                  <View
-                    key={tech}
-                    style={[styles.badge, { backgroundColor: colors.primarySoft }]}
-                  >
+                  <View key={tech} style={[styles.badge, { backgroundColor: colors.primarySoft }]}>
                     <Text style={[styles.badgeText, { color: colors.primaryStrong }]}>{tech}</Text>
                   </View>
                 ))}

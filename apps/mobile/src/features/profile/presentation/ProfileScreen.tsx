@@ -227,7 +227,9 @@ export default function ProfileScreen() {
                 style={[styles.notice, { backgroundColor: colors.primarySoft }]}
                 accessibilityRole="alert"
               >
-                <Text style={[styles.noticeText, { color: colors.primaryStrong }]}>{resetMessage}</Text>
+                <Text style={[styles.noticeText, { color: colors.primaryStrong }]}>
+                  {resetMessage}
+                </Text>
               </View>
             )}
 
@@ -244,7 +246,10 @@ export default function ProfileScreen() {
               ]}
             >
               {resetting ? (
-                <ActivityIndicator color={colors.textPrimary} accessibilityLabel="Sending reset link" />
+                <ActivityIndicator
+                  color={colors.textPrimary}
+                  accessibilityLabel="Sending reset link"
+                />
               ) : (
                 <Text style={[styles.secondaryButtonText, { color: colors.textPrimary }]}>
                   {t("profile.sendPasswordReset")}

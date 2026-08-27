@@ -291,7 +291,11 @@ export default function CoachScreen() {
         <View
           style={[
             styles.chatHeader,
-            { backgroundColor: colors.surface, borderColor: colors.border, paddingTop: insets.top + 8 },
+            {
+              backgroundColor: colors.surface,
+              borderColor: colors.border,
+              paddingTop: insets.top + 8,
+            },
           ]}
         >
           <Pressable

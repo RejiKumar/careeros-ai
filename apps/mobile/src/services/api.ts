@@ -618,12 +618,9 @@ export class ApiClient {
     accessToken: string | undefined,
     guestId?: string,
   ): Promise<GapAnalysisResponse[]> {
-    return this.request<GapAnalysisResponse[]>(
-      "/api/v1/skills-gap",
-      accessToken,
-      guestId,
-      { method: "GET" },
-    );
+    return this.request<GapAnalysisResponse[]>("/api/v1/skills-gap", accessToken, guestId, {
+      method: "GET",
+    });
   }
 
   deleteGapAnalysis(
@@ -631,12 +628,9 @@ export class ApiClient {
     analysisId: string,
     guestId?: string,
   ): Promise<void> {
-    return this.request<void>(
-      `/api/v1/skills-gap/${analysisId}`,
-      accessToken,
-      guestId,
-      { method: "DELETE" },
-    );
+    return this.request<void>(`/api/v1/skills-gap/${analysisId}`, accessToken, guestId, {
+      method: "DELETE",
+    });
   }
 
   /* ─── Achievements ─── */
@@ -701,29 +695,16 @@ export class ApiClient {
     );
   }
 
-  listSavedJobs(
-    accessToken: string | undefined,
-    guestId?: string,
-  ): Promise<SavedJobResponse[]> {
-    return this.request<SavedJobResponse[]>(
-      "/api/v1/job-search/saved",
-      accessToken,
-      guestId,
-      { method: "GET" },
-    );
+  listSavedJobs(accessToken: string | undefined, guestId?: string): Promise<SavedJobResponse[]> {
+    return this.request<SavedJobResponse[]>("/api/v1/job-search/saved", accessToken, guestId, {
+      method: "GET",
+    });
   }
 
-  deleteSavedJob(
-    accessToken: string | undefined,
-    jobId: string,
-    guestId?: string,
-  ): Promise<void> {
-    return this.request<void>(
-      `/api/v1/job-search/saved/${jobId}`,
-      accessToken,
-      guestId,
-      { method: "DELETE" },
-    );
+  deleteSavedJob(accessToken: string | undefined, jobId: string, guestId?: string): Promise<void> {
+    return this.request<void>(`/api/v1/job-search/saved/${jobId}`, accessToken, guestId, {
+      method: "DELETE",
+    });
   }
 
   /* ─── Market Pulse ─── */
@@ -811,11 +792,7 @@ export class ApiClient {
     );
   }
 
-  removeFCMToken(
-    accessToken: string | undefined,
-    token: string,
-    guestId?: string,
-  ): Promise<void> {
+  removeFCMToken(accessToken: string | undefined, token: string, guestId?: string): Promise<void> {
     return this.request<void>(
       `/api/v1/notifications/fcm-token?token=${encodeURIComponent(token)}`,
       accessToken,
@@ -859,12 +836,9 @@ export class ApiClient {
     accessToken: string | undefined,
     guestId?: string,
   ): Promise<NotificationLogResponse[]> {
-    return this.request<NotificationLogResponse[]>(
-      "/api/v1/notifications",
-      accessToken,
-      guestId,
-      { method: "GET" },
-    );
+    return this.request<NotificationLogResponse[]>("/api/v1/notifications", accessToken, guestId, {
+      method: "GET",
+    });
   }
 
   markNotificationRead(
@@ -923,17 +897,10 @@ export class ApiClient {
     );
   }
 
-  deleteTailor(
-    accessToken: string | undefined,
-    tailorId: string,
-    guestId?: string,
-  ): Promise<void> {
-    return this.request<void>(
-      `/api/v1/resume-tailor/${tailorId}`,
-      accessToken,
-      guestId,
-      { method: "DELETE" },
-    );
+  deleteTailor(accessToken: string | undefined, tailorId: string, guestId?: string): Promise<void> {
+    return this.request<void>(`/api/v1/resume-tailor/${tailorId}`, accessToken, guestId, {
+      method: "DELETE",
+    });
   }
 
   /* ─── Company ─── */
@@ -1001,12 +968,9 @@ export class ApiClient {
     accessToken: string | undefined,
     guestId?: string,
   ): Promise<SavedCompanyResponse[]> {
-    return this.request<SavedCompanyResponse[]>(
-      "/api/v1/companies/saved",
-      accessToken,
-      guestId,
-      { method: "GET" },
-    );
+    return this.request<SavedCompanyResponse[]>("/api/v1/companies/saved", accessToken, guestId, {
+      method: "GET",
+    });
   }
 
   deleteSavedCompany(
@@ -1014,12 +978,9 @@ export class ApiClient {
     savedId: string,
     guestId?: string,
   ): Promise<void> {
-    return this.request<void>(
-      `/api/v1/companies/saved/${savedId}`,
-      accessToken,
-      guestId,
-      { method: "DELETE" },
-    );
+    return this.request<void>(`/api/v1/companies/saved/${savedId}`, accessToken, guestId, {
+      method: "DELETE",
+    });
   }
 
   /* ─── Salary Negotiator ─── */
@@ -1085,24 +1046,18 @@ export class ApiClient {
     pathId: string,
     guestId?: string,
   ): Promise<CareerPathResponse> {
-    return this.request<CareerPathResponse>(
-      `/api/v1/career-path/${pathId}`,
-      accessToken,
-      guestId,
-      { method: "GET" },
-    );
+    return this.request<CareerPathResponse>(`/api/v1/career-path/${pathId}`, accessToken, guestId, {
+      method: "GET",
+    });
   }
 
   listCareerPaths(
     accessToken: string | undefined,
     guestId?: string,
   ): Promise<SavedCareerPathResponse[]> {
-    return this.request<SavedCareerPathResponse[]>(
-      "/api/v1/career-path",
-      accessToken,
-      guestId,
-      { method: "GET" },
-    );
+    return this.request<SavedCareerPathResponse[]>("/api/v1/career-path", accessToken, guestId, {
+      method: "GET",
+    });
   }
 
   deleteCareerPath(
@@ -1110,12 +1065,9 @@ export class ApiClient {
     pathId: string,
     guestId?: string,
   ): Promise<void> {
-    return this.request<void>(
-      `/api/v1/career-path/${pathId}`,
-      accessToken,
-      guestId,
-      { method: "DELETE" },
-    );
+    return this.request<void>(`/api/v1/career-path/${pathId}`, accessToken, guestId, {
+      method: "DELETE",
+    });
   }
 
   /* ─── Applications ─── */
@@ -1196,11 +1148,8 @@ export class ApiClient {
     applicationId: string,
     guestId?: string,
   ): Promise<void> {
-    return this.request<void>(
-      `/api/v1/applications/${applicationId}`,
-      accessToken,
-      guestId,
-      { method: "DELETE" },
-    );
+    return this.request<void>(`/api/v1/applications/${applicationId}`, accessToken, guestId, {
+      method: "DELETE",
+    });
   }
 }

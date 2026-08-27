@@ -16,10 +16,7 @@ import { useAuth } from "@/lib/auth";
 import { useTheme } from "@/lib/theme";
 import { ApiClient } from "@/services/api";
 import { t } from "../../../i18n";
-import {
-  ApiError,
-  type JobSearchResult,
-} from "@/services/contract";
+import { ApiError, type JobSearchResult } from "@/services/contract";
 
 const SOURCES = [
   { key: "", labelKey: "jobSearch.allSources" },
@@ -100,7 +97,13 @@ export default function JobSearchScreen() {
       );
       setSearchState({
         status: "success",
-        results: page === 1 ? response.results : [...(searchState.status === "success" ? searchState.results : []), ...response.results],
+        results:
+          page === 1
+            ? response.results
+            : [
+                ...(searchState.status === "success" ? searchState.results : []),
+                ...response.results,
+              ],
         page,
         hasMore: response.has_more,
       });
@@ -192,8 +195,18 @@ export default function JobSearchScreen() {
             </Text>
 
             <View style={styles.searchRow}>
-              <View style={[styles.searchInputWrap, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-                <Ionicons name="search" size={18} color={colors.textDisabled} style={styles.searchIcon} />
+              <View
+                style={[
+                  styles.searchInputWrap,
+                  { backgroundColor: colors.surface, borderColor: colors.border },
+                ]}
+              >
+                <Ionicons
+                  name="search"
+                  size={18}
+                  color={colors.textDisabled}
+                  style={styles.searchIcon}
+                />
                 <TextInput
                   value={query}
                   onChangeText={setQuery}
@@ -208,8 +221,18 @@ export default function JobSearchScreen() {
             </View>
 
             <View style={styles.locationRow}>
-              <View style={[styles.locationInputWrap, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-                <Ionicons name="location-outline" size={18} color={colors.textDisabled} style={styles.searchIcon} />
+              <View
+                style={[
+                  styles.locationInputWrap,
+                  { backgroundColor: colors.surface, borderColor: colors.border },
+                ]}
+              >
+                <Ionicons
+                  name="location-outline"
+                  size={18}
+                  color={colors.textDisabled}
+                  style={styles.searchIcon}
+                />
                 <TextInput
                   value={location}
                   onChangeText={setLocation}
@@ -395,9 +418,7 @@ function JobResultCard({
           {posted !== null && (
             <View style={styles.metaItem}>
               <Ionicons name="time-outline" size={13} color={colors.textDisabled} />
-              <Text style={[styles.metaText, { color: colors.textSecondary }]}>
-                {posted}
-              </Text>
+              <Text style={[styles.metaText, { color: colors.textSecondary }]}>{posted}</Text>
             </View>
           )}
         </View>
@@ -413,7 +434,10 @@ function JobResultCard({
         <View style={styles.skillRow}>
           {job.skills.slice(0, 6).map((skill) => (
             <View key={skill} style={[styles.skillTag, { backgroundColor: colors.primarySoft }]}>
-              <Text style={[styles.skillTagText, { color: colors.primaryStrong }]} numberOfLines={1}>
+              <Text
+                style={[styles.skillTagText, { color: colors.primaryStrong }]}
+                numberOfLines={1}
+              >
                 {skill}
               </Text>
             </View>

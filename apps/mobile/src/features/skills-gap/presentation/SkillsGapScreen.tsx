@@ -1,13 +1,6 @@
 import { useFocusEffect, useRouter } from "expo-router";
 import { useCallback, useState } from "react";
-import {
-  ActivityIndicator,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
+import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { useAuth } from "@/lib/auth";
@@ -163,7 +156,11 @@ export default function SkillsGapScreen() {
           accessibilityRole="button"
           accessibilityLabel={t("common.back")}
           onPress={() => router.back()}
-          style={({ pressed }) => [styles.backButton, { backgroundColor: colors.surfaceRaised }, pressed && styles.pressed]}
+          style={({ pressed }) => [
+            styles.backButton,
+            { backgroundColor: colors.surfaceRaised },
+            pressed && styles.pressed,
+          ]}
         >
           <Text style={[styles.backButtonText, { color: colors.primaryStrong }]}>
             {t("common.back")}
@@ -178,7 +175,10 @@ export default function SkillsGapScreen() {
 
         {!hasResume ? (
           <View
-            style={[styles.emptyCard, { backgroundColor: colors.surface, borderColor: colors.border }]}
+            style={[
+              styles.emptyCard,
+              { backgroundColor: colors.surface, borderColor: colors.border },
+            ]}
           >
             <Text style={[styles.emptyTitle, { color: colors.textPrimary }]}>
               {t("skillsGap.noResume")}
@@ -224,7 +224,10 @@ export default function SkillsGapScreen() {
 
         {!hasJob ? (
           <View
-            style={[styles.emptyCard, { backgroundColor: colors.surface, borderColor: colors.border }]}
+            style={[
+              styles.emptyCard,
+              { backgroundColor: colors.surface, borderColor: colors.border },
+            ]}
           >
             <Text style={[styles.emptyTitle, { color: colors.textPrimary }]}>
               {t("skillsGap.noJob")}
@@ -294,7 +297,10 @@ export default function SkillsGapScreen() {
           ]}
         >
           {analysisState.status === "loading" ? (
-            <ActivityIndicator color={colors.onPrimary} accessibilityLabel={t("skillsGap.analyzing")} />
+            <ActivityIndicator
+              color={colors.onPrimary}
+              accessibilityLabel={t("skillsGap.analyzing")}
+            />
           ) : (
             <Text style={[styles.primaryButtonLabel, { color: colors.onPrimary }]}>
               {t("skillsGap.analyzeButton")}
@@ -317,7 +323,9 @@ export default function SkillsGapScreen() {
             style={[styles.notice, { backgroundColor: colors.danger }]}
             accessibilityRole="alert"
           >
-            <Text style={[styles.noticeText, { color: colors.onDanger }]}>{historyState.message}</Text>
+            <Text style={[styles.noticeText, { color: colors.onDanger }]}>
+              {historyState.message}
+            </Text>
           </View>
         )}
         {historyState.status === "success" && historyState.items.length === 0 && (
@@ -336,7 +344,8 @@ export default function SkillsGapScreen() {
             >
               <View style={styles.savedBody}>
                 <Text style={[styles.savedTitle, { color: colors.textPrimary }]}>
-                  Match {item.overall_match_percentage}% — {new Date(item.created_at).toLocaleDateString()}
+                  Match {item.overall_match_percentage}% —{" "}
+                  {new Date(item.created_at).toLocaleDateString()}
                 </Text>
               </View>
               <View style={styles.savedActions}>
@@ -383,10 +392,7 @@ function AnalysisResultView({
         {analysis.matched_skills.length > 0 ? (
           <View style={styles.badgeRow}>
             {analysis.matched_skills.map((skill) => (
-              <View
-                key={skill}
-                style={[styles.badge, { backgroundColor: colors.success }]}
-              >
+              <View key={skill} style={[styles.badge, { backgroundColor: colors.success }]}>
                 <Text style={[styles.badgeText, { color: colors.onPrimary }]}>{skill}</Text>
               </View>
             ))}
@@ -400,10 +406,7 @@ function AnalysisResultView({
         {analysis.partial_skills.length > 0 ? (
           <View style={styles.badgeRow}>
             {analysis.partial_skills.map((skill) => (
-              <View
-                key={skill}
-                style={[styles.badge, { backgroundColor: colors.warning }]}
-              >
+              <View key={skill} style={[styles.badge, { backgroundColor: colors.warning }]}>
                 <Text style={[styles.badgeText, { color: colors.onPrimary }]}>{skill}</Text>
               </View>
             ))}
@@ -417,10 +420,7 @@ function AnalysisResultView({
         {analysis.missing_skills.length > 0 ? (
           <View style={styles.badgeRow}>
             {analysis.missing_skills.map((skill) => (
-              <View
-                key={skill}
-                style={[styles.badge, { backgroundColor: colors.danger }]}
-              >
+              <View key={skill} style={[styles.badge, { backgroundColor: colors.danger }]}>
                 <Text style={[styles.badgeText, { color: colors.onPrimary }]}>{skill}</Text>
               </View>
             ))}

@@ -150,10 +150,7 @@ export default function NotificationPreferencesScreen() {
   return (
     <AppBackground>
       <ScrollView contentContainerStyle={styles.scrollContent}>
-        <ScreenHeader
-          eyebrow={t("notifications.eyebrow")}
-          title={t("notifications.title")}
-        />
+        <ScreenHeader eyebrow={t("notifications.eyebrow")} title={t("notifications.title")} />
 
         <View
           style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}
@@ -230,10 +227,7 @@ export default function NotificationPreferencesScreen() {
               accessibilityState={{ checked: frequency === option }}
               accessibilityLabel={t(`notifications.${option}`)}
               onPress={() => setFrequency(option)}
-              style={({ pressed }) => [
-                styles.frequencyRow,
-                pressed && styles.pressed,
-              ]}
+              style={({ pressed }) => [styles.frequencyRow, pressed && styles.pressed]}
             >
               <View
                 style={[

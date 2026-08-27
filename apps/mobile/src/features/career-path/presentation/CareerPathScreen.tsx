@@ -153,7 +153,10 @@ export default function CareerPathScreen() {
 
         {!hasResume ? (
           <View
-            style={[styles.emptyCard, { backgroundColor: colors.surface, borderColor: colors.border }]}
+            style={[
+              styles.emptyCard,
+              { backgroundColor: colors.surface, borderColor: colors.border },
+            ]}
           >
             <Text style={[styles.emptyTitle, { color: colors.textPrimary }]}>
               {t("careerPath.noResume")}
@@ -221,9 +224,7 @@ export default function CareerPathScreen() {
             style={[styles.notice, { backgroundColor: colors.danger }]}
             accessibilityRole="alert"
           >
-            <Text style={[styles.noticeText, { color: colors.onDanger }]}>
-              {pathState.message}
-            </Text>
+            <Text style={[styles.noticeText, { color: colors.onDanger }]}>{pathState.message}</Text>
           </View>
         )}
 
@@ -240,7 +241,10 @@ export default function CareerPathScreen() {
           ]}
         >
           {pathState.status === "loading" ? (
-            <ActivityIndicator color={colors.onPrimary} accessibilityLabel={t("careerPath.generating")} />
+            <ActivityIndicator
+              color={colors.onPrimary}
+              accessibilityLabel={t("careerPath.generating")}
+            />
           ) : (
             <Text style={[styles.primaryButtonLabel, { color: colors.onPrimary }]}>
               {t("careerPath.generate")}
@@ -271,7 +275,9 @@ export default function CareerPathScreen() {
             style={[styles.notice, { backgroundColor: colors.danger }]}
             accessibilityRole="alert"
           >
-            <Text style={[styles.noticeText, { color: colors.onDanger }]}>{historyState.message}</Text>
+            <Text style={[styles.noticeText, { color: colors.onDanger }]}>
+              {historyState.message}
+            </Text>
           </View>
         )}
         {historyState.status === "success" && historyState.items.length === 0 && (
@@ -290,7 +296,8 @@ export default function CareerPathScreen() {
             >
               <View style={styles.savedBody}>
                 <Text style={[styles.savedTitle, { color: colors.textPrimary }]}>
-                  {item.target_role ?? "Career Path"} — {new Date(item.saved_at).toLocaleDateString()}
+                  {item.target_role ?? "Career Path"} —{" "}
+                  {new Date(item.saved_at).toLocaleDateString()}
                 </Text>
               </View>
               <View style={styles.savedActions}>
@@ -321,11 +328,16 @@ function CareerPathResultView({
 }) {
   return (
     <View
-      style={[styles.resultCard, { backgroundColor: colors.primarySoft, borderColor: colors.primary }]}
+      style={[
+        styles.resultCard,
+        { backgroundColor: colors.primarySoft, borderColor: colors.primary },
+      ]}
     >
       {path.timeline_estimate !== null && (
         <View style={styles.timelineRow}>
-          <Text style={[styles.timelineLabel, { color: colors.textSecondary }]}>{t("careerPath.timeline")}</Text>
+          <Text style={[styles.timelineLabel, { color: colors.textSecondary }]}>
+            {t("careerPath.timeline")}
+          </Text>
           <Text style={[styles.timelineValue, { color: colors.primaryStrong }]}>
             {path.timeline_estimate}
           </Text>
@@ -360,7 +372,9 @@ function CareerPathResultView({
             )}
           </View>
 
-          <Text style={[styles.stageDesc, { color: colors.textSecondary }]}>{stage.description}</Text>
+          <Text style={[styles.stageDesc, { color: colors.textSecondary }]}>
+            {stage.description}
+          </Text>
 
           {stage.required_skills.length > 0 && (
             <View style={styles.stageSection}>

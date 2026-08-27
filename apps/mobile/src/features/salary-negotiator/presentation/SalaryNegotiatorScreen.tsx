@@ -167,7 +167,9 @@ export default function SalaryNegotiatorScreen() {
           ]}
         />
 
-        <Text style={[styles.label, { color: colors.textSecondary }]}>{t("salary.experience")}</Text>
+        <Text style={[styles.label, { color: colors.textSecondary }]}>
+          {t("salary.experience")}
+        </Text>
         <View style={styles.chipRow}>
           {EXPERIENCE_OPTIONS.map((years) => (
             <Pressable
@@ -254,7 +256,10 @@ export default function SalaryNegotiatorScreen() {
           ]}
         >
           {isLoading ? (
-            <ActivityIndicator color={colors.onPrimary} accessibilityLabel={t("salary.analyzing")} />
+            <ActivityIndicator
+              color={colors.onPrimary}
+              accessibilityLabel={t("salary.analyzing")}
+            />
           ) : (
             <Text style={[styles.primaryButtonLabel, { color: colors.onPrimary }]}>
               {t("salary.getRange")}
@@ -293,35 +298,44 @@ function SalaryResultView({
 
   return (
     <View
-      style={[styles.resultCard, { backgroundColor: colors.primarySoft, borderColor: colors.primary }]}
+      style={[
+        styles.resultCard,
+        { backgroundColor: colors.primarySoft, borderColor: colors.primary },
+      ]}
     >
-      <Text style={[styles.resultLabel, { color: colors.primaryStrong }]}>
-        {t("salary.title")}
-      </Text>
+      <Text style={[styles.resultLabel, { color: colors.primaryStrong }]}>{t("salary.title")}</Text>
 
       <View style={styles.salaryRow}>
         <View style={styles.salaryCol}>
           <Text style={[styles.salaryValue, { color: colors.primaryStrong }]}>
             ${range.min_salary.toLocaleString()}
           </Text>
-          <Text style={[styles.salaryLabel, { color: colors.textSecondary }]}>{t("salary.minSalary")}</Text>
+          <Text style={[styles.salaryLabel, { color: colors.textSecondary }]}>
+            {t("salary.minSalary")}
+          </Text>
         </View>
         <View style={styles.salaryCol}>
           <Text style={[styles.salaryValue, { color: colors.primaryStrong }]}>
             ${range.median_salary.toLocaleString()}
           </Text>
-          <Text style={[styles.salaryLabel, { color: colors.textSecondary }]}>{t("salary.medianSalary")}</Text>
+          <Text style={[styles.salaryLabel, { color: colors.textSecondary }]}>
+            {t("salary.medianSalary")}
+          </Text>
         </View>
         <View style={styles.salaryCol}>
           <Text style={[styles.salaryValue, { color: colors.primaryStrong }]}>
             ${range.max_salary.toLocaleString()}
           </Text>
-          <Text style={[styles.salaryLabel, { color: colors.textSecondary }]}>{t("salary.maxSalary")}</Text>
+          <Text style={[styles.salaryLabel, { color: colors.textSecondary }]}>
+            {t("salary.maxSalary")}
+          </Text>
         </View>
       </View>
 
       <View style={styles.confidenceRow}>
-        <Text style={[styles.confidenceLabel, { color: colors.textSecondary }]}>{t("salary.confidence")}</Text>
+        <Text style={[styles.confidenceLabel, { color: colors.textSecondary }]}>
+          {t("salary.confidence")}
+        </Text>
         <Text style={[styles.confidenceValue, { color: colors.primaryStrong }]}>
           {range.confidence}%
         </Text>
@@ -329,12 +343,16 @@ function SalaryResultView({
 
       <Section title={t("salary.negotiationScript")} colors={colors}>
         <View style={styles.scriptSection}>
-          <Text style={[styles.scriptLabel, { color: colors.textPrimary }]}>{t("salary.opening")}</Text>
+          <Text style={[styles.scriptLabel, { color: colors.textPrimary }]}>
+            {t("salary.opening")}
+          </Text>
           <Text style={[styles.scriptText, { color: colors.textSecondary }]}>{script.opening}</Text>
         </View>
 
         <View style={styles.scriptSection}>
-          <Text style={[styles.scriptLabel, { color: colors.textPrimary }]}>{t("salary.justification")}</Text>
+          <Text style={[styles.scriptLabel, { color: colors.textPrimary }]}>
+            {t("salary.justification")}
+          </Text>
           {script.justification.map((point, idx) => (
             <Text key={idx} style={[styles.bullet, { color: colors.textSecondary }]}>
               • {point}
@@ -343,7 +361,9 @@ function SalaryResultView({
         </View>
 
         <View style={styles.scriptSection}>
-          <Text style={[styles.scriptLabel, { color: colors.textPrimary }]}>{t("salary.objections")}</Text>
+          <Text style={[styles.scriptLabel, { color: colors.textPrimary }]}>
+            {t("salary.objections")}
+          </Text>
           {script.objection_handling.map((point, idx) => (
             <Text key={idx} style={[styles.bullet, { color: colors.textSecondary }]}>
               • {point}
@@ -352,7 +372,9 @@ function SalaryResultView({
         </View>
 
         <View style={styles.scriptSection}>
-          <Text style={[styles.scriptLabel, { color: colors.textPrimary }]}>{t("salary.closing")}</Text>
+          <Text style={[styles.scriptLabel, { color: colors.textPrimary }]}>
+            {t("salary.closing")}
+          </Text>
           <Text style={[styles.scriptText, { color: colors.textSecondary }]}>{script.closing}</Text>
         </View>
       </Section>
@@ -375,8 +397,12 @@ function BenefitsView({
         {data.benefits.length > 0 ? (
           data.benefits.map((benefit, idx) => (
             <View key={idx} style={styles.benefitBlock}>
-              <Text style={[styles.benefitName, { color: colors.textPrimary }]}>{benefit.name}</Text>
-              <Text style={[styles.benefitDesc, { color: colors.textSecondary }]}>{benefit.description}</Text>
+              <Text style={[styles.benefitName, { color: colors.textPrimary }]}>
+                {benefit.name}
+              </Text>
+              <Text style={[styles.benefitDesc, { color: colors.textSecondary }]}>
+                {benefit.description}
+              </Text>
             </View>
           ))
         ) : (
