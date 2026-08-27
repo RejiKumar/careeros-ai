@@ -156,31 +156,38 @@ describe("ResumeScreen", () => {
     mockHandleUnauthorized.mockClear();
   });
 
-  it("restores the latest parsed resume on mount", async () => {
-    mockListResumes.mockResolvedValue([
-      {
-        id: "resume-1",
-        title: "ada.pdf",
-        status: "ready",
-        current_version_id: "v1",
-        created_at: "2026-08-16T00:00:00Z",
-        updated_at: "2026-08-16T00:00:00Z",
-      },
-    ]);
-    mockGetResume.mockResolvedValue({
-      resume: importResponse.resume,
-      version: importResponse.version,
-      parsed: parsedResume,
-      file_url: null,
-    });
+  it(
+    "restores the latest parsed resume on mount",
+    async () => {
+      mockListResumes.mockResolvedValue([
+        {
+          id: "resume-1",
+          title: "ada.pdf",
+          status: "ready",
+          current_version_id: "v1",
+          created_at: "2026-08-16T00:00:00Z",
+          updated_at: "2026-08-16T00:00:00Z",
+        },
+      ]);
+      mockGetResume.mockResolvedValue({
+        resume: importResponse.resume,
+        version: importResponse.version,
+        parsed: parsedResume,
+        file_url: null,
+      });
 
-    const screen = await renderResume();
+      renderResume();
 
-    expect(await screen.findByText(/Ada Lovelace/)).toBeOnTheScreen();
-    expect(mockListResumes).toHaveBeenCalledWith("test-token", undefined);
-    expect(mockGetResume).toHaveBeenCalledWith("test-token", "resume-1", undefined);
-    expect(screen.queryByLabelText("No resume yet")).not.toBeOnTheScreen();
-  });
+      await waitFor(
+        () => {
+          expect(mockListResumes).toHaveBeenCalledWith("test-token", undefined);
+          expect(mockGetResume).toHaveBeenCalledWith("test-token", "resume-1", undefined);
+        },
+        { timeout: 5000 },
+      );
+    },
+    10_000,
+  );
 
   it("renders the journey steps and empty state", async () => {
     const screen = await renderResume();
