@@ -447,7 +447,7 @@ class FakeProvider(CareerAiProvider):
                 partial_skills=[{"skill": "AWS", "proficiency": "basic"}],
                 missing_skills=[{"skill": "Kubernetes", "priority": "high"}],
                 overall_match_percent=65,
-                summary="Resume covers some core skills but is missing containerization experience.",
+                summary="Resume covers core skills but misses containerization.",
             ),
             request_id="gap-request-1",
             model_version="gemini-3.6-flash",
@@ -465,7 +465,9 @@ class FakeProvider(CareerAiProvider):
         return TailorResult(
             content=TailorContent(
                 tailored_content=content,
-                changes=[{"field": "summary", "type": "rewrite", "reason": "Align with job keywords"}],
+                changes=[
+                    {"field": "summary", "type": "rewrite", "reason": "Align with job keywords"}
+                ],
                 match_score_improvement=12,
             ),
             request_id="tailor-request-1",
