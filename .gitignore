@@ -54,6 +54,14 @@ tools/
 android/
 ios/
 
+# Keystore files (secrets — never commit)
+*.jks
+*.keystore
+
+# Google services config (contains API keys)
+google-services.json
+GoogleService-Info.plist
+
 # npm lockfile (project uses pnpm)
 package-lock.json
 

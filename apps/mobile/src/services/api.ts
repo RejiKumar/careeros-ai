@@ -1,22 +1,34 @@
 import type {
   AchievementResponse,
   AssessmentResponse,
+  BenefitsComparisonResponse,
   CoachMessagePairResponse,
   CoachThreadDetailResponse,
   CoachThreadResponse,
+  CompanyJobsResponse,
+  CompanyProfileResponse,
+  CareerPathResponse,
   DashboardResponse,
   EntitlementResponse,
+  FCMTokenResponse,
   FeedbackResponse,
+  GapAnalysisResponse,
   GuestMigrationResponse,
   InterviewAnswerResponse,
   InterviewSessionDetailResponse,
   InterviewSessionResponse,
   JobDescriptionMatchResponse,
+  MarketPulseResponse,
+  SkillTrendResponse,
   JobDescriptionResponse,
+  JobSearchResponse,
   MatchResponse,
   MissionCompleteResponse,
   MissionProgressResponse,
   MissionResponse,
+  NegotiationResponse,
+  NotificationLogResponse,
+  NotificationPreferenceResponse,
   ResumeContent,
   ResumeDetailResponse,
   ResumeImportResponse,
@@ -25,8 +37,16 @@ import type {
   RewriteAcceptedResponse,
   RewriteBatchResponse,
   RoastResponse,
+  SavedCareerPathResponse,
+  SavedCompanyResponse,
+  SavedJobResponse,
+  TailorAcceptResponse,
+  TailorHistoryItem,
+  TailorResponse,
   UserResponse,
   WrappedResponse,
+  ApplicationResponse,
+  ApplicationStatsResponse,
 } from "./contract";
 import { ApiError } from "./contract";
 
@@ -409,34 +429,43 @@ export class ApiClient {
 
   /* ─── Rewrites ─── */
 
-  createRewriteBatch(accessToken: string, resumeId: string): Promise<RewriteBatchResponse> {
+  createRewriteBatch(
+    accessToken: string | undefined,
+    resumeId: string,
+    guestId?: string,
+  ): Promise<RewriteBatchResponse> {
     return this.request<RewriteBatchResponse>(
       `/api/v1/resumes/${resumeId}/rewrites`,
       accessToken,
-      undefined,
+      guestId,
       { method: "POST" },
     );
   }
 
-  listRewriteBatches(accessToken: string, resumeId: string): Promise<RewriteBatchResponse[]> {
+  listRewriteBatches(
+    accessToken: string | undefined,
+    resumeId: string,
+    guestId?: string,
+  ): Promise<RewriteBatchResponse[]> {
     return this.request<RewriteBatchResponse[]>(
       `/api/v1/resumes/${resumeId}/rewrites`,
       accessToken,
-      undefined,
+      guestId,
       { method: "GET" },
     );
   }
 
   acceptRewriteBatch(
-    accessToken: string,
+    accessToken: string | undefined,
     resumeId: string,
     rewriteId: string,
     acceptedData: ResumeContent,
+    guestId?: string,
   ): Promise<RewriteAcceptedResponse> {
     return this.jsonRequest<RewriteAcceptedResponse>(
       `/api/v1/resumes/${resumeId}/rewrites/${rewriteId}/accept`,
       accessToken,
-      undefined,
+      guestId,
       "POST",
       { accepted_data: acceptedData },
     );
@@ -552,12 +581,176 @@ export class ApiClient {
     );
   }
 
+  /* ─── Skills Gap ─── */
+
+  analyzeSkillsGap(
+    accessToken: string | undefined,
+    payload: {
+      resume_id: string;
+      job_description_id: string;
+      resume_version_id?: string;
+    },
+    guestId?: string,
+  ): Promise<GapAnalysisResponse> {
+    return this.jsonRequest<GapAnalysisResponse>(
+      "/api/v1/skills-gap/analyze",
+      accessToken,
+      guestId,
+      "POST",
+      payload,
+    );
+  }
+
+  getGapAnalysis(
+    accessToken: string | undefined,
+    analysisId: string,
+    guestId?: string,
+  ): Promise<GapAnalysisResponse> {
+    return this.request<GapAnalysisResponse>(
+      `/api/v1/skills-gap/${analysisId}`,
+      accessToken,
+      guestId,
+      { method: "GET" },
+    );
+  }
+
+  listGapAnalyses(
+    accessToken: string | undefined,
+    guestId?: string,
+  ): Promise<GapAnalysisResponse[]> {
+    return this.request<GapAnalysisResponse[]>("/api/v1/skills-gap", accessToken, guestId, {
+      method: "GET",
+    });
+  }
+
+  deleteGapAnalysis(
+    accessToken: string | undefined,
+    analysisId: string,
+    guestId?: string,
+  ): Promise<void> {
+    return this.request<void>(`/api/v1/skills-gap/${analysisId}`, accessToken, guestId, {
+      method: "DELETE",
+    });
+  }
+
   /* ─── Achievements ─── */
 
   getAchievements(accessToken: string): Promise<AchievementResponse[]> {
     return this.request<AchievementResponse[]>("/api/v1/achievements", accessToken, undefined, {
       method: "GET",
     });
+  }
+
+  /* ─── Job Search ─── */
+
+  searchJobs(
+    accessToken: string | undefined,
+    query: string,
+    location?: string,
+    source?: string,
+    page?: number,
+    limit?: number,
+    guestId?: string,
+  ): Promise<JobSearchResponse> {
+    const params = new URLSearchParams();
+    params.set("query", query);
+    if (location !== undefined && location !== "") {
+      params.set("location", location);
+    }
+    if (source !== undefined && source !== "") {
+      params.set("source", source);
+    }
+    if (page !== undefined) {
+      params.set("page", String(page));
+    }
+    if (limit !== undefined) {
+      params.set("limit", String(limit));
+    }
+    return this.request<JobSearchResponse>(
+      `/api/v1/job-search/search?${params.toString()}`,
+      accessToken,
+      guestId,
+      { method: "POST" },
+    );
+  }
+
+  saveJob(
+    accessToken: string | undefined,
+    payload: {
+      job_id: string;
+      title: string;
+      company?: string | null;
+      location?: string | null;
+      source: string;
+      url?: string | null;
+    },
+    guestId?: string,
+  ): Promise<SavedJobResponse> {
+    return this.jsonRequest<SavedJobResponse>(
+      "/api/v1/job-search/saved",
+      accessToken,
+      guestId,
+      "POST",
+      payload,
+    );
+  }
+
+  listSavedJobs(accessToken: string | undefined, guestId?: string): Promise<SavedJobResponse[]> {
+    return this.request<SavedJobResponse[]>("/api/v1/job-search/saved", accessToken, guestId, {
+      method: "GET",
+    });
+  }
+
+  deleteSavedJob(accessToken: string | undefined, jobId: string, guestId?: string): Promise<void> {
+    return this.request<void>(`/api/v1/job-search/saved/${jobId}`, accessToken, guestId, {
+      method: "DELETE",
+    });
+  }
+
+  /* ─── Market Pulse ─── */
+
+  getMarketPulse(
+    accessToken: string | undefined,
+    location?: string,
+    role?: string,
+    guestId?: string,
+  ): Promise<MarketPulseResponse> {
+    const params = new URLSearchParams();
+    if (location !== undefined && location !== "") {
+      params.set("location", location);
+    }
+    if (role !== undefined && role !== "") {
+      params.set("role", role);
+    }
+    const query = params.toString();
+    return this.request<MarketPulseResponse>(
+      `/api/v1/market-pulse${query !== "" ? `?${query}` : ""}`,
+      accessToken,
+      guestId,
+      { method: "GET" },
+    );
+  }
+
+  getSkillTrends(
+    accessToken: string | undefined,
+    period?: string,
+    location?: string,
+    guestId?: string,
+  ): Promise<SkillTrendResponse> {
+    const params = new URLSearchParams();
+    if (period !== undefined && period !== "") {
+      params.set("period", period);
+    }
+    if (location !== undefined && location !== "") {
+      params.set("location", location);
+    }
+    const query = params.toString();
+    return this.request<SkillTrendResponse>(
+      `/api/v1/market-pulse/trends${query !== "" ? `?${query}` : ""}`,
+      accessToken,
+      guestId,
+      { method: "GET" },
+    );
   }
 
   /* ─── Feedback ─── */
@@ -580,5 +773,383 @@ export class ApiClient {
       "POST",
       payload,
     );
+  }
+
+  /* ─── Notifications ─── */
+
+  registerFCMToken(
+    accessToken: string | undefined,
+    token: string,
+    platform: string,
+    guestId?: string,
+  ): Promise<FCMTokenResponse> {
+    return this.jsonRequest<FCMTokenResponse>(
+      "/api/v1/notifications/fcm-token",
+      accessToken,
+      guestId,
+      "POST",
+      { token, platform },
+    );
+  }
+
+  removeFCMToken(accessToken: string | undefined, token: string, guestId?: string): Promise<void> {
+    return this.request<void>(
+      `/api/v1/notifications/fcm-token?token=${encodeURIComponent(token)}`,
+      accessToken,
+      guestId,
+      { method: "DELETE" },
+    );
+  }
+
+  updateNotificationPreferences(
+    accessToken: string | undefined,
+    prefs: {
+      job_alerts?: boolean;
+      mission_reminders?: boolean;
+      career_tips?: boolean;
+      frequency?: string;
+    },
+    guestId?: string,
+  ): Promise<NotificationPreferenceResponse> {
+    return this.jsonRequest<NotificationPreferenceResponse>(
+      "/api/v1/notifications/preferences",
+      accessToken,
+      guestId,
+      "PUT",
+      prefs,
+    );
+  }
+
+  getNotificationPreferences(
+    accessToken: string | undefined,
+    guestId?: string,
+  ): Promise<NotificationPreferenceResponse> {
+    return this.request<NotificationPreferenceResponse>(
+      "/api/v1/notifications/preferences",
+      accessToken,
+      guestId,
+      { method: "GET" },
+    );
+  }
+
+  listNotifications(
+    accessToken: string | undefined,
+    guestId?: string,
+  ): Promise<NotificationLogResponse[]> {
+    return this.request<NotificationLogResponse[]>("/api/v1/notifications", accessToken, guestId, {
+      method: "GET",
+    });
+  }
+
+  markNotificationRead(
+    accessToken: string | undefined,
+    notificationId: string,
+    guestId?: string,
+  ): Promise<void> {
+    return this.request<void>(
+      `/api/v1/notifications/${notificationId}/read`,
+      accessToken,
+      guestId,
+      { method: "PATCH" },
+    );
+  }
+
+  /* ─── Resume Tailor ─── */
+
+  tailorResume(
+    accessToken: string | undefined,
+    payload: { resume_id: string; job_description_id: string; resume_version_id?: string },
+    guestId?: string,
+  ): Promise<TailorResponse> {
+    return this.jsonRequest<TailorResponse>(
+      "/api/v1/resume-tailor/tailor",
+      accessToken,
+      guestId,
+      "POST",
+      payload,
+    );
+  }
+
+  acceptTailor(
+    accessToken: string | undefined,
+    payload: { tailor_id: string },
+    guestId?: string,
+  ): Promise<TailorAcceptResponse> {
+    return this.jsonRequest<TailorAcceptResponse>(
+      "/api/v1/resume-tailor/accept",
+      accessToken,
+      guestId,
+      "POST",
+      payload,
+    );
+  }
+
+  getTailorHistory(
+    accessToken: string | undefined,
+    resumeId: string,
+    guestId?: string,
+  ): Promise<TailorHistoryItem[]> {
+    return this.request<TailorHistoryItem[]>(
+      `/api/v1/resume-tailor/history/${resumeId}`,
+      accessToken,
+      guestId,
+      { method: "GET" },
+    );
+  }
+
+  deleteTailor(accessToken: string | undefined, tailorId: string, guestId?: string): Promise<void> {
+    return this.request<void>(`/api/v1/resume-tailor/${tailorId}`, accessToken, guestId, {
+      method: "DELETE",
+    });
+  }
+
+  /* ─── Company ─── */
+
+  searchCompanies(
+    accessToken: string | undefined,
+    query: string,
+    location?: string,
+    guestId?: string,
+  ): Promise<CompanyProfileResponse[]> {
+    const params = new URLSearchParams();
+    params.set("query", query);
+    if (location !== undefined && location !== "") {
+      params.set("location", location);
+    }
+    return this.request<CompanyProfileResponse[]>(
+      `/api/v1/companies/search?${params.toString()}`,
+      accessToken,
+      guestId,
+      { method: "POST" },
+    );
+  }
+
+  getCompany(
+    accessToken: string | undefined,
+    companyId: string,
+    guestId?: string,
+  ): Promise<CompanyProfileResponse> {
+    return this.request<CompanyProfileResponse>(
+      `/api/v1/companies/${companyId}`,
+      accessToken,
+      guestId,
+      { method: "GET" },
+    );
+  }
+
+  getCompanyJobs(
+    accessToken: string | undefined,
+    companyId: string,
+    guestId?: string,
+  ): Promise<CompanyJobsResponse> {
+    return this.request<CompanyJobsResponse>(
+      `/api/v1/companies/${companyId}/jobs`,
+      accessToken,
+      guestId,
+      { method: "GET" },
+    );
+  }
+
+  saveCompany(
+    accessToken: string | undefined,
+    payload: { company_id: string; company_name: string },
+    guestId?: string,
+  ): Promise<SavedCompanyResponse> {
+    return this.jsonRequest<SavedCompanyResponse>(
+      "/api/v1/companies/saved",
+      accessToken,
+      guestId,
+      "POST",
+      payload,
+    );
+  }
+
+  listSavedCompanies(
+    accessToken: string | undefined,
+    guestId?: string,
+  ): Promise<SavedCompanyResponse[]> {
+    return this.request<SavedCompanyResponse[]>("/api/v1/companies/saved", accessToken, guestId, {
+      method: "GET",
+    });
+  }
+
+  deleteSavedCompany(
+    accessToken: string | undefined,
+    savedId: string,
+    guestId?: string,
+  ): Promise<void> {
+    return this.request<void>(`/api/v1/companies/saved/${savedId}`, accessToken, guestId, {
+      method: "DELETE",
+    });
+  }
+
+  /* ─── Salary Negotiator ─── */
+
+  getSalaryRange(
+    accessToken: string | undefined,
+    payload: {
+      role: string;
+      location: string;
+      experience_years: number;
+      skills: string[];
+      company?: string;
+    },
+    guestId?: string,
+  ): Promise<NegotiationResponse> {
+    return this.jsonRequest<NegotiationResponse>(
+      "/api/v1/salary-negotiator/range",
+      accessToken,
+      guestId,
+      "POST",
+      payload,
+    );
+  }
+
+  getBenefitsComparison(
+    accessToken: string | undefined,
+    payload: {
+      role: string;
+      location: string;
+      experience_years: number;
+      skills: string[];
+      company?: string;
+    },
+    guestId?: string,
+  ): Promise<BenefitsComparisonResponse> {
+    return this.jsonRequest<BenefitsComparisonResponse>(
+      "/api/v1/salary-negotiator/benefits",
+      accessToken,
+      guestId,
+      "POST",
+      payload,
+    );
+  }
+
+  /* ─── Career Path ─── */
+
+  generateCareerPath(
+    accessToken: string | undefined,
+    payload: { resume_id: string; target_role?: string },
+    guestId?: string,
+  ): Promise<CareerPathResponse> {
+    return this.jsonRequest<CareerPathResponse>(
+      "/api/v1/career-path/generate",
+      accessToken,
+      guestId,
+      "POST",
+      payload,
+    );
+  }
+
+  getCareerPath(
+    accessToken: string | undefined,
+    pathId: string,
+    guestId?: string,
+  ): Promise<CareerPathResponse> {
+    return this.request<CareerPathResponse>(`/api/v1/career-path/${pathId}`, accessToken, guestId, {
+      method: "GET",
+    });
+  }
+
+  listCareerPaths(
+    accessToken: string | undefined,
+    guestId?: string,
+  ): Promise<SavedCareerPathResponse[]> {
+    return this.request<SavedCareerPathResponse[]>("/api/v1/career-path", accessToken, guestId, {
+      method: "GET",
+    });
+  }
+
+  deleteCareerPath(
+    accessToken: string | undefined,
+    pathId: string,
+    guestId?: string,
+  ): Promise<void> {
+    return this.request<void>(`/api/v1/career-path/${pathId}`, accessToken, guestId, {
+      method: "DELETE",
+    });
+  }
+
+  /* ─── Applications ─── */
+
+  createApplication(
+    accessToken: string | undefined,
+    payload: {
+      job_title: string;
+      company?: string | null;
+      status?: string;
+      notes?: string | null;
+      follow_up_date?: string | null;
+      interview_date?: string | null;
+    },
+    guestId?: string,
+  ): Promise<ApplicationResponse> {
+    return this.jsonRequest<ApplicationResponse>(
+      "/api/v1/applications",
+      accessToken,
+      guestId,
+      "POST",
+      payload,
+    );
+  }
+
+  listApplications(
+    accessToken: string | undefined,
+    statusFilter?: string,
+    guestId?: string,
+  ): Promise<ApplicationResponse[]> {
+    const params = new URLSearchParams();
+    if (statusFilter !== undefined && statusFilter !== "") {
+      params.set("status", statusFilter);
+    }
+    const query = params.toString();
+    const path = `/api/v1/applications${query !== "" ? `?${query}` : ""}`;
+    return this.request<ApplicationResponse[]>(path, accessToken, guestId, {
+      method: "GET",
+    });
+  }
+
+  getApplicationStats(
+    accessToken: string | undefined,
+    guestId?: string,
+  ): Promise<ApplicationStatsResponse> {
+    return this.request<ApplicationStatsResponse>(
+      "/api/v1/applications/stats",
+      accessToken,
+      guestId,
+      { method: "GET" },
+    );
+  }
+
+  updateApplication(
+    accessToken: string | undefined,
+    applicationId: string,
+    payload: {
+      job_title?: string;
+      company?: string | null;
+      status?: string;
+      notes?: string | null;
+      follow_up_date?: string | null;
+      interview_date?: string | null;
+    },
+    guestId?: string,
+  ): Promise<ApplicationResponse> {
+    return this.jsonRequest<ApplicationResponse>(
+      `/api/v1/applications/${applicationId}`,
+      accessToken,
+      guestId,
+      "PATCH",
+      payload,
+    );
+  }
+
+  deleteApplication(
+    accessToken: string | undefined,
+    applicationId: string,
+    guestId?: string,
+  ): Promise<void> {
+    return this.request<void>(`/api/v1/applications/${applicationId}`, accessToken, guestId, {
+      method: "DELETE",
+    });
   }
 }

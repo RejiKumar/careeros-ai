@@ -336,6 +336,317 @@ export interface GuestMigrationResponse {
   guest_id: string;
 }
 
+export interface JobSearchResult {
+  id: string;
+  title: string;
+  company: string | null;
+  location: string | null;
+  source: string;
+  url: string | null;
+  description: string | null;
+  skills: string[];
+  match_score: number | null;
+  salary_range: string | null;
+  posted_date: string | null;
+  created_at: string;
+}
+
+export interface JobSearchResponse {
+  results: JobSearchResult[];
+  total: number;
+  page: number;
+  limit: number;
+  has_more: boolean;
+}
+
+export interface SavedJobResponse {
+  id: string;
+  job_id: string;
+  title: string;
+  company: string | null;
+  location: string | null;
+  source: string;
+  url: string | null;
+  saved_at: string;
+}
+
+export interface JobAlertPreference {
+  id: string;
+  user_id: string;
+  keywords: string[];
+  location: string | null;
+  sources: string[];
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface TailorSectionDiff {
+  section: string;
+  original: string;
+  tailored: string;
+  reasoning: string;
+}
+
+export interface TailorDiff {
+  id: string;
+  resume_id: string;
+  job_description_id: string;
+  resume_version_id: string;
+  original_summary: string | null;
+  tailored_summary: string | null;
+  original_skills: string[];
+  tailored_skills: string[];
+  original_experience: WorkEntry[];
+  tailored_experience: WorkEntry[];
+  section_diffs: TailorSectionDiff[];
+  model_version: string | null;
+  created_at: string;
+}
+
+export interface TailorResponse {
+  tailor: TailorDiff;
+  job_description: JobDescriptionResponse;
+}
+
+export interface TailorHistoryItem {
+  id: string;
+  resume_id: string;
+  job_description_id: string;
+  job_title: string | null;
+  job_company: string | null;
+  accepted: boolean;
+  created_at: string;
+}
+
+export interface TailorAcceptResponse {
+  resume_id: string;
+  version: number;
+  version_id: string;
+  status: string;
+}
+
+export interface FCMTokenResponse {
+  id: string;
+  token: string;
+  platform: string;
+  created_at: string;
+}
+
+export interface NotificationPreferenceResponse {
+  id?: string;
+  user_id?: string;
+  job_alerts: boolean;
+  mission_reminders: boolean;
+  career_tips: boolean;
+  frequency: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface NotificationLogResponse {
+  id: string;
+  user_id: string | null;
+  guest_id: string | null;
+  title: string;
+  body: string;
+  data: Record<string, unknown> | null;
+  read: boolean;
+  created_at: string;
+}
+
+export interface LearningResource {
+  type: "course" | "certification" | "article" | "tutorial";
+  title: string;
+  url: string | null;
+  provider: string | null;
+}
+
+export interface SkillGap {
+  skill: string;
+  match_level: "matched" | "partial" | "missing";
+}
+
+export interface GapAnalysisResponse {
+  id: string;
+  resume_id: string;
+  job_description_id: string;
+  overall_match_percentage: number;
+  matched_skills: string[];
+  partial_skills: string[];
+  missing_skills: string[];
+  learning_resources: LearningResource[];
+  created_at: string;
+}
+
+export interface GapAnalysisHistoryResponse {
+  analyses: GapAnalysisResponse[];
+  total: number;
+}
+
+export interface ApplicationResponse {
+  id: string;
+  user_id: string | null;
+  guest_id: string | null;
+  job_title: string;
+  company: string | null;
+  status: "applied" | "interviewing" | "offered" | "rejected";
+  notes: string | null;
+  applied_date: string;
+  follow_up_date: string | null;
+  interview_date: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ApplicationStatsResponse {
+  total: number;
+  by_status: {
+    applied: number;
+    interviewing: number;
+    offered: number;
+    rejected: number;
+  };
+}
+
+export interface SkillDemandItem {
+  skill: string;
+  demand_score: number;
+  change_pct: number;
+  job_count: number;
+}
+
+export interface SalaryRange {
+  role: string;
+  location: string;
+  min: number;
+  max: number;
+  median: number;
+}
+
+export interface TopCompany {
+  name: string;
+  job_count: number;
+  tech_stack: string[];
+}
+
+export interface MarketPulseResponse {
+  location: string;
+  role: string | null;
+  skill_demand: SkillDemandItem[];
+  salary_ranges: SalaryRange[];
+  top_companies: TopCompany[];
+  recommended_skills: string[];
+}
+
+export type SkillTrendDirection = "rising" | "stable" | "declining";
+
+export interface SkillTrendItem {
+  skill: string;
+  trend: SkillTrendDirection;
+  change_pct: number;
+}
+
+export interface SkillTrendResponse {
+  period: string;
+  trends: SkillTrendItem[];
+}
+
+/* ─── Company ─── */
+
+export interface CompanyProfileResponse {
+  id: string;
+  name: string;
+  location: string | null;
+  tech_stack: string[];
+  team_size: number | null;
+  industry: string | null;
+  culture_signals: string[];
+  recent_job_count: number;
+  logo_url: string | null;
+}
+
+export interface CompanyJob {
+  id: string;
+  title: string;
+  location: string | null;
+  posted_date: string | null;
+  url: string | null;
+}
+
+export interface CompanyJobsResponse {
+  company_id: string;
+  company_name: string;
+  jobs: CompanyJob[];
+}
+
+export interface SavedCompanyResponse {
+  id: string;
+  company_id: string;
+  company_name: string;
+  saved_at: string;
+}
+
+/* ─── Salary Negotiator ─── */
+
+export interface NegotiationScript {
+  opening: string;
+  justification: string[];
+  objection_handling: string[];
+  closing: string;
+}
+
+export interface SalaryRangeResponse {
+  role: string;
+  location: string;
+  min_salary: number;
+  max_salary: number;
+  median_salary: number;
+  confidence: number;
+  currency: string;
+}
+
+export interface NegotiationResponse {
+  salary_range: SalaryRangeResponse;
+  negotiation_script: NegotiationScript;
+}
+
+export interface BenefitsItem {
+  name: string;
+  description: string;
+}
+
+export interface BenefitsComparisonResponse {
+  benefits: BenefitsItem[];
+}
+
+/* ─── Career Path ─── */
+
+export interface CareerStage {
+  title: string;
+  description: string;
+  required_skills: string[];
+  recommended_actions: string[];
+  is_current: boolean;
+}
+
+export interface CareerPathResponse {
+  id: string;
+  resume_id: string;
+  target_role: string | null;
+  stages: CareerStage[];
+  gap_analysis: string[];
+  timeline_estimate: string | null;
+  created_at: string;
+}
+
+export interface SavedCareerPathResponse {
+  id: string;
+  path_id: string;
+  target_role: string | null;
+  saved_at: string;
+}
+
 export class ApiError extends Error {
   readonly status: number;
   readonly code: string | null;

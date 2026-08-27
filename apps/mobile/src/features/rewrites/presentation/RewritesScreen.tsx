@@ -31,8 +31,9 @@ export default function RewritesScreen() {
   const resumeIdParam = typeof params.resumeId === "string" ? params.resumeId : undefined;
   const { theme } = useTheme();
   const { colors } = theme;
-  const { session, handleUnauthorized } = useAuth();
+  const { session, guestId, status: authStatus, handleUnauthorized } = useAuth();
 
+  const isGuest = authStatus === "guest";
   const [resumeState, setResumeState] = useState<ResumeState>(
     resumeIdParam === undefined
       ? { status: "error", message: t("rewrites.noResume") }
@@ -45,15 +46,16 @@ export default function RewritesScreen() {
   const resumeId = resumeIdParam;
 
   useEffect(() => {
-    const token = accessToken;
+    const token = isGuest ? undefined : accessToken;
+    const gid = (isGuest ? guestId : undefined) ?? undefined;
     const rid = resumeId;
-    if (token === undefined || rid === undefined) {
+    if (rid === undefined) {
       return;
     }
     let cancelled = false;
     const loadResume = async () => {
       try {
-        const detail = await apiClient.getResume(token, rid);
+        const detail = await apiClient.getResume(token, rid, gid);
         if (!cancelled) {
           setResumeState({ status: "success", detail });
         }
@@ -75,15 +77,17 @@ export default function RewritesScreen() {
     return () => {
       cancelled = true;
     };
-  }, [accessToken, resumeId, handleUnauthorized]);
+  }, [accessToken, guestId, isGuest, resumeId, handleUnauthorized]);
 
   async function handleGenerate() {
-    if (accessToken === undefined || resumeId === undefined) {
+    if (resumeId === undefined) {
       return;
     }
+    const token = isGuest ? undefined : accessToken;
+    const gid = (isGuest ? guestId : undefined) ?? undefined;
     setBatchState({ status: "loading" });
     try {
-      const batch = await apiClient.createRewriteBatch(accessToken, resumeId);
+      const batch = await apiClient.createRewriteBatch(token, resumeId, gid);
       setBatchState({ status: "success", batch });
     } catch (err) {
       if (err instanceof ApiError && err.status === 401) {
@@ -133,12 +137,14 @@ export default function RewritesScreen() {
   }
 
   async function handleAccept(suggestion: RewriteBatchResponse["suggestions"][number]) {
-    if (accessToken === undefined || resumeId === undefined) {
+    if (resumeId === undefined) {
       return;
     }
     if (resumeState.status !== "success" || batchState.status !== "success") {
       return;
     }
+    const token = isGuest ? undefined : accessToken;
+    const gid = (isGuest ? guestId : undefined) ?? undefined;
     const updatedContent = applySuggestion(resumeState.detail.parsed, suggestion);
     if (updatedContent === null) {
       setBatchState({ status: "error", message: t("rewrites.noContent") });
@@ -147,10 +153,11 @@ export default function RewritesScreen() {
     setBatchState({ status: "loading" });
     try {
       const result = await apiClient.acceptRewriteBatch(
-        accessToken,
+        token,
         resumeId,
         batchState.batch.id,
         updatedContent,
+        gid,
       );
       setBatchState({ status: "success", batch: batchState.batch });
       setResumeState({
@@ -351,7 +358,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    padding: 24,
+    paddingHorizontal: 24,
     paddingBottom: 48,
   },
   backButton: {

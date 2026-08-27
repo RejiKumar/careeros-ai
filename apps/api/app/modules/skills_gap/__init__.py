@@ -1,0 +1,1 @@
+"""Skills Gap Radar module."""

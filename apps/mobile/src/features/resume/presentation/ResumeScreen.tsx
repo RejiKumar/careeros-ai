@@ -2,6 +2,7 @@ import { getDocumentAsync } from "expo-document-picker";
 import { useFocusEffect, useRouter } from "expo-router";
 import { useCallback, useState } from "react";
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { t } from "../../../i18n";
 import { useAuth } from "@/lib/auth";
@@ -37,9 +38,12 @@ export default function ResumeScreen() {
   const router = useRouter();
   const { theme } = useTheme();
   const { colors } = theme;
-  const { session, handleUnauthorized } = useAuth();
+  const { session, guestId, status: authStatus, handleUnauthorized } = useAuth();
 
+  const insets = useSafeAreaInsets();
+  const isGuest = authStatus === "guest";
   const [importState, setImportState] = useState<ImportState>({ status: "idle" });
+  const [restoring, setRestoring] = useState(true);
   const [scoreState, setScoreState] = useState<ScoreState>({ status: "idle" });
   const [pendingFile, setPendingFile] = useState<{
     uri: string;
@@ -61,23 +65,29 @@ export default function ResumeScreen() {
   }
 
   const restoreLatestResume = useCallback(async () => {
-    if (accessToken === undefined) {
+    const token = isGuest ? undefined : accessToken;
+    const gid = (isGuest ? guestId : undefined) ?? undefined;
+    if (token === undefined && gid === undefined) {
+      setRestoring(false);
       return;
     }
     try {
-      const items = await apiClient.listResumes(accessToken);
+      const items = await apiClient.listResumes(token, gid);
       const latest = items.find((r) => r.current_version_id !== null);
       if (latest === undefined) {
+        setRestoring(false);
         return;
       }
-      const detail = await apiClient.getResume(accessToken, latest.id);
+      const detail = await apiClient.getResume(token, latest.id, gid);
       if (detail.parsed !== null) {
         setImportState({ status: "success", resumeId: latest.id, parsed: detail.parsed });
       }
     } catch {
       // Restore is best-effort; the import journey remains available.
+    } finally {
+      setRestoring(false);
     }
-  }, [accessToken]);
+  }, [accessToken, guestId, isGuest]);
 
   useFocusEffect(
     useCallback(() => {
@@ -147,14 +157,16 @@ export default function ResumeScreen() {
   }
 
   async function uploadFile(file: { uri: string; name: string; type: string }) {
-    if (accessToken === undefined) {
+    const token = isGuest ? undefined : accessToken;
+    const gid = (isGuest ? guestId : undefined) ?? undefined;
+    if (token === undefined && gid === undefined) {
       void handleUnauthorized();
       return;
     }
     setPendingFile(file);
     setImportState({ status: "uploading" });
     try {
-      const response = await apiClient.importResume(accessToken, file);
+      const response = await apiClient.importResume(token, file, gid);
       setImportState({ status: "success", resumeId: response.resume.id, parsed: response.parsed });
     } catch (err) {
       throw err;
@@ -165,12 +177,17 @@ export default function ResumeScreen() {
     if (scoreState.status === "loading") {
       return;
     }
-    if (accessToken === undefined || importState.status !== "success") {
+    if (importState.status !== "success") {
+      return;
+    }
+    const token = isGuest ? undefined : accessToken;
+    const gid = (isGuest ? guestId : undefined) ?? undefined;
+    if (token === undefined && gid === undefined) {
       return;
     }
     setScoreState({ status: "loading" });
     try {
-      const assessment = await apiClient.createAssessment(accessToken, importState.resumeId);
+      const assessment = await apiClient.createAssessment(token, importState.resumeId, gid);
       setScoreState({ status: "success", assessment });
     } catch (err) {
       if (err instanceof ApiError && err.status === 401) {
@@ -186,7 +203,7 @@ export default function ResumeScreen() {
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
-      <ScrollView contentContainerStyle={styles.scrollContent}>
+      <ScrollView contentContainerStyle={[styles.scrollContent, { paddingTop: insets.top + 24 }]}>
         <Pressable
           accessibilityRole="button"
           accessibilityLabel="Go back"
@@ -233,7 +250,32 @@ export default function ResumeScreen() {
                 {t("resume.improveButton")}
               </Text>
             </Pressable>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Import another resume"
+              onPress={() => {
+                setImportState({ status: "idle" });
+                setScoreState({ status: "idle" });
+                void handleImport();
+              }}
+              style={({ pressed }) => [
+                styles.secondaryButton,
+                { backgroundColor: colors.surfaceRaised },
+                pressed && styles.pressed,
+              ]}
+            >
+              <Text style={[styles.secondaryButtonLabel, { color: colors.primaryStrong }]}>
+                {t("resume.importAnother") ?? "Import another resume"}
+              </Text>
+            </Pressable>
           </>
+        ) : restoring ? (
+          <View style={styles.loadingBox}>
+            <ActivityIndicator color={colors.primary} accessibilityLabel="Restoring resume" />
+            <Text style={[styles.statusText, { color: colors.textSecondary }]}>
+              {t("resume.restoring") ?? "Restoring your resume\u2026"}
+            </Text>
+          </View>
         ) : (
           <>
             <View
@@ -666,7 +708,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    padding: 24,
+    paddingHorizontal: 24,
     paddingBottom: 48,
   },
   backButton: {
@@ -761,6 +803,16 @@ const styles = StyleSheet.create({
   },
   primaryButtonLabel: {
     fontSize: 16,
+    fontWeight: "700",
+  },
+  secondaryButton: {
+    marginTop: 12,
+    borderRadius: 14,
+    paddingVertical: 14,
+    alignItems: "center",
+  },
+  secondaryButtonLabel: {
+    fontSize: 15,
     fontWeight: "700",
   },
   pressed: {

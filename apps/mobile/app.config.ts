@@ -1,8 +1,29 @@
 import type { ConfigContext, ExpoConfig } from "expo/config";
 
-export type AppEnvironment = "dev" | "qa" | "prod";
+export type AppEnvironment = "dev" | "prod";
 
 const APP_ENV = (process.env.EXPO_PUBLIC_APP_ENV ?? "dev") as AppEnvironment;
+
+const ADMOB_IDS = {
+  dev: {
+    androidAppId: "ca-app-pub-3940256099942544~3347511713",
+    iosAppId: "ca-app-pub-3940256099942544~1458002511",
+    bannerUnitId: {
+      android: "ca-app-pub-3940256099942544/6300978111",
+      ios: "ca-app-pub-3940256099942544/2934735716",
+    },
+  },
+  prod: {
+    androidAppId: "ca-app-pub-3342123808291001~3690375670",
+    iosAppId: "ca-app-pub-3342123808291001~3690375670",
+    bannerUnitId: {
+      android: "ca-app-pub-3342123808291001/4771523057",
+      ios: "ca-app-pub-3342123808291001/4771523057",
+    },
+  },
+} as const;
+
+const admob = ADMOB_IDS[APP_ENV];
 
 const profiles: Record<AppEnvironment, Partial<ExpoConfig>> = {
   dev: {
@@ -19,20 +40,6 @@ const profiles: Record<AppEnvironment, Partial<ExpoConfig>> = {
       supportsTablet: false,
     },
   },
-  qa: {
-    name: "CareerOS AI (QA)",
-    slug: "careeros-ai",
-    scheme: "careerosqa",
-    version: "1.0.0",
-    android: {
-      package: "ai.careeros.app.qa",
-      versionCode: 1,
-    },
-    ios: {
-      bundleIdentifier: "ai.careeros.app.qa",
-      supportsTablet: false,
-    },
-  },
   prod: {
     name: "CareerOS AI",
     slug: "careeros-ai",
@@ -40,7 +47,7 @@ const profiles: Record<AppEnvironment, Partial<ExpoConfig>> = {
     version: "1.0.0",
     android: {
       package: "ai.careeros.app",
-      versionCode: 1,
+      versionCode: 5,
     },
     ios: {
       bundleIdentifier: "ai.careeros.app",
@@ -80,6 +87,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
       "expo-router",
       "expo-speech-recognition",
       "./plugins/withAdMobManifest",
+      "./plugins/withNewArchDisabled",
       [
         "expo-splash-screen",
         {
@@ -92,6 +100,8 @@ export default ({ config }: ConfigContext): ExpoConfig => {
       [
         "react-native-google-mobile-ads",
         {
+          androidAppId: admob.androidAppId,
+          iosAppId: admob.iosAppId,
           user_tracking_usage_description:
             "This identifier will be used to deliver personalized ads to you.",
         },

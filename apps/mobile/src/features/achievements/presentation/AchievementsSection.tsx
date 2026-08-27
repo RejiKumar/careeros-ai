@@ -18,18 +18,23 @@ const apiClient = new ApiClient();
 export default function AchievementsSection() {
   const { theme } = useTheme();
   const { colors } = theme;
-  const { session, handleUnauthorized } = useAuth();
+  const { session, status: authStatus, handleUnauthorized } = useAuth();
 
+  const isGuest = authStatus === "guest";
   const accessToken = session?.access_token;
   const [state, setState] = useState<AchievementsState>({ status: "loading" });
 
   const load = useCallback(async () => {
-    if (accessToken === undefined) {
-      void handleUnauthorized();
-      return;
-    }
     setState({ status: "loading" });
     try {
+      if (isGuest) {
+        setState({ status: "success", items: [] });
+        return;
+      }
+      if (accessToken === undefined) {
+        void handleUnauthorized();
+        return;
+      }
       const items = await apiClient.getAchievements(accessToken);
       setState({ status: "success", items });
     } catch (err) {
@@ -42,7 +47,7 @@ export default function AchievementsSection() {
         });
       }
     }
-  }, [accessToken, handleUnauthorized]);
+  }, [accessToken, isGuest, handleUnauthorized]);
 
   useFocusEffect(
     useCallback(() => {

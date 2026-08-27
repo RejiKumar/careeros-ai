@@ -21,17 +21,20 @@ from .provider import (
     AssessmentResult,
     CareerAiProvider,
     CoachResult,
+    GapAnalysisResult,
     InterviewQuestionsResult,
     MatchResult,
     ParsedResume,
     ProviderError,
     RewriteResult,
     RoastResult,
+    TailorResult,
 )
 from .schemas import (
     AnswerEvaluation,
     CoachMessage,
     CoachReply,
+    GapAnalysisContent,
     InterviewQuestionsContent,
     JobMatchContent,
     ResumeAssessment,
@@ -39,6 +42,7 @@ from .schemas import (
     RewriteContent,
     RoastContent,
     RoastMode,
+    TailorContent,
 )
 
 logger = logging.getLogger(__name__)
@@ -164,6 +168,47 @@ _EVALUATE_USER_PROMPT = (
     "<question>\n{question}\n</question>\n\n"
     "<answer>\n{answer}\n</answer>\n\n"
     "<resume_context>\n{resume_context}\n</resume_context>"
+)
+
+_GAP_ANALYSIS_SYSTEM_PROMPT = (
+    "You analyze the skills gap between a resume and a job description. "
+    "Score ONLY skills present in the resume or required by the job description. "
+    "Never invent, guess or fabricate skills, requirements or evidence. "
+    "A skill is 'matched' only if the resume clearly demonstrates it and the job "
+    "requires it; 'partial' if the resume shows related experience but not a direct "
+    "match; 'missing' if the job requires it and the resume does not demonstrate it. "
+    "For missing skills, suggest realistic learning resources. "
+    "Return only JSON matching the requested schema, without markdown fences."
+)
+
+_GAP_ANALYSIS_USER_PROMPT = (
+    "Analyze the skills gap between this resume and job description.\n\n"
+    "<resume_content>\n{content}\n</resume_content>\n\n"
+    "<job_description>\n{job_description}\n</job_description>"
+)
+
+_TAILOR_SYSTEM_PROMPT = (
+    "You tailor a resume for a specific job description. "
+    "IMPORTANT: Do NOT fabricate any experience, skills or qualifications. "
+    "Only rephrase, reorder and emphasize existing content. "
+    "Return only JSON matching the requested schema, without markdown fences."
+)
+
+_TAILOR_USER_PROMPT = (
+    "Tailor this resume for the specific job description. "
+    "IMPORTANT: Do NOT fabricate any experience, skills or qualifications. "
+    "Only rephrase, reorder and emphasize existing content.\n\n"
+    "Resume content:\n{resume_content}\n\n"
+    "Job description:\n{job_description}\n\n"
+    "Return a JSON object with:\n"
+    "- tailored_content: the modified resume content (same structure as input)\n"
+    "- diffs: list of changes made, each with field, original, tailored and reasoning\n\n"
+    "Guidelines:\n"
+    "1. Rewrite summary to emphasize relevant experience for this role\n"
+    "2. Reorder skills to match job requirements (most relevant first)\n"
+    "3. Adjust bullet points to use job-specific keywords where truthful\n"
+    "4. Do NOT add skills or experience not in the original\n"
+    "5. Preserve factual accuracy throughout"
 )
 
 
@@ -319,6 +364,41 @@ class GeminiProvider(CareerAiProvider):
         return AnswerEvaluationResult(
             content=evaluation, request_id=request_id, model_version=self._model
         )
+
+    def analyze_skills_gap(
+        self,
+        resume_content: ResumeContent,
+        job_description: str,
+        *,
+        locale: str = "en",
+    ) -> GapAnalysisResult:
+        payload = resume_content.model_dump(mode="json")
+        user_text = _GAP_ANALYSIS_USER_PROMPT.format(
+            content=json.dumps(payload, ensure_ascii=False),
+            job_description=job_description[:_MAX_RESUME_CHARS] or " ",
+        )
+        system_prompt = _GAP_ANALYSIS_SYSTEM_PROMPT + _language_instruction(locale)
+        raw, request_id = self._generate(system_prompt, user_text, _gap_analysis_json_schema())
+        analysis = _validated(GapAnalysisContent, raw, request_id)
+        return GapAnalysisResult(content=analysis, request_id=request_id, model_version=self._model)
+
+    def tailor_resume(
+        self,
+        content: ResumeContent,
+        job_description: str,
+        *,
+        locale: str = "en",
+    ) -> TailorResult:
+        payload = content.model_dump(mode="json")
+        user_text = _TAILOR_USER_PROMPT.format(
+            resume_content=json.dumps(payload, ensure_ascii=False),
+            job_description=job_description[:_MAX_RESUME_CHARS] or " ",
+        )
+        system_prompt = _TAILOR_SYSTEM_PROMPT + _language_instruction(locale)
+        raw, request_id = self._generate(system_prompt, user_text, _tailor_json_schema())
+        tailored = _validated(TailorContent, raw, request_id)
+        logger.info("Resume tailored (request %s)", request_id)
+        return TailorResult(content=tailored, request_id=request_id, model_version=self._model)
 
     def _post_with_retry(self, body: dict, attempts: int = 3) -> httpx.Response:
         """POST generateContent with exponential backoff on 429 rate limits."""
@@ -599,6 +679,68 @@ def _evaluation_json_schema() -> dict[str, Any]:
             "feedback",
             "suggested_answer",
         ],
+    )
+
+
+def _learning_resource_schema() -> dict[str, Any]:
+    return _object_schema(
+        {
+            "title": {"type": "string"},
+            "url": {"type": "string"},
+            "type": {"type": "string"},
+            "provider": {"type": "string"},
+        },
+        ["title", "type"],
+    )
+
+
+def _skill_gap_item_schema() -> dict[str, Any]:
+    return _object_schema(
+        {
+            "skill": {"type": "string"},
+            "status": {"type": "string"},
+            "resume_evidence": {"type": "string"},
+            "job_requirement": {"type": "string"},
+            "confidence": {"type": "number"},
+            "learning_resources": {
+                "type": "array",
+                "items": _learning_resource_schema(),
+            },
+        },
+        ["skill", "status", "job_requirement", "confidence"],
+    )
+
+
+def _gap_analysis_json_schema() -> dict[str, Any]:
+    """Strict JSON schema matching GapAnalysisContent."""
+    skill_array = {"type": "array", "items": _skill_gap_item_schema()}
+    return _object_schema(
+        {
+            "matched_skills": skill_array,
+            "partial_skills": skill_array,
+            "missing_skills": skill_array,
+        },
+        ["matched_skills", "partial_skills", "missing_skills"],
+    )
+
+
+def _tailor_json_schema() -> dict[str, Any]:
+    """Strict JSON schema matching TailorContent."""
+    diff_schema = _object_schema(
+        {
+            "field": {"type": "string"},
+            "original": {"type": "string"},
+            "tailored": {"type": "string"},
+            "reasoning": {"type": "string"},
+        },
+        ["field", "original", "tailored", "reasoning"],
+    )
+    return _object_schema(
+        {
+            "tailored_content": _resume_json_schema(),
+            "diffs": {"type": "array", "items": diff_schema},
+        },
+        ["tailored_content", "diffs"],
     )
 
 
