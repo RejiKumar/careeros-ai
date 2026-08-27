@@ -9,17 +9,20 @@ from app.ai.provider import (
     AssessmentResult,
     CareerAiProvider,
     CoachResult,
+    GapAnalysisResult,
     InterviewQuestionsResult,
     MatchResult,
     ParsedResume,
     ProviderError,
     RewriteResult,
     RoastResult,
+    TailorResult,
 )
 from app.ai.schemas import (
     AnswerEvaluation,
     CoachMessage,
     CoachReply,
+    GapAnalysisContent,
     InterviewQuestionsContent,
     JobMatchContent,
     ResumeAssessment,
@@ -27,6 +30,7 @@ from app.ai.schemas import (
     RewriteContent,
     RoastContent,
     RoastMode,
+    TailorContent,
 )
 from app.integrations.supabase.auth import ERROR_CODE_INVALID, AuthVerificationError
 from app.integrations.supabase.client import SupabaseClients
@@ -425,5 +429,45 @@ class FakeProvider(CareerAiProvider):
                 suggested_answer="I led a project that reduced startup time by 40%.",
             ),
             request_id="evaluation-request-1",
+            model_version="gemini-3.6-flash",
+        )
+
+    def analyze_skills_gap(
+        self,
+        resume_content: ResumeContent,
+        job_description: str,
+        *,
+        locale: str = "en",
+    ) -> GapAnalysisResult:
+        if self._error is not None:
+            raise self._error
+        return GapAnalysisResult(
+            content=GapAnalysisContent(
+                matched_skills=[{"skill": "Python", "proficiency": "strong"}],
+                partial_skills=[{"skill": "AWS", "proficiency": "basic"}],
+                missing_skills=[{"skill": "Kubernetes", "priority": "high"}],
+                overall_match_percent=65,
+                summary="Resume covers some core skills but is missing containerization experience.",
+            ),
+            request_id="gap-request-1",
+            model_version="gemini-3.6-flash",
+        )
+
+    def tailor_resume(
+        self,
+        content: ResumeContent,
+        job_description: str,
+        *,
+        locale: str = "en",
+    ) -> TailorResult:
+        if self._error is not None:
+            raise self._error
+        return TailorResult(
+            content=TailorContent(
+                tailored_content=content,
+                changes=[{"field": "summary", "type": "rewrite", "reason": "Align with job keywords"}],
+                match_score_improvement=12,
+            ),
+            request_id="tailor-request-1",
             model_version="gemini-3.6-flash",
         )
