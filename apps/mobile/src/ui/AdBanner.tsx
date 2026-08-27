@@ -20,13 +20,14 @@ try {
   if (Platform.OS !== "web") {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     const mobileAds = require("react-native-google-mobile-ads").default;
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    /* eslint-disable @typescript-eslint/no-require-imports */
     const {
       BannerAd,
       BannerAdSize,
       TestIds,
       useForeground,
     } = require("react-native-google-mobile-ads");
+    /* eslint-enable @typescript-eslint/no-require-imports */
 
     const appEnv = (process.env.EXPO_PUBLIC_APP_ENV ?? "dev") as "dev" | "prod";
     const ids = BANNER_IDS[appEnv];

@@ -1,4 +1,4 @@
-import { useFocusEffect, useRouter } from "expo-router";
+import { useFocusEffect } from "expo-router";
 import { useCallback, useState } from "react";
 import {
   ActivityIndicator,
@@ -51,11 +51,8 @@ const apiClient = new ApiClient();
 export default function ApplicationTrackerScreen() {
   const { theme } = useTheme();
   const { colors } = theme;
-  const { session, guestId, status: authStatus, handleUnauthorized } = useAuth();
+  const { session, guestId, handleUnauthorized } = useAuth();
   const insets = useSafeAreaInsets();
-  const router = useRouter();
-
-  const isGuest = authStatus === "guest";
   const accessToken = session?.access_token;
 
   const [listState, setListState] = useState<ListState>({ status: "loading" });

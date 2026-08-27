@@ -9,7 +9,7 @@ import {
   View,
 } from "react-native";
 
-import { AuthProvider, useAuth, type AuthStatus } from "@/lib/auth";
+import { AuthProvider, useAuth } from "@/lib/auth";
 import { setupNotifications } from "@/lib/notifications";
 import { ThemeProvider, useTheme } from "@/lib/theme";
 import { initAdMob } from "@/ui/AdBanner";
