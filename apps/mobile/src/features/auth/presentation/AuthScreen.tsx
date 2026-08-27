@@ -120,7 +120,8 @@ export default function AuthScreen() {
     <AppBackground>
       <KeyboardAvoidingView
         style={styles.flex}
-        behavior={Platform.OS === "ios" ? "padding" : undefined}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 64 : 0}
       >
         <ScrollView
           contentContainerStyle={styles.scrollContent}
@@ -206,6 +207,8 @@ export default function AuthScreen() {
                 secureTextEntry={!passwordVisible}
                 autoCapitalize="none"
                 autoComplete={isSignIn ? "current-password" : "new-password"}
+                textContentType={isSignIn ? "password" : "newPassword"}
+                accessible={true}
                 accessibilityLabel={t("auth.passwordLabel")}
                 placeholder={t("auth.passwordPlaceholder")}
                 placeholderTextColor={colors.textDisabled}

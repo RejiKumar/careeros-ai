@@ -1,0 +1,1 @@
+"""Salary negotiation intelligence module."""

@@ -12,7 +12,9 @@ type IconName = React.ComponentProps<typeof Ionicons>["name"];
 const TAB_ICONS: Record<string, { active: IconName; inactive: IconName }> = {
   index: { active: "home", inactive: "home-outline" },
   resume: { active: "document-text", inactive: "document-text-outline" },
+  search: { active: "search", inactive: "search-outline" },
   "job-match": { active: "flash", inactive: "flash-outline" },
+  tailor: { active: "create", inactive: "create-outline" },
   coach: { active: "chatbubble-ellipses", inactive: "chatbubble-ellipses-outline" },
   profile: { active: "person", inactive: "person-outline" },
 };
@@ -72,10 +74,24 @@ export default function TabsLayout() {
         }}
       />
       <Tabs.Screen
+        name="search"
+        options={{
+          title: t("tabs.search"),
+          tabBarIcon: ({ focused }) => <TabBarIcon name="search" focused={focused} />,
+        }}
+      />
+      <Tabs.Screen
         name="job-match"
         options={{
           title: t("tabs.match"),
           tabBarIcon: ({ focused }) => <TabBarIcon name="job-match" focused={focused} />,
+        }}
+      />
+      <Tabs.Screen
+        name="tailor"
+        options={{
+          title: t("tabs.tailor"),
+          tabBarIcon: ({ focused }) => <TabBarIcon name="tailor" focused={focused} />,
         }}
       />
       <Tabs.Screen
@@ -93,10 +109,12 @@ export default function TabsLayout() {
         }}
       />
       <Tabs.Screen name="missions" options={{ href: null }} />
+      <Tabs.Screen name="applications" options={{ href: null }} />
       <Tabs.Screen name="rewrites" options={{ href: null }} />
       <Tabs.Screen name="roast" options={{ href: null }} />
       <Tabs.Screen name="wrapped" options={{ href: null }} />
       <Tabs.Screen name="interview" options={{ href: null }} />
+      <Tabs.Screen name="skills-gap" options={{ href: null }} />
     </Tabs>
   );
 }

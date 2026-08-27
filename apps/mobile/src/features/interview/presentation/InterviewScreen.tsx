@@ -2,6 +2,8 @@ import { useFocusEffect } from "expo-router";
 import { useCallback, useState } from "react";
 import {
   ActivityIndicator,
+  KeyboardAvoidingView,
+  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -194,6 +196,10 @@ export default function InterviewScreen() {
   if (viewMode === "setup") {
     return (
       <AppBackground>
+        <KeyboardAvoidingView
+          behavior={Platform.OS === "ios" ? "padding" : undefined}
+          style={{ flex: 1 }}
+        >
         <ScrollView
           contentContainerStyle={styles.scrollContent}
           keyboardShouldPersistTaps="handled"
@@ -341,6 +347,7 @@ export default function InterviewScreen() {
             )}
           </Pressable>
         </ScrollView>
+        </KeyboardAvoidingView>
       </AppBackground>
     );
   }
@@ -353,6 +360,10 @@ export default function InterviewScreen() {
 
   return (
     <AppBackground>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
+        style={{ flex: 1 }}
+      >
       <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
         <Pressable
           accessibilityRole="button"
@@ -561,6 +572,7 @@ export default function InterviewScreen() {
           </>
         )}
       </ScrollView>
+      </KeyboardAvoidingView>
     </AppBackground>
   );
 }

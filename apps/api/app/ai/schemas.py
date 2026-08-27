@@ -226,3 +226,65 @@ class AnswerEvaluation(BaseModel):
     completeness: int = 0
     feedback: str = ""
     suggested_answer: str = ""
+
+
+class TailorDiff(BaseModel):
+    """One diff between original and tailored resume content. Never adds new facts."""
+
+    model_config = ConfigDict(extra="ignore")
+
+    field: str = ""
+    original: str = ""
+    tailored: str = ""
+    reasoning: str = ""
+
+
+class TailorContent(BaseModel):
+    """AI-derived tailored resume. Reviewable, never ground truth.
+
+    Only rephrases, reorders and emphasizes existing content.
+    Never fabricates experience, skills or qualifications.
+    """
+
+    model_config = ConfigDict(extra="ignore")
+
+    tailored_content: ResumeContent = Field(default_factory=ResumeContent)
+    diffs: list[TailorDiff] = Field(default_factory=list)
+
+
+class LearningResourceContent(BaseModel):
+    """A suggested learning resource for a missing skill."""
+
+    model_config = ConfigDict(extra="ignore")
+
+    title: str = ""
+    url: str | None = None
+    type: str = "course"
+    provider: str | None = None
+
+
+class SkillGapItem(BaseModel):
+    """One skill in a gap analysis result."""
+
+    model_config = ConfigDict(extra="ignore")
+
+    skill: str = ""
+    status: str = "missing"
+    resume_evidence: str | None = None
+    job_requirement: str = ""
+    confidence: float = 0.0
+    learning_resources: list[LearningResourceContent] | None = None
+
+
+class GapAnalysisContent(BaseModel):
+    """AI-derived skills gap analysis. Reviewable, never ground truth.
+
+    Compares resume evidence against job requirements; a missing skill means
+    the resume does not demonstrate it, not that the person lacks it.
+    """
+
+    model_config = ConfigDict(extra="ignore")
+
+    matched_skills: list[SkillGapItem] = Field(default_factory=list)
+    partial_skills: list[SkillGapItem] = Field(default_factory=list)
+    missing_skills: list[SkillGapItem] = Field(default_factory=list)

@@ -202,3 +202,131 @@
 - [ ] User feedback
 - [ ] Performance optimization
 - [ ] V1.1 planning
+
+---
+
+# V1.1 — Core Differentiators
+
+## Milestone 21 — Live Job Search
+
+- [ ] Backend: Job aggregator service (Technopark, Naukri, LinkedIn, Indeed, Monster)
+- [ ] Backend: Search API with deduplication and relevance scoring
+- [ ] Backend: Result caching with TTL
+- [ ] Mobile: Job search screen with platform filters
+- [ ] Mobile: Job detail screen
+- [ ] Mobile: Saved jobs list
+- [ ] Mobile: Search history
+
+## Milestone 22 — Push Job Alerts (FCM)
+
+- [ ] Backend: FCM integration (Firebase Admin SDK)
+- [ ] Backend: Background job matcher (periodic scan)
+- [ ] Backend: Match threshold configuration
+- [ ] Backend: Notification delivery pipeline
+- [ ] Mobile: FCM token registration
+- [ ] Mobile: Permission flow (opt-in)
+- [ ] Mobile: Notification preferences screen
+- [ ] Mobile: Deep link handling (notification → job detail)
+- [ ] Mobile: Alert frequency settings
+
+## Milestone 23 — Skills Gap Radar
+
+- [ ] Backend: Skill extraction from job descriptions (AI)
+- [ ] Backend: Gap analysis engine (resume vs JD)
+- [ ] Backend: Learning resource recommendations
+- [ ] Mobile: Radar chart visualization
+- [ ] Mobile: Gap analysis detail screen
+- [ ] Mobile: Progress tracking over time
+- [ ] Mobile: Learning resource links
+
+## Milestone 24 — Auto-Tailor Resume
+
+- [ ] Backend: Resume tailoring AI (summary rewrite, skill reordering, keyword injection)
+- [ ] Backend: Diff generation (before/after)
+- [ ] Backend: Version management (create new version, don't overwrite)
+- [ ] Mobile: One-tap "Tailor for this job" button
+- [ ] Mobile: Diff review screen
+- [ ] Mobile: Accept/reject tailored version
+- [ ] Mobile: Version history
+
+---
+
+# V1.2 — Engagement & Retention
+
+## Milestone 25 — Application Tracker
+
+- [ ] Backend: Application CRUD (status, notes, dates)
+- [ ] Backend: Application pipeline analytics
+- [ ] Mobile: Kanban board view (Applied → Interview → Offer → Rejected)
+- [ ] Mobile: Application detail screen
+- [ ] Mobile: Add/edit notes
+- [ ] Mobile: Follow-up reminders
+- [ ] Mobile: Application analytics dashboard
+
+## Milestone 26 — Market Pulse Dashboard
+
+- [ ] Backend: Skill demand trend aggregation
+- [ ] Backend: Salary data aggregation
+- [ ] Backend: Top hiring companies API
+- [ ] Mobile: Market Pulse screen with trend charts
+- [ ] Mobile: Skill demand cards
+- [ ] Mobile: Salary range displays
+- [ ] Mobile: Top companies list
+
+## Milestone 27 — Skill Trend Forecast
+
+- [ ] Backend: AI-powered trend analysis
+- [ ] Backend: Emerging skills detection
+- [ ] Mobile: Trend visualization (3-month, 6-month, 1-year)
+- [ ] Mobile: Recommended skills to learn
+- [ ] Mobile: Personalized learning path
+
+## Milestone 28 — Company Deep Dive
+
+- [ ] Backend: Company data aggregation (tech stack, culture, size)
+- [ ] Backend: Company search API
+- [ ] Mobile: Company profile screen
+- [ ] Mobile: Tech stack display
+- [ ] Mobile: Recent job postings
+- [ ] Mobile: Employee skill distribution
+
+## Milestone 29 — Referral Finder
+
+- [ ] Backend: LinkedIn integration (API or scraping)
+- [ ] Backend: Connection matching
+- [ ] Mobile: Referral suggestions screen
+- [ ] Mobile: Introduction message templates
+- [ ] Mobile: Referral tracking
+
+---
+
+# V1.3 — Premium Features
+
+## Milestone 30 — Enhanced AI Interview Simulator
+
+- [ ] Backend: Role-specific question generation from real job postings
+- [ ] Backend: Voice input processing
+- [ ] Backend: STAR method evaluation
+- [ ] Mobile: Voice interview mode
+- [ ] Mobile: Company-specific prep
+- [ ] Mobile: Technical coding challenges
+- [ ] Mobile: Interview score tracking
+
+## Milestone 31 — Salary Negotiator
+
+- [ ] Backend: Salary data aggregation
+- [ ] Backend: Experience-adjusted range calculation
+- [ ] Backend: Negotiation script generation
+- [ ] Mobile: Salary range display
+- [ ] Mobile: Negotiation script screen
+- [ ] Mobile: Benefits comparison
+
+## Milestone 32 — Career Path Mapper
+
+- [ ] Backend: Career progression AI
+- [ ] Backend: Skill requirement mapping
+- [ ] Backend: Timeline estimation
+- [ ] Mobile: Career path visualization (tree/timeline)
+- [ ] Mobile: Stage-by-stage skill requirements
+- [ ] Mobile: Gap analysis for next step
+- [ ] Mobile: Recommended actions

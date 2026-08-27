@@ -2,6 +2,8 @@ import { useFocusEffect } from "expo-router";
 import { useCallback, useState } from "react";
 import {
   ActivityIndicator,
+  KeyboardAvoidingView,
+  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -9,6 +11,7 @@ import {
   TextInput,
   View,
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { useAuth } from "@/lib/auth";
 import { useTheme } from "@/lib/theme";
@@ -40,7 +43,11 @@ const apiClient = new ApiClient();
 export default function JobMatchScreen() {
   const { theme } = useTheme();
   const { colors } = theme;
-  const { session, handleUnauthorized } = useAuth();
+  const { session, guestId, status: authStatus, handleUnauthorized } = useAuth();
+  const insets = useSafeAreaInsets();
+
+  const isGuest = authStatus === "guest";
+  const accessToken = session?.access_token;
 
   const [title, setTitle] = useState("");
   const [company, setCompany] = useState("");
@@ -50,9 +57,19 @@ export default function JobMatchScreen() {
   const [matchState, setMatchState] = useState<MatchState>({ status: "idle" });
   const [listState, setListState] = useState<ListState>({ status: "loading" });
 
-  const accessToken = session?.access_token;
-
   const loadResumes = useCallback(async () => {
+    if (isGuest && guestId !== null) {
+      try {
+        const items = await apiClient.listResumes(undefined, guestId);
+        setResumes(items);
+        if (resumeId === null && items.length > 0) {
+          setResumeId(items[0]?.id ?? null);
+        }
+      } catch {
+        // Resume context is optional
+      }
+      return;
+    }
     if (accessToken === undefined) {
       void handleUnauthorized();
       return;
@@ -68,9 +85,22 @@ export default function JobMatchScreen() {
         void handleUnauthorized();
       }
     }
-  }, [accessToken, handleUnauthorized, resumeId]);
+  }, [isGuest, guestId, accessToken, handleUnauthorized, resumeId]);
 
   const loadList = useCallback(async () => {
+    if (isGuest && guestId !== null) {
+      setListState({ status: "loading" });
+      try {
+        const items = await apiClient.listJobDescriptions(undefined, guestId);
+        setListState({ status: "success", items });
+      } catch (err) {
+        setListState({
+          status: "error",
+          message: err instanceof Error ? err.message : t("jobMatch.errorJobs"),
+        });
+      }
+      return;
+    }
     if (accessToken === undefined) {
       void handleUnauthorized();
       return;
@@ -89,7 +119,7 @@ export default function JobMatchScreen() {
         });
       }
     }
-  }, [accessToken, handleUnauthorized]);
+  }, [isGuest, guestId, accessToken, handleUnauthorized]);
 
   useFocusEffect(
     useCallback(() => {
@@ -112,8 +142,7 @@ export default function JobMatchScreen() {
   }
 
   async function handleMatch() {
-    if (accessToken === undefined || resumeId === null) {
-      void handleUnauthorized();
+    if (resumeId === null) {
       return;
     }
     const validationError = validate();
@@ -128,6 +157,7 @@ export default function JobMatchScreen() {
         company?: string;
         raw_text: string;
         resume_id: string;
+        guest_id?: string;
       } = { raw_text: rawText.trim(), resume_id: resumeId };
       if (title.trim() !== "") {
         payload.title = title.trim();
@@ -135,12 +165,28 @@ export default function JobMatchScreen() {
       if (company.trim() !== "") {
         payload.company = company.trim();
       }
-      const result = await apiClient.createJobDescription(accessToken, payload);
-      setMatchState({
-        status: "success",
-        match: result.match,
-        jobDescription: result.job_description,
-      });
+      if (isGuest && guestId !== null) {
+        payload.guest_id = guestId;
+      }
+      if (!isGuest) {
+        if (accessToken === undefined) {
+          void handleUnauthorized();
+          return;
+        }
+        const result = await apiClient.createJobDescription(accessToken, payload);
+        setMatchState({
+          status: "success",
+          match: result.match,
+          jobDescription: result.job_description,
+        });
+      } else {
+        const result = await apiClient.createJobDescription(undefined, payload);
+        setMatchState({
+          status: "success",
+          match: result.match,
+          jobDescription: result.job_description,
+        });
+      }
       setTitle("");
       setCompany("");
       setRawText("");
@@ -158,14 +204,18 @@ export default function JobMatchScreen() {
   }
 
   async function handleRerun(jobDescriptionId: string) {
-    if (accessToken === undefined || resumeId === null) {
+    if (resumeId === null) {
       return;
     }
     setMatchState({ status: "loading" });
     try {
-      const match = await apiClient.runMatch(accessToken, jobDescriptionId, {
-        resume_id: resumeId,
-      });
+      const match = isGuest && guestId !== null
+        ? await apiClient.runMatch(undefined, jobDescriptionId, {
+            resume_id: resumeId,
+          }, guestId)
+        : await apiClient.runMatch(accessToken, jobDescriptionId, {
+            resume_id: resumeId,
+          });
       const jobDescription =
         listState.status === "success"
           ? (listState.items.find((item) => item.id === jobDescriptionId) ?? null)
@@ -188,6 +238,9 @@ export default function JobMatchScreen() {
   }
 
   async function handleDelete(jobDescriptionId: string) {
+    if (isGuest) {
+      return;
+    }
     if (accessToken === undefined) {
       return;
     }
@@ -203,7 +256,14 @@ export default function JobMatchScreen() {
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
-      <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
+        style={{ flex: 1 }}
+      >
+      <ScrollView
+        contentContainerStyle={[styles.scrollContent, { paddingTop: insets.top + 24 }]}
+        keyboardShouldPersistTaps="handled"
+      >
         <Text style={[styles.eyebrow, { color: colors.primaryStrong }]}>
           {t("jobMatch.eyebrow")}
         </Text>
@@ -437,6 +497,7 @@ export default function JobMatchScreen() {
             </View>
           ))}
       </ScrollView>
+      </KeyboardAvoidingView>
     </View>
   );
 }
@@ -565,7 +626,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    padding: 24,
+    paddingHorizontal: 24,
     paddingBottom: 48,
   },
   eyebrow: {
