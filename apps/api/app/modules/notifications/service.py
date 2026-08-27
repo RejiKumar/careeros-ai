@@ -118,11 +118,7 @@ class NotificationService:
     ) -> NotificationPreferenceResponse:
         current = self._repository.get_preference(actor=actor)
         skip_keys = ("id", "user_id", "created_at", "updated_at")
-        filtered = (
-            {k: v for k, v in current.items() if k not in skip_keys}
-            if current
-            else {}
-        )
+        filtered = {k: v for k, v in current.items() if k not in skip_keys} if current else {}
         merged = {**_DEFAULT_PREFERENCES, **filtered}
         if job_alerts is not None:
             merged["job_alerts"] = job_alerts
@@ -166,9 +162,7 @@ class NotificationService:
                 data=data,
                 image_url=image_url,
             )
-        self.log_notification(
-            user_id=user_id, title=title, body=body, notification_type="push"
-        )
+        self.log_notification(user_id=user_id, title=title, body=body, notification_type="push")
 
     def log_notification(
         self,

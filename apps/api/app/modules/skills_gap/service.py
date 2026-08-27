@@ -117,15 +117,9 @@ class SkillsGapService:
         except ProviderError as exc:
             raise GapAnalysisAiError() from exc
 
-        matched_skills = [
-            _to_skill_gap(s, "matched") for s in result.content.matched_skills
-        ]
-        partial_skills = [
-            _to_skill_gap(s, "partial") for s in result.content.partial_skills
-        ]
-        missing_skills = [
-            _to_skill_gap(s, "missing") for s in result.content.missing_skills
-        ]
+        matched_skills = [_to_skill_gap(s, "matched") for s in result.content.matched_skills]
+        partial_skills = [_to_skill_gap(s, "partial") for s in result.content.partial_skills]
+        missing_skills = [_to_skill_gap(s, "missing") for s in result.content.missing_skills]
 
         total_skills = len(matched_skills) + len(partial_skills) + len(missing_skills)
         overall_match = round(len(matched_skills) / total_skills, 2) if total_skills > 0 else 0.0
@@ -142,9 +136,7 @@ class SkillsGapService:
 
         return _to_gap_response(row)
 
-    def get_analysis(
-        self, actor: CurrentActor, *, analysis_id: str
-    ) -> GapAnalysisResponse:
+    def get_analysis(self, actor: CurrentActor, *, analysis_id: str) -> GapAnalysisResponse:
         row = self._repository.get(actor=actor, analysis_id=analysis_id)
         if row is None:
             raise AnalysisNotFoundError()

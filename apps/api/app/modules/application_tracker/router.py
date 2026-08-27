@@ -96,4 +96,3 @@ def delete_application(
     actor: Annotated[CurrentActor, Depends(get_current_actor)],
 ) -> None:
     service.delete_application(actor, application_id=application_id)
-

@@ -380,9 +380,7 @@ class GeminiProvider(CareerAiProvider):
         system_prompt = _GAP_ANALYSIS_SYSTEM_PROMPT + _language_instruction(locale)
         raw, request_id = self._generate(system_prompt, user_text, _gap_analysis_json_schema())
         analysis = _validated(GapAnalysisContent, raw, request_id)
-        return GapAnalysisResult(
-            content=analysis, request_id=request_id, model_version=self._model
-        )
+        return GapAnalysisResult(content=analysis, request_id=request_id, model_version=self._model)
 
     def tailor_resume(
         self,

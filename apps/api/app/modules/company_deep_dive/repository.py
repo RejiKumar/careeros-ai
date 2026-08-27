@@ -22,13 +22,7 @@ class CompanyRepository:
         return qb.execute().data
 
     def get_company(self, *, company_id: str) -> dict | None:
-        rows = (
-            self._client.table(COMPANIES_TABLE)
-            .select("*")
-            .eq("id", company_id)
-            .execute()
-            .data
-        )
+        rows = self._client.table(COMPANIES_TABLE).select("*").eq("id", company_id).execute().data
         return rows[0] if rows else None
 
     def save_company(
@@ -57,9 +51,5 @@ class CompanyRepository:
         return owner_eq(query, actor).order("saved_at", desc=True).execute().data
 
     def delete_saved_company(self, *, actor: CurrentActor, saved_id: str) -> None:
-        query = (
-            self._client.table(SAVED_COMPANIES_TABLE)
-            .delete()
-            .eq("id", saved_id)
-        )
+        query = self._client.table(SAVED_COMPANIES_TABLE).delete().eq("id", saved_id)
         owner_eq(query, actor).execute()

@@ -173,4 +173,3 @@ def _compute_stats(rows: list[dict]) -> ApplicationStatsResponse:
 
 def _parse_date(value: str) -> date:
     return date.fromisoformat(value[:10])
-

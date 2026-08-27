@@ -48,4 +48,3 @@ class ApplicationStatsResponse(BaseModel):
     rejected: int
     response_rate: float
     avg_response_days: float | None = None
-

@@ -51,11 +51,7 @@ class ResumeTailorRepository:
         return rows[0] if rows else None
 
     def list_by_user(self, *, actor: CurrentActor, resume_id: str) -> list[dict]:
-        query = (
-            self._client.table(TAILOR_HISTORY_TABLE)
-            .select("*")
-            .eq("resume_id", resume_id)
-        )
+        query = self._client.table(TAILOR_HISTORY_TABLE).select("*").eq("resume_id", resume_id)
         return owner_eq(query, actor).order("created_at", desc=True).execute().data
 
     def update_acceptance(
@@ -68,11 +64,7 @@ class ResumeTailorRepository:
         updates: dict = {"accepted": True}
         if tailored_version_id is not None:
             updates["tailored_version_id"] = tailored_version_id
-        query = (
-            self._client.table(TAILOR_HISTORY_TABLE)
-            .update(updates)
-            .eq("id", tailor_id)
-        )
+        query = self._client.table(TAILOR_HISTORY_TABLE).update(updates).eq("id", tailor_id)
         rows = owner_eq(query, actor).execute().data
         return rows[0] if rows else None
 

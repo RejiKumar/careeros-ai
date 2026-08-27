@@ -52,58 +52,85 @@ class MarketPulseService:
         # TODO: replace with real aggregation from repository + provider
         skill_demands = [
             SkillDemandItem(
-                skill="React", demand_score=92.5,
-                change_percent=12.3, period="6m", job_count=1840,
+                skill="React",
+                demand_score=92.5,
+                change_percent=12.3,
+                period="6m",
+                job_count=1840,
             ),
             SkillDemandItem(
-                skill="Python", demand_score=88.1,
-                change_percent=8.7, period="6m", job_count=2150,
+                skill="Python",
+                demand_score=88.1,
+                change_percent=8.7,
+                period="6m",
+                job_count=2150,
             ),
             SkillDemandItem(
-                skill="TypeScript", demand_score=85.4,
-                change_percent=15.1, period="3m", job_count=1620,
+                skill="TypeScript",
+                demand_score=85.4,
+                change_percent=15.1,
+                period="3m",
+                job_count=1620,
             ),
             SkillDemandItem(
-                skill="Node.js", demand_score=79.8,
-                change_percent=5.2, period="1y", job_count=1380,
+                skill="Node.js",
+                demand_score=79.8,
+                change_percent=5.2,
+                period="1y",
+                job_count=1380,
             ),
             SkillDemandItem(
-                skill="AWS", demand_score=82.0,
-                change_percent=10.4, period="6m", job_count=1590,
+                skill="AWS",
+                demand_score=82.0,
+                change_percent=10.4,
+                period="6m",
+                job_count=1590,
             ),
         ]
 
         salary_ranges = [
             SalaryRange(
-                role="Software Engineer", location="Bangalore",
-                min_salary=600000, max_salary=1800000,
-                median_salary=1100000, experience_level="mid",
+                role="Software Engineer",
+                location="Bangalore",
+                min_salary=600000,
+                max_salary=1800000,
+                median_salary=1100000,
+                experience_level="mid",
             ),
             SalaryRange(
-                role="Software Engineer", location="Remote",
-                min_salary=500000, max_salary=1600000,
-                median_salary=950000, experience_level="mid",
+                role="Software Engineer",
+                location="Remote",
+                min_salary=500000,
+                max_salary=1600000,
+                median_salary=950000,
+                experience_level="mid",
             ),
             SalaryRange(
-                role="Data Scientist", location="Bangalore",
-                min_salary=800000, max_salary=2200000,
-                median_salary=1400000, experience_level="senior",
+                role="Data Scientist",
+                location="Bangalore",
+                min_salary=800000,
+                max_salary=2200000,
+                median_salary=1400000,
+                experience_level="senior",
             ),
         ]
 
         top_companies = [
             TopCompany(
-                name="TCS", job_count=342,
+                name="TCS",
+                job_count=342,
                 tech_stack=["Java", "React", "AWS"],
                 location="Bangalore",
             ),
             TopCompany(
-                name="Infosys", job_count=298,
+                name="Infosys",
+                job_count=298,
                 tech_stack=["Python", "Angular", "Azure"],
                 location="Hyderabad",
             ),
             TopCompany(
-                name="Flipkart", job_count=156,
+                name="Flipkart",
+                job_count=156,
                 tech_stack=["Kotlin", "React", "GCP"],
                 location="Bangalore",
             ),
@@ -128,24 +155,34 @@ class MarketPulseService:
         # TODO: replace with real trend analysis from repository + provider
         trends = [
             SkillTrendItem(
-                skill="React", direction="rising",
-                change_percent=12.3, period=period,
+                skill="React",
+                direction="rising",
+                change_percent=12.3,
+                period=period,
             ),
             SkillTrendItem(
-                skill="Python", direction="rising",
-                change_percent=8.7, period=period,
+                skill="Python",
+                direction="rising",
+                change_percent=8.7,
+                period=period,
             ),
             SkillTrendItem(
-                skill="Java", direction="stable",
-                change_percent=1.2, period=period,
+                skill="Java",
+                direction="stable",
+                change_percent=1.2,
+                period=period,
             ),
             SkillTrendItem(
-                skill="PHP", direction="declining",
-                change_percent=-4.5, period=period,
+                skill="PHP",
+                direction="declining",
+                change_percent=-4.5,
+                period=period,
             ),
             SkillTrendItem(
-                skill="jQuery", direction="declining",
-                change_percent=-11.2, period=period,
+                skill="jQuery",
+                direction="declining",
+                change_percent=-11.2,
+                period=period,
             ),
         ]
 

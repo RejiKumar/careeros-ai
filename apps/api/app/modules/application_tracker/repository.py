@@ -54,9 +54,7 @@ class ApplicationRepository:
         rows = owner_eq(query, actor).execute().data
         return rows[0] if rows else None
 
-    def list_by_user(
-        self, *, actor: CurrentActor, status_filter: str | None = None
-    ) -> list[dict]:
+    def list_by_user(self, *, actor: CurrentActor, status_filter: str | None = None) -> list[dict]:
         query = self._client.table(APPLICATIONS_TABLE).select("*")
         if status_filter is not None:
             query = query.eq("status", status_filter)
@@ -94,4 +92,3 @@ class ApplicationRepository:
     def get_stats(self, *, actor: CurrentActor) -> list[dict]:
         query = self._client.table(APPLICATIONS_TABLE).select("*")
         return owner_eq(query, actor).execute().data
-
