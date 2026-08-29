@@ -294,7 +294,7 @@ function SalaryResultView({
   data: NegotiationResponse;
   colors: ReturnType<typeof import("@/lib/theme").useTheme>["theme"]["colors"];
 }) {
-  const { salary_range: range, negotiation_script: script } = data;
+  const { salary_range: range, script } = data;
 
   return (
     <View
@@ -308,7 +308,7 @@ function SalaryResultView({
       <View style={styles.salaryRow}>
         <View style={styles.salaryCol}>
           <Text style={[styles.salaryValue, { color: colors.primaryStrong }]}>
-            ${range.min_salary.toLocaleString()}
+            {formatSalary(range.min_salary, range.currency)}
           </Text>
           <Text style={[styles.salaryLabel, { color: colors.textSecondary }]}>
             {t("salary.minSalary")}
@@ -316,7 +316,7 @@ function SalaryResultView({
         </View>
         <View style={styles.salaryCol}>
           <Text style={[styles.salaryValue, { color: colors.primaryStrong }]}>
-            ${range.median_salary.toLocaleString()}
+            {formatSalary(range.median_salary, range.currency)}
           </Text>
           <Text style={[styles.salaryLabel, { color: colors.textSecondary }]}>
             {t("salary.medianSalary")}
@@ -324,7 +324,7 @@ function SalaryResultView({
         </View>
         <View style={styles.salaryCol}>
           <Text style={[styles.salaryValue, { color: colors.primaryStrong }]}>
-            ${range.max_salary.toLocaleString()}
+            {formatSalary(range.max_salary, range.currency)}
           </Text>
           <Text style={[styles.salaryLabel, { color: colors.textSecondary }]}>
             {t("salary.maxSalary")}
@@ -337,7 +337,7 @@ function SalaryResultView({
           {t("salary.confidence")}
         </Text>
         <Text style={[styles.confidenceValue, { color: colors.primaryStrong }]}>
-          {range.confidence}%
+          {Math.round(range.confidence * 100)}%
         </Text>
       </View>
 
@@ -353,7 +353,7 @@ function SalaryResultView({
           <Text style={[styles.scriptLabel, { color: colors.textPrimary }]}>
             {t("salary.justification")}
           </Text>
-          {script.justification.map((point, idx) => (
+          {script.justification_points.map((point, idx) => (
             <Text key={idx} style={[styles.bullet, { color: colors.textSecondary }]}>
               • {point}
             </Text>
@@ -364,7 +364,7 @@ function SalaryResultView({
           <Text style={[styles.scriptLabel, { color: colors.textPrimary }]}>
             {t("salary.objections")}
           </Text>
-          {script.objection_handling.map((point, idx) => (
+          {script.handling_objections.map((point, idx) => (
             <Text key={idx} style={[styles.bullet, { color: colors.textSecondary }]}>
               • {point}
             </Text>
@@ -398,11 +398,23 @@ function BenefitsView({
           data.benefits.map((benefit, idx) => (
             <View key={idx} style={styles.benefitBlock}>
               <Text style={[styles.benefitName, { color: colors.textPrimary }]}>
-                {benefit.name}
+                {benefit.item}
               </Text>
               <Text style={[styles.benefitDesc, { color: colors.textSecondary }]}>
-                {benefit.description}
+                {benefit.typical}
               </Text>
+              {benefit.negotiable && (
+                <View
+                  style={[
+                    styles.negotiableBadge,
+                    { backgroundColor: colors.primarySoft, borderColor: colors.primary },
+                  ]}
+                >
+                  <Text style={[styles.negotiableText, { color: colors.primaryStrong }]}>
+                    {t("salary.negotiable")}
+                  </Text>
+                </View>
+              )}
             </View>
           ))
         ) : (
@@ -428,6 +440,17 @@ function Section({
       {children}
     </View>
   );
+}
+
+function formatSalary(value: number, currency: string): string {
+  if (currency === "INR") {
+    if (value >= 1_00_000) {
+      const lakhs = value / 1_00_000;
+      return `₹${lakhs % 1 === 0 ? lakhs : lakhs.toFixed(1)}L`;
+    }
+    return `₹${value.toLocaleString("en-IN")}`;
+  }
+  return `${currency === "USD" ? "$" : `${currency} `}${value.toLocaleString()}`;
 }
 
 const styles = StyleSheet.create({
@@ -579,5 +602,17 @@ const styles = StyleSheet.create({
   benefitDesc: {
     fontSize: 13,
     lineHeight: 18,
+  },
+  negotiableBadge: {
+    alignSelf: "flex-start",
+    borderRadius: 9999,
+    borderWidth: 1,
+    paddingHorizontal: 10,
+    paddingVertical: 3,
+    marginTop: 4,
+  },
+  negotiableText: {
+    fontSize: 11,
+    fontWeight: "700",
   },
 });

@@ -13,7 +13,11 @@ from fastapi import status
 from app.ai.provider import CareerAiProvider
 from app.core.auth import CurrentActor
 from app.core.errors import AppError
-from app.integrations.supabase.client import SupabaseClients, require_service_client
+from app.integrations.supabase.client import (
+    SupabaseClients,
+    ensure_guest_account,
+    require_service_client,
+)
 
 from .repository import JobSearchRepository
 from .schema import (
@@ -54,6 +58,7 @@ class DuplicateSavedJobError(AppError):
 class JobSearchService:
     def __init__(self, clients: SupabaseClients, provider: CareerAiProvider) -> None:
         service_client = require_service_client(clients)
+        self._clients = clients
         self._provider = provider
         self._repository = JobSearchRepository(service_client)
 
@@ -88,6 +93,8 @@ class JobSearchService:
         url: str,
         match_score: float | None = None,
     ) -> SavedJobResponse:
+        if actor.kind == "guest":
+            ensure_guest_account(self._clients, actor.id)
         existing = self._repository.list_saved_jobs(actor=actor)
         for saved in existing:
             if saved["job_id"] == job_id:
@@ -123,6 +130,8 @@ class JobSearchService:
         frequency: str = "daily",
         enabled: bool = True,
     ) -> JobAlertPreference:
+        if actor.kind == "guest":
+            ensure_guest_account(self._clients, actor.id)
         row = self._repository.upsert_alert_preference(
             actor=actor,
             query_text=query,

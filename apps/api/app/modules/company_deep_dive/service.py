@@ -14,7 +14,11 @@ from fastapi import status
 from app.ai.provider import CareerAiProvider
 from app.core.auth import CurrentActor
 from app.core.errors import AppError
-from app.integrations.supabase.client import SupabaseClients, require_service_client
+from app.integrations.supabase.client import (
+    SupabaseClients,
+    ensure_guest_account,
+    require_service_client,
+)
 
 from .repository import CompanyRepository
 from .schema import (
@@ -55,6 +59,7 @@ class CompanySearchError(AppError):
 class CompanyService:
     def __init__(self, clients: SupabaseClients, provider: CareerAiProvider) -> None:
         service_client = require_service_client(clients)
+        self._clients = clients
         self._provider = provider
         self._repository = CompanyRepository(service_client)
 
@@ -119,6 +124,8 @@ class CompanyService:
         company_name: str,
         notes: str | None = None,
     ) -> SavedCompanyResponse:
+        if actor.kind == "guest":
+            ensure_guest_account(self._clients, actor.id)
         row = self._repository.save_company(
             actor=actor,
             company_name=company_name,

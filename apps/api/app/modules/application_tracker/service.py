@@ -12,7 +12,11 @@ from fastapi import status
 
 from app.core.auth import CurrentActor
 from app.core.errors import AppError
-from app.integrations.supabase.client import SupabaseClients, require_service_client
+from app.integrations.supabase.client import (
+    SupabaseClients,
+    ensure_guest_account,
+    require_service_client,
+)
 
 from .repository import ApplicationRepository
 from .schema import (
@@ -33,6 +37,7 @@ class ApplicationNotFoundError(AppError):
 class ApplicationService:
     def __init__(self, clients: SupabaseClients) -> None:
         service_client = require_service_client(clients)
+        self._clients = clients
         self._repository = ApplicationRepository(service_client)
 
     def create_application(
@@ -49,6 +54,8 @@ class ApplicationService:
         interview_date: str | None,
         follow_up_date: str | None,
     ) -> ApplicationResponse:
+        if actor.kind == "guest":
+            ensure_guest_account(self._clients, actor.id)
         row = self._repository.create(
             actor=actor,
             job_id=job_id,

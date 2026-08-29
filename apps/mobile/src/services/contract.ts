@@ -487,69 +487,75 @@ export interface GapAnalysisHistoryResponse {
 export interface ApplicationResponse {
   id: string;
   user_id: string | null;
-  guest_id: string | null;
+  job_id: string | null;
   job_title: string;
-  company: string | null;
+  company: string;
   status: "applied" | "interviewing" | "offered" | "rejected";
   notes: string | null;
-  applied_date: string;
-  follow_up_date: string | null;
+  url: string | null;
+  applied_at: string | null;
   interview_date: string | null;
+  follow_up_date: string | null;
   created_at: string;
-  updated_at: string;
+  updated_at: string | null;
 }
 
 export interface ApplicationStatsResponse {
   total: number;
-  by_status: {
-    applied: number;
-    interviewing: number;
-    offered: number;
-    rejected: number;
-  };
+  applied: number;
+  interviewing: number;
+  offered: number;
+  rejected: number;
+  response_rate: number;
+  avg_response_days: number | null;
 }
 
 export interface SkillDemandItem {
   skill: string;
   demand_score: number;
-  change_pct: number;
+  change_percent: number;
+  period: string;
   job_count: number;
 }
 
 export interface SalaryRange {
   role: string;
   location: string;
-  min: number;
-  max: number;
-  median: number;
+  min_salary: number;
+  median_salary: number;
+  max_salary: number;
+  currency: string;
+  experience_level: string | null;
 }
 
 export interface TopCompany {
   name: string;
   job_count: number;
   tech_stack: string[];
+  location: string | null;
+  logo_url: string | null;
 }
 
 export interface MarketPulseResponse {
-  location: string;
-  role: string | null;
-  skill_demand: SkillDemandItem[];
+  skill_demands: SkillDemandItem[];
   salary_ranges: SalaryRange[];
   top_companies: TopCompany[];
-  recommended_skills: string[];
+  generated_at: string;
 }
 
 export type SkillTrendDirection = "rising" | "stable" | "declining";
 
 export interface SkillTrendItem {
   skill: string;
-  trend: SkillTrendDirection;
-  change_pct: number;
+  direction: SkillTrendDirection;
+  change_percent: number;
+  period: string;
 }
 
 export interface SkillTrendResponse {
-  period: string;
   trends: SkillTrendItem[];
+  recommended_skills: string[];
+  generated_at: string;
 }
 
 /* ─── Company ─── */
@@ -591,8 +597,8 @@ export interface SavedCompanyResponse {
 
 export interface NegotiationScript {
   opening: string;
-  justification: string[];
-  objection_handling: string[];
+  justification_points: string[];
+  handling_objections: string[];
   closing: string;
 }
 
@@ -604,20 +610,24 @@ export interface SalaryRangeResponse {
   median_salary: number;
   confidence: number;
   currency: string;
+  experience_level: string;
 }
 
 export interface NegotiationResponse {
   salary_range: SalaryRangeResponse;
-  negotiation_script: NegotiationScript;
+  script: NegotiationScript;
+  generated_at: string;
 }
 
 export interface BenefitsItem {
-  name: string;
-  description: string;
+  item: string;
+  typical: string;
+  negotiable: boolean;
 }
 
 export interface BenefitsComparisonResponse {
   benefits: BenefitsItem[];
+  generated_at: string;
 }
 
 /* ─── Career Path ─── */

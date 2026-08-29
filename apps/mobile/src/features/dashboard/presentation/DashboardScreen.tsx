@@ -46,6 +46,14 @@ interface QuickAction {
 
 const QUICK_ACTIONS: QuickAction[] = [
   {
+    key: "tools",
+    title: t("tools.title"),
+    text: t("dashboard.quickActions.toolsDesc"),
+    icon: "apps",
+    gradient: ["#38BDF8", "#16A34A"],
+    route: "/tools",
+  },
+  {
     key: "resume",
     title: t("dashboard.quickActions.resumeHealth"),
     text: t("dashboard.quickActions.resumeHealthDesc"),

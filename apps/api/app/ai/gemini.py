@@ -28,6 +28,7 @@ from .provider import (
     ProviderError,
     RewriteResult,
     RoastResult,
+    SalaryAnalysisResult,
     TailorResult,
 )
 from .schemas import (
@@ -42,6 +43,7 @@ from .schemas import (
     RewriteContent,
     RoastContent,
     RoastMode,
+    SalaryAnalysisContent,
     TailorContent,
 )
 
@@ -192,6 +194,24 @@ _TAILOR_SYSTEM_PROMPT = (
     "IMPORTANT: Do NOT fabricate any experience, skills or qualifications. "
     "Only rephrase, reorder and emphasize existing content. "
     "Return only JSON matching the requested schema, without markdown fences."
+)
+
+_SALARY_SYSTEM_PROMPT = (
+    "You estimate market salary ranges and draft negotiation guidance. "
+    "Ground estimates ONLY in general market signals for the role, location "
+    "and experience level given; never invent a single guaranteed offer. "
+    "Always present figures as ranges and estimates to validate. Keep the "
+    "negotiation script practical and respectful. "
+    "Return only JSON matching the requested schema, without markdown fences."
+)
+
+_SALARY_USER_PROMPT = (
+    "Estimate a market salary range and negotiation guidance.\n\n"
+    "<role>\n{role}\n</role>\n\n"
+    "<location>\n{location}\n</location>\n\n"
+    "<experience_years>\n{experience_years}\n</experience_years>\n\n"
+    "<skills>\n{skills}\n</skills>\n\n"
+    "<company>\n{company}\n</company>"
 )
 
 _TAILOR_USER_PROMPT = (
@@ -399,6 +419,29 @@ class GeminiProvider(CareerAiProvider):
         tailored = _validated(TailorContent, raw, request_id)
         logger.info("Resume tailored (request %s)", request_id)
         return TailorResult(content=tailored, request_id=request_id, model_version=self._model)
+
+    def generate_salary_analysis(
+        self,
+        *,
+        role: str,
+        location: str,
+        experience_years: int | None = None,
+        skills: list[str] | None = None,
+        company: str | None = None,
+    ) -> SalaryAnalysisResult:
+        user_text = _SALARY_USER_PROMPT.format(
+            role=role or "Unknown",
+            location=location or "Unknown",
+            experience_years="n/a" if experience_years is None else str(experience_years),
+            skills=", ".join(skills) if skills else "n/a",
+            company=company or "n/a",
+        )
+        raw, request_id = self._generate(_SALARY_SYSTEM_PROMPT, user_text, _salary_json_schema())
+        analysis = _validated(SalaryAnalysisContent, raw, request_id)
+        logger.info("Salary analysis generated (request %s)", request_id)
+        return SalaryAnalysisResult(
+            content=analysis, request_id=request_id, model_version=self._model
+        )
 
     def _post_with_retry(self, body: dict, attempts: int = 3) -> httpx.Response:
         """POST generateContent with exponential backoff on 429 rate limits."""
@@ -741,6 +784,43 @@ def _tailor_json_schema() -> dict[str, Any]:
             "diffs": {"type": "array", "items": diff_schema},
         },
         ["tailored_content", "diffs"],
+    )
+
+
+def _salary_json_schema() -> dict[str, Any]:
+    """Strict JSON schema matching SalaryAnalysisContent."""
+    string_array = _string_array_schema()
+    return _object_schema(
+        {
+            "salary_range": _object_schema(
+                {
+                    "min_salary": {"type": "number"},
+                    "max_salary": {"type": "number"},
+                    "median_salary": {"type": "number"},
+                    "currency": {"type": "string"},
+                    "experience_level": {"type": "string"},
+                    "confidence": {"type": "number"},
+                },
+                [
+                    "min_salary",
+                    "max_salary",
+                    "median_salary",
+                    "currency",
+                    "experience_level",
+                    "confidence",
+                ],
+            ),
+            "script": _object_schema(
+                {
+                    "opening": {"type": "string"},
+                    "justification_points": string_array,
+                    "handling_objections": string_array,
+                    "closing": {"type": "string"},
+                },
+                ["opening", "justification_points", "handling_objections", "closing"],
+            ),
+        },
+        ["salary_range", "script"],
     )
 
 

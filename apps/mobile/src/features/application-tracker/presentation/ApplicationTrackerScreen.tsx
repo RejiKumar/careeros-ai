@@ -262,9 +262,7 @@ export default function ApplicationTrackerScreen() {
             >
               <Text style={[styles.statValue, { color: colors.primaryStrong }]}>
                 {statsState.data.total > 0
-                  ? `${Math.round(
-                      (statsState.data.by_status.interviewing / statsState.data.total) * 100,
-                    )}%`
+                  ? `${Math.round((statsState.data.interviewing / statsState.data.total) * 100)}%`
                   : "0%"}
               </Text>
               <Text style={[styles.statLabel, { color: colors.textSecondary }]}>
@@ -278,7 +276,7 @@ export default function ApplicationTrackerScreen() {
               ]}
             >
               <Text style={[styles.statValue, { color: colors.success }]}>
-                {statsState.data.by_status.offered}
+                {statsState.data.offered}
               </Text>
               <Text style={[styles.statLabel, { color: colors.textSecondary }]}>
                 {t("applications.offered")}
@@ -671,7 +669,7 @@ function ApplicationCard({
         )}
         <View style={styles.cardDates}>
           <Text style={[styles.cardDate, { color: colors.textDisabled }]}>
-            {t("applications.applied")}: {app.applied_date}
+            {t("applications.applied")}: {app.applied_at}
           </Text>
           {app.follow_up_date !== null && (
             <Text style={[styles.cardDate, { color: colors.textDisabled }]}>
