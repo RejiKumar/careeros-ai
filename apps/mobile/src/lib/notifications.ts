@@ -27,7 +27,7 @@ export async function requestNotificationPermission(): Promise<boolean> {
 
 export async function getFCMToken(): Promise<string | null> {
   try {
-    const tokenData = await Notifications.getExpoPushTokenAsync();
+    const tokenData = await Notifications.getDevicePushTokenAsync();
     return tokenData.data;
   } catch {
     return null;

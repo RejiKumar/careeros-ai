@@ -30,7 +30,7 @@ def _load_credentials(settings: Settings) -> dict | None:
         try:
             with open(settings.firebase_credentials_path, encoding="utf-8") as fh:
                 return json.load(fh)
-        except OSError, json.JSONDecodeError:
+        except (OSError, json.JSONDecodeError):
             logger.error(
                 "Could not read FIREBASE_CREDENTIALS_PATH; FCM disabled.",
                 exc_info=True,

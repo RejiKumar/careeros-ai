@@ -89,6 +89,12 @@ export default ({ config }: ConfigContext): ExpoConfig => {
       "./plugins/withAdMobManifest",
       "./plugins/withNewArchDisabled",
       [
+        "expo-notifications",
+        {
+          defaultChannel: "default",
+        },
+      ],
+      [
         "expo-splash-screen",
         {
           image: "./assets/splash-icon.png",
