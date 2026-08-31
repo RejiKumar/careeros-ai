@@ -7,6 +7,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends
 
 from app.core.auth import CurrentActor, get_current_actor
+from app.core.config import Settings, get_settings
 from app.integrations.supabase.client import SupabaseClients, get_supabase_clients
 
 from .schema import (
@@ -23,8 +24,9 @@ router = APIRouter(prefix="/notifications", tags=["notifications"])
 
 def get_notification_service(
     clients: Annotated[SupabaseClients, Depends(get_supabase_clients)],
+    settings: Annotated[Settings, Depends(get_settings)],
 ) -> NotificationService:
-    return NotificationService(clients)
+    return NotificationService(clients, settings)
 
 
 @router.post("/fcm-token", response_model=FCMTokenResponse, status_code=201)

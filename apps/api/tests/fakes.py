@@ -154,6 +154,7 @@ class FakeTable:
         row.setdefault("created_at", _FIXED_NOW)
         row.setdefault("updated_at", _FIXED_NOW)
         row.setdefault("saved_at", _FIXED_NOW)
+        row.setdefault("sent_at", _FIXED_NOW)
         if self.name == "resumes":
             row.setdefault("status", "draft")
             row.setdefault("current_version_id", None)
