@@ -502,7 +502,9 @@ class FakeProvider(CareerAiProvider):
                 script={
                     "opening": "Based on market data for this role in this location...",
                     "justification_points": ["Highlight relevant experience and current skills."],
-                    "handling_objections": ["If the range is lower than expectations, ask for the band."],
+                    "handling_objections": [
+                        "If the range is lower than expectations, ask for the band.",
+                    ],
                     "closing": "Confirm next steps and reiterate interest.",
                 },
             ),
