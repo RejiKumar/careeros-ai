@@ -85,9 +85,7 @@ def test_mission_reminder_sent_and_logged(clients_: FakeClients, monkeypatch) ->
     assert mission_logs[0]["user_id"] == "u-1"
 
 
-def test_mission_reminder_skipped_when_completed_today(
-    clients_: FakeClients, monkeypatch
-) -> None:
+def test_mission_reminder_skipped_when_completed_today(clients_: FakeClients, monkeypatch) -> None:
     _with_fcm_available(monkeypatch)
     _add_user_and_token(clients_, user_id="u-1", token="tok-1")
     _add_pref(clients_, user_id="u-1")
