@@ -226,3 +226,102 @@ class AnswerEvaluation(BaseModel):
     completeness: int = 0
     feedback: str = ""
     suggested_answer: str = ""
+
+
+class TailorDiff(BaseModel):
+    """One diff between original and tailored resume content. Never adds new facts."""
+
+    model_config = ConfigDict(extra="ignore")
+
+    field: str = ""
+    original: str = ""
+    tailored: str = ""
+    reasoning: str = ""
+
+
+class TailorContent(BaseModel):
+    """AI-derived tailored resume. Reviewable, never ground truth.
+
+    Only rephrases, reorders and emphasizes existing content.
+    Never fabricates experience, skills or qualifications.
+    """
+
+    model_config = ConfigDict(extra="ignore")
+
+    tailored_content: ResumeContent = Field(default_factory=ResumeContent)
+    diffs: list[TailorDiff] = Field(default_factory=list)
+
+
+class LearningResourceContent(BaseModel):
+    """A suggested learning resource for a missing skill."""
+
+    model_config = ConfigDict(extra="ignore")
+
+    title: str = ""
+    url: str | None = None
+    type: str = "course"
+    provider: str | None = None
+
+
+class SkillGapItem(BaseModel):
+    """One skill in a gap analysis result."""
+
+    model_config = ConfigDict(extra="ignore")
+
+    skill: str = ""
+    status: str = "missing"
+    resume_evidence: str | None = None
+    job_requirement: str = ""
+    confidence: float = 0.0
+    learning_resources: list[LearningResourceContent] | None = None
+
+
+class GapAnalysisContent(BaseModel):
+    """AI-derived skills gap analysis. Reviewable, never ground truth.
+
+    Compares resume evidence against job requirements; a missing skill means
+    the resume does not demonstrate it, not that the person lacks it.
+    """
+
+    model_config = ConfigDict(extra="ignore")
+
+    matched_skills: list[SkillGapItem] = Field(default_factory=list)
+    partial_skills: list[SkillGapItem] = Field(default_factory=list)
+    missing_skills: list[SkillGapItem] = Field(default_factory=list)
+
+
+class SalaryRangeContent(BaseModel):
+    """AI-estimated market salary range. Advisory, never a guaranteed offer."""
+
+    model_config = ConfigDict(extra="ignore")
+
+    min_salary: float = 0.0
+    max_salary: float = 0.0
+    median_salary: float = 0.0
+    currency: str = "INR"
+    experience_level: str = "mid"
+    confidence: float = 0.7
+
+
+class NegotiationScriptContent(BaseModel):
+    """AI-drafted negotiation guidance. Advisory talking points, not guarantees."""
+
+    model_config = ConfigDict(extra="ignore")
+
+    opening: str = ""
+    justification_points: list[str] = Field(default_factory=list)
+    handling_objections: list[str] = Field(default_factory=list)
+    closing: str = ""
+
+
+class SalaryAnalysisContent(BaseModel):
+    """AI-derived salary estimate and negotiation script. Reviewable, never ground truth.
+
+    Estimates are based on general market signals for the role and location;
+    they are guidance to validate, not guaranteed compensation data.
+    """
+
+    model_config = ConfigDict(extra="ignore")
+
+    salary_range: SalaryRangeContent = Field(default_factory=SalaryRangeContent)
+    script: NegotiationScriptContent = Field(default_factory=NegotiationScriptContent)

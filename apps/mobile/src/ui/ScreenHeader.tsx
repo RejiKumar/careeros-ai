@@ -1,4 +1,5 @@
-import { StyleSheet, Text, View } from "react-native";
+import { Pressable, StyleSheet, Text, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { useTheme } from "@/lib/theme";
 
@@ -6,13 +7,29 @@ interface ScreenHeaderProps {
   eyebrow: string;
   title: string;
   subtitle?: string;
+  onBack?: () => void;
 }
 
-export default function ScreenHeader({ eyebrow, title, subtitle }: ScreenHeaderProps) {
+export default function ScreenHeader({ eyebrow, title, subtitle, onBack }: ScreenHeaderProps) {
   const { theme } = useTheme();
   const { colors } = theme;
+  const insets = useSafeAreaInsets();
   return (
-    <View style={styles.header}>
+    <View style={[styles.header, { marginTop: insets.top + 12 }]}>
+      {onBack !== undefined && (
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Back"
+          onPress={onBack}
+          style={({ pressed }) => [
+            styles.backButton,
+            { backgroundColor: colors.surfaceRaised },
+            pressed && styles.pressed,
+          ]}
+        >
+          <Text style={[styles.backButtonText, { color: colors.primaryStrong }]}>Back</Text>
+        </Pressable>
+      )}
       <Text style={[styles.eyebrow, { color: colors.primaryStrong }]}>{eyebrow}</Text>
       <Text style={[styles.title, { color: colors.textPrimary }]}>{title}</Text>
       {subtitle !== undefined && (
@@ -24,8 +41,21 @@ export default function ScreenHeader({ eyebrow, title, subtitle }: ScreenHeaderP
 
 const styles = StyleSheet.create({
   header: {
-    marginTop: 20,
     marginBottom: 16,
+  },
+  backButton: {
+    alignSelf: "flex-start",
+    borderRadius: 9999,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    marginBottom: 12,
+  },
+  backButtonText: {
+    fontSize: 13,
+    fontWeight: "700",
+  },
+  pressed: {
+    opacity: 0.85,
   },
   eyebrow: {
     fontSize: 12,

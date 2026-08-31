@@ -1,22 +1,11 @@
-const { withDangerousMod } = require("expo/config-plugins");
-const fs = require("fs");
-const path = require("path");
+const { withProjectBuildGradle } = require("expo/config-plugins");
 
 module.exports = function withNewArchDisabled(config) {
-  return withDangerousMod(config, [
-    "android",
-    (cfg) => {
-      const propsPath = path.join(
-        cfg.modRequest.platformProjectRoot,
-        "gradle.properties",
-      );
-      let content = fs.readFileSync(propsPath, "utf-8");
-      content = content.replace(
-        /newArchEnabled\s*=\s*true/,
-        "newArchEnabled=false",
-      );
-      fs.writeFileSync(propsPath, content);
-      return cfg;
-    },
-  ]);
+  return withProjectBuildGradle(config, (cfg) => {
+    cfg.modResults.contents = cfg.modResults.contents.replace(
+      /newArchEnabled\s*=\s*true/,
+      "newArchEnabled = false",
+    );
+    return cfg;
+  });
 };

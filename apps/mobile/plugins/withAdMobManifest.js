@@ -1,5 +1,10 @@
 const { withAndroidManifest } = require("expo/config-plugins");
 
+const ADMOB_APP_IDS = {
+  dev: "ca-app-pub-3940256099942544~3347511713",
+  prod: "ca-app-pub-3342123808291001~3690375670",
+};
+
 module.exports = function withAdMobAndCleartext(config) {
   return withAndroidManifest(config, (cfg) => {
     const manifest = cfg.modResults.manifest;
@@ -11,6 +16,9 @@ module.exports = function withAdMobAndCleartext(config) {
       app["meta-data"] = [];
     }
 
+    const env = process.env.EXPO_PUBLIC_APP_ENV || "dev";
+    const appId = ADMOB_APP_IDS[env] || ADMOB_APP_IDS.dev;
+
     const idx = app["meta-data"].findIndex(
       (m) => m.$["android:name"] === "com.google.android.gms.ads.APPLICATION_ID",
     );
@@ -18,8 +26,7 @@ module.exports = function withAdMobAndCleartext(config) {
     const entry = {
       $: {
         "android:name": "com.google.android.gms.ads.APPLICATION_ID",
-        "android:value":
-          process.env.EXPO_PUBLIC_ADMOB_APP_ID_ANDROID || "ca-app-pub-3940256099942544~3347511713",
+        "android:value": appId,
         "tools:node": "replace",
       },
     };

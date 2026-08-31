@@ -9,17 +9,21 @@ from app.ai.provider import (
     AssessmentResult,
     CareerAiProvider,
     CoachResult,
+    GapAnalysisResult,
     InterviewQuestionsResult,
     MatchResult,
     ParsedResume,
     ProviderError,
     RewriteResult,
     RoastResult,
+    SalaryAnalysisResult,
+    TailorResult,
 )
 from app.ai.schemas import (
     AnswerEvaluation,
     CoachMessage,
     CoachReply,
+    GapAnalysisContent,
     InterviewQuestionsContent,
     JobMatchContent,
     ResumeAssessment,
@@ -27,6 +31,8 @@ from app.ai.schemas import (
     RewriteContent,
     RoastContent,
     RoastMode,
+    SalaryAnalysisContent,
+    TailorContent,
 )
 from app.integrations.supabase.auth import ERROR_CODE_INVALID, AuthVerificationError
 from app.integrations.supabase.client import SupabaseClients
@@ -147,6 +153,8 @@ class FakeTable:
         row.setdefault("id", str(uuid.uuid4()))
         row.setdefault("created_at", _FIXED_NOW)
         row.setdefault("updated_at", _FIXED_NOW)
+        row.setdefault("saved_at", _FIXED_NOW)
+        row.setdefault("sent_at", _FIXED_NOW)
         if self.name == "resumes":
             row.setdefault("status", "draft")
             row.setdefault("current_version_id", None)
@@ -425,5 +433,81 @@ class FakeProvider(CareerAiProvider):
                 suggested_answer="I led a project that reduced startup time by 40%.",
             ),
             request_id="evaluation-request-1",
+            model_version="gemini-3.6-flash",
+        )
+
+    def analyze_skills_gap(
+        self,
+        resume_content: ResumeContent,
+        job_description: str,
+        *,
+        locale: str = "en",
+    ) -> GapAnalysisResult:
+        if self._error is not None:
+            raise self._error
+        return GapAnalysisResult(
+            content=GapAnalysisContent(
+                matched_skills=[{"skill": "Python", "proficiency": "strong"}],
+                partial_skills=[{"skill": "AWS", "proficiency": "basic"}],
+                missing_skills=[{"skill": "Kubernetes", "priority": "high"}],
+                overall_match_percent=65,
+                summary="Resume covers core skills but misses containerization.",
+            ),
+            request_id="gap-request-1",
+            model_version="gemini-3.6-flash",
+        )
+
+    def tailor_resume(
+        self,
+        content: ResumeContent,
+        job_description: str,
+        *,
+        locale: str = "en",
+    ) -> TailorResult:
+        if self._error is not None:
+            raise self._error
+        return TailorResult(
+            content=TailorContent(
+                tailored_content=content,
+                changes=[
+                    {"field": "summary", "type": "rewrite", "reason": "Align with job keywords"}
+                ],
+                match_score_improvement=12,
+            ),
+            request_id="tailor-request-1",
+            model_version="gemini-3.6-flash",
+        )
+
+    def generate_salary_analysis(
+        self,
+        *,
+        role: str,
+        location: str,
+        experience_years: int | None = None,
+        skills: list[str] | None = None,
+        company: str | None = None,
+    ) -> SalaryAnalysisResult:
+        if self._error is not None:
+            raise self._error
+        return SalaryAnalysisResult(
+            content=SalaryAnalysisContent(
+                salary_range={
+                    "min_salary": 600000.0,
+                    "max_salary": 1400000.0,
+                    "median_salary": 950000.0,
+                    "currency": "INR",
+                    "experience_level": "mid",
+                    "confidence": 0.7,
+                },
+                script={
+                    "opening": "Based on market data for this role in this location...",
+                    "justification_points": ["Highlight relevant experience and current skills."],
+                    "handling_objections": [
+                        "If the range is lower than expectations, ask for the band.",
+                    ],
+                    "closing": "Confirm next steps and reiterate interest.",
+                },
+            ),
+            request_id="salary-request-1",
             model_version="gemini-3.6-flash",
         )

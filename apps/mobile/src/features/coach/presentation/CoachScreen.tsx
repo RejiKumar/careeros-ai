@@ -11,11 +11,13 @@ import {
   TextInput,
   View,
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { useAuth } from "@/lib/auth";
 import { useTheme } from "@/lib/theme";
 import { t, useStrings } from "../../../i18n";
 import { ApiClient } from "@/services/api";
+import { LoginRequiredScreen } from "@/ui/LoginRequired";
 import SpeechToTextButton from "@/ui/SpeechToTextButton";
 import {
   ApiError,
@@ -43,6 +45,7 @@ export default function CoachScreen() {
   const { theme } = useTheme();
   const { colors } = theme;
   const { session, guestId, status: authStatus, handleUnauthorized } = useAuth();
+  const insets = useSafeAreaInsets();
   const strings = useStrings();
 
   const isGuest = authStatus === "guest";
@@ -275,6 +278,10 @@ export default function CoachScreen() {
     }
   }
 
+  if (authStatus !== "signedIn") {
+    return <LoginRequiredScreen />;
+  }
+
   if (mode === "chat" && activeThread !== null) {
     const lastAssistantMsg =
       chatState.status === "success"
@@ -289,7 +296,11 @@ export default function CoachScreen() {
         <View
           style={[
             styles.chatHeader,
-            { backgroundColor: colors.surface, borderColor: colors.border },
+            {
+              backgroundColor: colors.surface,
+              borderColor: colors.border,
+              paddingTop: insets.top + 8,
+            },
           ]}
         >
           <Pressable
@@ -470,7 +481,7 @@ export default function CoachScreen() {
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
-      <ScrollView contentContainerStyle={styles.scrollContent}>
+      <ScrollView contentContainerStyle={[styles.scrollContent, { paddingTop: insets.top + 24 }]}>
         <Text style={[styles.eyebrow, { color: colors.primaryStrong }]}>
           {t("coach.listEyebrow")}
         </Text>
@@ -608,7 +619,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    padding: 24,
+    paddingHorizontal: 24,
     paddingBottom: 48,
   },
   eyebrow: {

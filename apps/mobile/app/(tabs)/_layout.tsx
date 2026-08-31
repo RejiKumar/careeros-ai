@@ -12,7 +12,7 @@ type IconName = React.ComponentProps<typeof Ionicons>["name"];
 const TAB_ICONS: Record<string, { active: IconName; inactive: IconName }> = {
   index: { active: "home", inactive: "home-outline" },
   resume: { active: "document-text", inactive: "document-text-outline" },
-  "job-match": { active: "flash", inactive: "flash-outline" },
+  search: { active: "search", inactive: "search-outline" },
   coach: { active: "chatbubble-ellipses", inactive: "chatbubble-ellipses-outline" },
   profile: { active: "person", inactive: "person-outline" },
 };
@@ -72,10 +72,10 @@ export default function TabsLayout() {
         }}
       />
       <Tabs.Screen
-        name="job-match"
+        name="search"
         options={{
-          title: t("tabs.match"),
-          tabBarIcon: ({ focused }) => <TabBarIcon name="job-match" focused={focused} />,
+          title: t("tabs.search"),
+          tabBarIcon: ({ focused }) => <TabBarIcon name="search" focused={focused} />,
         }}
       />
       <Tabs.Screen
@@ -92,11 +92,20 @@ export default function TabsLayout() {
           tabBarIcon: ({ focused }) => <TabBarIcon name="profile" focused={focused} />,
         }}
       />
+      <Tabs.Screen name="job-match" options={{ href: null }} />
+      <Tabs.Screen name="tailor" options={{ href: null }} />
       <Tabs.Screen name="missions" options={{ href: null }} />
+      <Tabs.Screen name="applications" options={{ href: null }} />
       <Tabs.Screen name="rewrites" options={{ href: null }} />
       <Tabs.Screen name="roast" options={{ href: null }} />
       <Tabs.Screen name="wrapped" options={{ href: null }} />
       <Tabs.Screen name="interview" options={{ href: null }} />
+      <Tabs.Screen name="skills-gap" options={{ href: null }} />
+      <Tabs.Screen name="market-pulse" options={{ href: null }} />
+      <Tabs.Screen name="company" options={{ href: null }} />
+      <Tabs.Screen name="salary" options={{ href: null }} />
+      <Tabs.Screen name="career-path" options={{ href: null }} />
+      <Tabs.Screen name="tools" options={{ href: null }} />
     </Tabs>
   );
 }

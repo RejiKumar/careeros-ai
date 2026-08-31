@@ -20,6 +20,7 @@ from .schemas import (
     AnswerEvaluation,
     CoachMessage,
     CoachReply,
+    GapAnalysisContent,
     InterviewQuestionsContent,
     JobMatchContent,
     ResumeAssessment,
@@ -27,6 +28,8 @@ from .schemas import (
     RewriteContent,
     RoastContent,
     RoastMode,
+    SalaryAnalysisContent,
+    TailorContent,
 )
 
 
@@ -78,6 +81,24 @@ class InterviewQuestionsResult(BaseModel):
 
 class AnswerEvaluationResult(BaseModel):
     content: AnswerEvaluation
+    request_id: str
+    model_version: str
+
+
+class TailorResult(BaseModel):
+    content: TailorContent
+    request_id: str
+    model_version: str
+
+
+class GapAnalysisResult(BaseModel):
+    content: GapAnalysisContent
+    request_id: str
+    model_version: str
+
+
+class SalaryAnalysisResult(BaseModel):
+    content: SalaryAnalysisContent
     request_id: str
     model_version: str
 
@@ -148,6 +169,49 @@ class CareerAiProvider(ABC):
         locale: str = "en",
     ) -> AnswerEvaluationResult:
         """Evaluate one interview answer as guidance, not a hiring judgment."""
+        raise NotImplementedError
+
+    @abstractmethod
+    def analyze_skills_gap(
+        self,
+        resume_content: ResumeContent,
+        job_description: str,
+        *,
+        locale: str = "en",
+    ) -> GapAnalysisResult:
+        """Analyze the skills gap between structured resume content and a job description."""
+        raise NotImplementedError
+
+    @abstractmethod
+    def tailor_resume(
+        self,
+        content: ResumeContent,
+        job_description: str,
+        *,
+        locale: str = "en",
+    ) -> TailorResult:
+        """Tailor a resume for a specific job description.
+
+        Never fabricates experience, skills or qualifications.
+        Only rephrases, reorders and emphasizes existing content.
+        """
+        raise NotImplementedError
+
+    @abstractmethod
+    def generate_salary_analysis(
+        self,
+        *,
+        role: str,
+        location: str,
+        experience_years: int | None = None,
+        skills: list[str] | None = None,
+        company: str | None = None,
+    ) -> SalaryAnalysisResult:
+        """Estimate a market salary range and draft negotiation guidance.
+
+        Estimates are advisory only, grounded in general market signals for
+        the role and location, never fabricated single-point offers.
+        """
         raise NotImplementedError
 
 

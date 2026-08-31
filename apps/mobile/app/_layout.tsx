@@ -10,7 +10,9 @@ import {
 } from "react-native";
 
 import { AuthProvider, useAuth } from "@/lib/auth";
+import { setupNotifications } from "@/lib/notifications";
 import { ThemeProvider, useTheme } from "@/lib/theme";
+import { initAdMob } from "@/ui/AdBanner";
 
 function ThemedStatusBar() {
   const { colorScheme, theme } = useTheme();
@@ -33,16 +35,28 @@ function RestoringScreen() {
 
 function RootNavigator() {
   const router = useRouter();
-  const { status } = useAuth();
+  const { status, session, guestId } = useAuth();
   const pathname = usePathname();
 
-  // Navigate imperatively so the Stack stays mounted; a render-time <Redirect>
-  // in place of the Stack unmounts the navigator mid-navigation and can loop.
   useEffect(() => {
     if (status === "signedOut" && pathname !== "/auth") {
       router.replace("/auth");
     }
   }, [status, pathname, router]);
+
+  useEffect(() => {
+    if (status === "restoring") {
+      return;
+    }
+    const accessToken = session?.access_token;
+    let cleanup: (() => void) | undefined;
+    void setupNotifications(status, accessToken, guestId).then((fn) => {
+      cleanup = fn;
+    });
+    return () => {
+      cleanup?.();
+    };
+  }, [status, session, guestId]);
 
   if (status === "restoring") {
     return <RestoringScreen />;
@@ -57,6 +71,10 @@ function RootNavigator() {
 }
 
 export default function RootLayout() {
+  useEffect(() => {
+    initAdMob();
+  }, []);
+
   return (
     <ThemeProvider>
       <AuthProvider>

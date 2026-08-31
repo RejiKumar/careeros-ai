@@ -130,20 +130,117 @@ V1 foundation; advanced voice mode may be V1.1.
 
 ---
 
-# 5. Future Features
+# 5. Future Features — Competitive Differentiation Roadmap
 
-- Voice interview
-- Career roadmap
-- Application tracker
-- Job discovery
-- Salary insights
-- Portfolio builder
-- LinkedIn profile optimization
-- Community
-- Networking
-- AI job application agent
-- Additional AI providers
-- iOS production launch
+The app must go beyond what ChatGPT or generic AI tools can offer. The competitive moat is: real-time job data, persistent tracking, push notifications, and platform integrations that a chatbot cannot replicate.
+
+## Phase 1 — Core Differentiators (implement first)
+
+### Live Job Search
+
+Aggregate real-time job postings from multiple platforms:
+
+- **Technopark** (Kerala tech hub jobs)
+- **Naukri.com** (India's largest job board)
+- **LinkedIn Jobs** (professional network)
+- **Indeed** (global aggregator)
+- **Monster India**
+
+Backend performs search aggregation, deduplication, and relevance scoring. Results are cached with TTL for performance. The mobile app displays unified search results with platform source badges.
+
+### Push Job Alerts (Firebase Cloud Messaging)
+
+- Background job matcher runs periodically (e.g., every 6 hours)
+- Compares user resume skills against new job postings
+- Sends push notification when match score exceeds threshold (e.g., >80%)
+- Notification includes: job title, company, match score, platform source
+- Deep link opens the job detail screen in the app
+- Users can configure alert frequency and minimum match threshold
+
+### Skills Gap Radar
+
+- User selects a specific job posting from search results
+- System extracts required skills from the job description
+- Compares against user's resume skills
+- Visual radar chart shows: matched skills, partially matched, missing skills
+- Each missing skill shows learning resources (courses, certifications)
+- Persists gap analyses for tracking progress over time
+
+### Auto-Tailor Resume
+
+- One-tap action: "Tailor my resume for this job"
+- AI rewrites summary to emphasize relevant experience
+- Reorders skills section to match job requirements
+- Adjusts bullet points to use job-specific keywords
+- Preserves factual accuracy — never fabricates experience
+- Creates a new resume version (not overwriting original)
+- User reviews diff before accepting
+
+## Phase 2 — Engagement & Retention
+
+### Application Tracker
+
+- Track applications: Applied → Interview → Offer → Rejected
+- Link applications to specific job postings
+- Add notes, interview dates, follow-up reminders
+- Dashboard shows application pipeline (Kanban view)
+- Analytics: acceptance rate, response time, top sources
+
+### Market Pulse Dashboard
+
+- Real-time skill demand trends (e.g., "Python demand: ↑23% this quarter in Kerala")
+- Average salary ranges by role and location
+- Top hiring companies in the user's area
+- Emerging skills in the user's industry
+- Historical trend charts (3-month, 6-month, 1-year)
+
+### Skill Trend Forecast
+
+- AI-powered analysis of job posting patterns
+- "Django rising, PHP declining in Technopark"
+- Recommended skills to learn based on market trajectory
+- Personalized learning path suggestions
+
+### Company Deep Dive
+
+- Company tech stack (from job postings + public data)
+- Company culture signals (Glassdoor-style insights)
+- Team size, funding stage, growth trajectory
+- Recent job postings (is the company actively hiring?)
+- Employee skill distribution
+
+### Referral Finder
+
+- LinkedIn integration to find connections at target companies
+- "3 people in your network work at [Company]"
+- Suggested introduction messages
+- Track referral requests and outcomes
+
+## Phase 3 — Premium Features
+
+### AI Interview Simulator (Enhanced)
+
+- Role-specific questions generated from real job postings
+- Mock interview with voice input and AI evaluation
+- Company-specific interview preparation
+- Behavioral question STAR method coaching
+- Technical coding challenge simulation
+
+### Salary Negotiator
+
+- Market-based salary data for the user's role and location
+- Experience-adjusted salary range
+- Negotiation script generation
+- "Based on your experience and this role, ask for ₹X–Y"
+- Benefits comparison (salary vs equity vs perks)
+
+### Career Path Mapper
+
+- Visual career progression: "Junior → Senior → Lead → CTO"
+- Skill requirements at each career stage
+- Timeline estimates based on current skills
+- Gap analysis for next career step
+- Recommended actions to advance
 
 Future features must not complicate V1 architecture unnecessarily.
 
@@ -1203,7 +1300,7 @@ Measure, fix, optimize, then expand.
 
 Do not launch with everything.
 
-### Must ship
+### Must ship (V1)
 
 - Authentication
 - Guest
@@ -1222,18 +1319,38 @@ Do not launch with everything.
 - Analytics
 - Crash reporting
 
-### V1.1
+### V1.1 — Core Differentiators
 
-- Wrapped
+- Live Job Search (Technopark, Naukri, LinkedIn, Indeed, Monster)
+- Push Job Alerts (Firebase Cloud Messaging)
+- Skills Gap Radar
+- Auto-Tailor Resume
+- Interview Coach
 - Daily missions
-- Interview coach
+- Wrapped
 - Resume versions
 
-### V1.2
+### V1.2 — Engagement & Retention
 
+- Application Tracker (Kanban view)
+- Market Pulse Dashboard
+- Skill Trend Forecast
+- Company Deep Dive
+- Referral Finder
+
+### V1.3 — Premium Features
+
+- Enhanced AI Interview Simulator
+- Salary Negotiator
+- Career Path Mapper
+
+### V2
+
+- iOS production launch
 - Voice interview
-- Career roadmap
-- Application tracker
+- Community features
+- AI job application agent
+- Additional AI providers
 
 ---
 

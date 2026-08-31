@@ -102,7 +102,7 @@ export default function SpeechToTextButton({
       ];
       await api.start({
         lang: "en-US",
-        interimResults: true,
+        interimResults: false,
         continuous: false,
         addsPunctuation: false,
         requiresOnDeviceRecognition: false,

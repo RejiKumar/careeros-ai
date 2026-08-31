@@ -2,6 +2,8 @@ import { useFocusEffect } from "expo-router";
 import { useCallback, useState } from "react";
 import {
   ActivityIndicator,
+  KeyboardAvoidingView,
+  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -194,153 +196,158 @@ export default function InterviewScreen() {
   if (viewMode === "setup") {
     return (
       <AppBackground>
-        <ScrollView
-          contentContainerStyle={styles.scrollContent}
-          keyboardShouldPersistTaps="handled"
+        <KeyboardAvoidingView
+          behavior={Platform.OS === "ios" ? "padding" : undefined}
+          style={{ flex: 1 }}
         >
-          <ScreenHeader
-            eyebrow={t("interview.eyebrow")}
-            title={t("interview.title")}
-            subtitle={t("interview.subtitle")}
-          />
+          <ScrollView
+            contentContainerStyle={styles.scrollContent}
+            keyboardShouldPersistTaps="handled"
+          >
+            <ScreenHeader
+              eyebrow={t("interview.eyebrow")}
+              title={t("interview.title")}
+              subtitle={t("interview.subtitle")}
+            />
 
-          <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>
-            {t("interview.modeSection")}
-          </Text>
-          <View style={styles.modeRow}>
-            {INTERVIEW_MODES.map((mode) => (
-              <Pressable
-                key={mode.key}
-                accessibilityRole="button"
-                accessibilityLabel={`${t("interview.modeSection")}: ${t(mode.labelKey)}`}
-                accessibilityState={{ selected: selectedMode === mode.key }}
-                onPress={() => setSelectedMode(mode.key)}
-                style={[
-                  styles.modeChip,
-                  {
-                    backgroundColor: selectedMode === mode.key ? colors.primary : colors.surface,
-                    borderColor: selectedMode === mode.key ? colors.primary : colors.border,
-                  },
-                ]}
-              >
-                <Text
+            <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>
+              {t("interview.modeSection")}
+            </Text>
+            <View style={styles.modeRow}>
+              {INTERVIEW_MODES.map((mode) => (
+                <Pressable
+                  key={mode.key}
+                  accessibilityRole="button"
+                  accessibilityLabel={`${t("interview.modeSection")}: ${t(mode.labelKey)}`}
+                  accessibilityState={{ selected: selectedMode === mode.key }}
+                  onPress={() => setSelectedMode(mode.key)}
                   style={[
-                    styles.modeChipText,
-                    { color: selectedMode === mode.key ? colors.onPrimary : colors.textPrimary },
+                    styles.modeChip,
+                    {
+                      backgroundColor: selectedMode === mode.key ? colors.primary : colors.surface,
+                      borderColor: selectedMode === mode.key ? colors.primary : colors.border,
+                    },
                   ]}
                 >
-                  {t(mode.labelKey)}
-                </Text>
-              </Pressable>
-            ))}
-          </View>
-
-          {resumes.length > 0 && (
-            <>
-              <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>
-                {t("interview.resumeContext")}
-              </Text>
-              <View style={styles.chipRow}>
-                {resumes.map((r) => (
-                  <Pressable
-                    key={r.id}
-                    accessibilityRole="button"
-                    accessibilityLabel={`Use resume ${r.title}`}
-                    accessibilityState={{ selected: resumeId === r.id }}
-                    onPress={() => setResumeId(r.id)}
+                  <Text
                     style={[
-                      styles.chip,
-                      {
-                        backgroundColor: resumeId === r.id ? colors.primary : colors.surface,
-                        borderColor: resumeId === r.id ? colors.primary : colors.border,
-                      },
+                      styles.modeChipText,
+                      { color: selectedMode === mode.key ? colors.onPrimary : colors.textPrimary },
                     ]}
                   >
-                    <Text
+                    {t(mode.labelKey)}
+                  </Text>
+                </Pressable>
+              ))}
+            </View>
+
+            {resumes.length > 0 && (
+              <>
+                <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>
+                  {t("interview.resumeContext")}
+                </Text>
+                <View style={styles.chipRow}>
+                  {resumes.map((r) => (
+                    <Pressable
+                      key={r.id}
+                      accessibilityRole="button"
+                      accessibilityLabel={`Use resume ${r.title}`}
+                      accessibilityState={{ selected: resumeId === r.id }}
+                      onPress={() => setResumeId(r.id)}
                       style={[
-                        styles.chipText,
-                        { color: resumeId === r.id ? colors.onPrimary : colors.textPrimary },
+                        styles.chip,
+                        {
+                          backgroundColor: resumeId === r.id ? colors.primary : colors.surface,
+                          borderColor: resumeId === r.id ? colors.primary : colors.border,
+                        },
                       ]}
                     >
-                      {r.title}
-                    </Text>
-                  </Pressable>
-                ))}
-              </View>
-            </>
-          )}
-
-          <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>
-            {t("interview.targetJob")}
-          </Text>
-          <TextInput
-            value={targetJob}
-            onChangeText={setTargetJob}
-            accessibilityLabel={t("interview.targetJob")}
-            placeholder={t("interview.targetJobPlaceholder")}
-            placeholderTextColor={colors.textDisabled}
-            style={[
-              styles.textInput,
-              {
-                backgroundColor: colors.surface,
-                borderColor: colors.border,
-                color: colors.textPrimary,
-              },
-            ]}
-          />
-
-          <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>
-            {t("interview.targetSkills")}
-          </Text>
-          <TextInput
-            value={targetSkills}
-            onChangeText={setTargetSkills}
-            accessibilityLabel={t("interview.targetSkills")}
-            placeholder={t("interview.targetSkillsPlaceholder")}
-            placeholderTextColor={colors.textDisabled}
-            style={[
-              styles.textInput,
-              {
-                backgroundColor: colors.surface,
-                borderColor: colors.border,
-                color: colors.textPrimary,
-              },
-            ]}
-          />
-
-          {createError !== null && (
-            <View
-              style={[styles.errorCard, { backgroundColor: colors.danger }]}
-              accessibilityRole="alert"
-            >
-              <Text style={[styles.errorText, { color: colors.onDanger }]}>{createError}</Text>
-            </View>
-          )}
-
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel={t("interview.startButton")}
-            onPress={() => void handleCreateSession()}
-            disabled={selectedMode === null || creating}
-            style={({ pressed }) => [
-              styles.primaryButton,
-              { backgroundColor: colors.primary },
-              pressed && styles.pressed,
-              (selectedMode === null || creating) && styles.disabled,
-            ]}
-          >
-            {creating ? (
-              <ActivityIndicator
-                color={colors.onPrimary}
-                accessibilityLabel={t("interview.startButton")}
-              />
-            ) : (
-              <Text style={[styles.primaryButtonText, { color: colors.onPrimary }]}>
-                {t("interview.startButton")}
-              </Text>
+                      <Text
+                        style={[
+                          styles.chipText,
+                          { color: resumeId === r.id ? colors.onPrimary : colors.textPrimary },
+                        ]}
+                      >
+                        {r.title}
+                      </Text>
+                    </Pressable>
+                  ))}
+                </View>
+              </>
             )}
-          </Pressable>
-        </ScrollView>
+
+            <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>
+              {t("interview.targetJob")}
+            </Text>
+            <TextInput
+              value={targetJob}
+              onChangeText={setTargetJob}
+              accessibilityLabel={t("interview.targetJob")}
+              placeholder={t("interview.targetJobPlaceholder")}
+              placeholderTextColor={colors.textDisabled}
+              style={[
+                styles.textInput,
+                {
+                  backgroundColor: colors.surface,
+                  borderColor: colors.border,
+                  color: colors.textPrimary,
+                },
+              ]}
+            />
+
+            <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>
+              {t("interview.targetSkills")}
+            </Text>
+            <TextInput
+              value={targetSkills}
+              onChangeText={setTargetSkills}
+              accessibilityLabel={t("interview.targetSkills")}
+              placeholder={t("interview.targetSkillsPlaceholder")}
+              placeholderTextColor={colors.textDisabled}
+              style={[
+                styles.textInput,
+                {
+                  backgroundColor: colors.surface,
+                  borderColor: colors.border,
+                  color: colors.textPrimary,
+                },
+              ]}
+            />
+
+            {createError !== null && (
+              <View
+                style={[styles.errorCard, { backgroundColor: colors.danger }]}
+                accessibilityRole="alert"
+              >
+                <Text style={[styles.errorText, { color: colors.onDanger }]}>{createError}</Text>
+              </View>
+            )}
+
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={t("interview.startButton")}
+              onPress={() => void handleCreateSession()}
+              disabled={selectedMode === null || creating}
+              style={({ pressed }) => [
+                styles.primaryButton,
+                { backgroundColor: colors.primary },
+                pressed && styles.pressed,
+                (selectedMode === null || creating) && styles.disabled,
+              ]}
+            >
+              {creating ? (
+                <ActivityIndicator
+                  color={colors.onPrimary}
+                  accessibilityLabel={t("interview.startButton")}
+                />
+              ) : (
+                <Text style={[styles.primaryButtonText, { color: colors.onPrimary }]}>
+                  {t("interview.startButton")}
+                </Text>
+              )}
+            </Pressable>
+          </ScrollView>
+        </KeyboardAvoidingView>
       </AppBackground>
     );
   }
@@ -353,214 +360,222 @@ export default function InterviewScreen() {
 
   return (
     <AppBackground>
-      <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel={t("common.back")}
-          onPress={() => {
-            setViewMode("setup");
-            setActiveSession(null);
-            setActiveQuestionId(null);
-          }}
-          style={[styles.backLink, { backgroundColor: colors.surfaceRaised }]}
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
+        style={{ flex: 1 }}
+      >
+        <ScrollView
+          contentContainerStyle={styles.scrollContent}
+          keyboardShouldPersistTaps="handled"
         >
-          <Text style={[styles.backLinkText, { color: colors.textPrimary }]}>
-            {t("interview.newSession")}
-          </Text>
-        </Pressable>
-
-        <ScreenHeader
-          eyebrow={t("interview.eyebrow")}
-          title={`${activeSession?.mode ?? ""} session`}
-        />
-
-        <Text style={[styles.guideDisclosure, { color: colors.textDisabled }]}>
-          {t("interview.disclosure")}
-        </Text>
-
-        {sessionDetail.status === "loading" && (
-          <ActivityIndicator
-            size="large"
-            color={colors.primary}
-            accessibilityLabel={t("common.loading")}
-          />
-        )}
-
-        {sessionDetail.status === "error" && (
-          <View
-            style={[styles.errorCard, { backgroundColor: colors.danger }]}
-            accessibilityRole="alert"
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={t("common.back")}
+            onPress={() => {
+              setViewMode("setup");
+              setActiveSession(null);
+              setActiveQuestionId(null);
+            }}
+            style={[styles.backLink, { backgroundColor: colors.surfaceRaised }]}
           >
-            <Text style={[styles.errorText, { color: colors.onDanger }]}>
-              {sessionDetail.message}
+            <Text style={[styles.backLinkText, { color: colors.textPrimary }]}>
+              {t("interview.newSession")}
             </Text>
-          </View>
-        )}
+          </Pressable>
 
-        {sessionDetail.status === "success" && (
-          <>
-            <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>
-              {t("interview.questionsSection")}
-            </Text>
-            {sessionDetail.questions.map((q, i) => {
-              const answered = answers.has(q.id);
-              return (
-                <Pressable
-                  key={q.id}
-                  accessibilityRole="button"
-                  accessibilityLabel={`Question ${i + 1}: ${q.question}`}
-                  accessibilityState={{ selected: activeQuestionId === q.id }}
-                  onPress={() => handleSelectQuestion(q.id)}
-                  style={[
-                    styles.questionCard,
-                    {
-                      backgroundColor:
-                        activeQuestionId === q.id ? colors.primarySoft : colors.surface,
-                      borderColor: activeQuestionId === q.id ? colors.primary : colors.border,
-                    },
-                  ]}
-                >
-                  <View style={styles.questionHeader}>
-                    <Text style={[styles.questionNumber, { color: colors.primaryStrong }]}>
-                      {i + 1}
-                    </Text>
-                    <Text style={[styles.questionFocus, { color: colors.textDisabled }]}>
-                      {q.focus}
-                    </Text>
-                    {answered && (
-                      <Text style={[styles.answeredBadge, { color: colors.success }]}>✓</Text>
-                    )}
-                  </View>
-                  <Text style={[styles.questionText, { color: colors.textPrimary }]}>
-                    {q.question}
-                  </Text>
-                </Pressable>
-              );
-            })}
+          <ScreenHeader
+            eyebrow={t("interview.eyebrow")}
+            title={`${activeSession?.mode ?? ""} session`}
+          />
 
-            {activeQuestion !== null && (
-              <View
-                style={[
-                  styles.answerSection,
-                  { backgroundColor: colors.surface, borderColor: colors.border },
-                ]}
-              >
-                <Text style={[styles.answerSectionTitle, { color: colors.textPrimary }]}>
-                  {t("interview.answerTitle", {
-                    n: sessionDetail.questions.findIndex((q) => q.id === activeQuestionId) + 1,
-                  })}
-                </Text>
-                <TextInput
-                  value={answerDraft}
-                  onChangeText={setAnswerDraft}
-                  multiline
-                  accessibilityLabel={t("interview.answerPlaceholder")}
-                  placeholder={t("interview.answerPlaceholder")}
-                  placeholderTextColor={colors.textDisabled}
-                  style={[
-                    styles.answerInput,
-                    {
-                      backgroundColor: colors.background,
-                      borderColor: colors.border,
-                      color: colors.textPrimary,
-                    },
-                  ]}
-                />
-                <SpeechToTextButton
-                  onResult={(text) =>
-                    setAnswerDraft((prev) => (prev === "" ? text : `${prev} ${text}`))
-                  }
-                  color={colors.textDisabled}
-                  activeColor={colors.primaryStrong}
-                  label={t("interview.voiceInput")}
-                />
-                <Pressable
-                  accessibilityRole="button"
-                  accessibilityLabel={t("interview.submitAnswer")}
-                  onPress={() => void handleSubmitAnswer()}
-                  disabled={answerDraft.trim() === "" || answerState.status === "loading"}
-                  style={({ pressed }) => [
-                    styles.primaryButton,
-                    { backgroundColor: colors.primary },
-                    pressed && styles.pressed,
-                    (answerDraft.trim() === "" || answerState.status === "loading") &&
-                      styles.disabled,
-                  ]}
-                >
-                  {answerState.status === "loading" ? (
-                    <ActivityIndicator
-                      color={colors.onPrimary}
-                      accessibilityLabel={t("common.loading")}
-                    />
-                  ) : (
-                    <Text style={[styles.primaryButtonText, { color: colors.onPrimary }]}>
-                      {t("interview.submitAnswer")}
-                    </Text>
-                  )}
-                </Pressable>
+          <Text style={[styles.guideDisclosure, { color: colors.textDisabled }]}>
+            {t("interview.disclosure")}
+          </Text>
 
-                {answerState.status === "error" && (
-                  <View
-                    style={[styles.errorCard, { backgroundColor: colors.danger }]}
-                    accessibilityRole="alert"
-                  >
-                    <Text style={[styles.errorText, { color: colors.onDanger }]}>
-                      {answerState.message}
-                    </Text>
-                  </View>
-                )}
+          {sessionDetail.status === "loading" && (
+            <ActivityIndicator
+              size="large"
+              color={colors.primary}
+              accessibilityLabel={t("common.loading")}
+            />
+          )}
 
-                {answerState.status === "success" && (
-                  <View
+          {sessionDetail.status === "error" && (
+            <View
+              style={[styles.errorCard, { backgroundColor: colors.danger }]}
+              accessibilityRole="alert"
+            >
+              <Text style={[styles.errorText, { color: colors.onDanger }]}>
+                {sessionDetail.message}
+              </Text>
+            </View>
+          )}
+
+          {sessionDetail.status === "success" && (
+            <>
+              <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>
+                {t("interview.questionsSection")}
+              </Text>
+              {sessionDetail.questions.map((q, i) => {
+                const answered = answers.has(q.id);
+                return (
+                  <Pressable
+                    key={q.id}
+                    accessibilityRole="button"
+                    accessibilityLabel={`Question ${i + 1}: ${q.question}`}
+                    accessibilityState={{ selected: activeQuestionId === q.id }}
+                    onPress={() => handleSelectQuestion(q.id)}
                     style={[
-                      styles.evalCard,
-                      { backgroundColor: colors.primarySoft, borderColor: colors.primary },
+                      styles.questionCard,
+                      {
+                        backgroundColor:
+                          activeQuestionId === q.id ? colors.primarySoft : colors.surface,
+                        borderColor: activeQuestionId === q.id ? colors.primary : colors.border,
+                      },
                     ]}
                   >
-                    <Text style={[styles.evalTitle, { color: colors.primaryStrong }]}>
-                      {t("interview.evaluation")}
+                    <View style={styles.questionHeader}>
+                      <Text style={[styles.questionNumber, { color: colors.primaryStrong }]}>
+                        {i + 1}
+                      </Text>
+                      <Text style={[styles.questionFocus, { color: colors.textDisabled }]}>
+                        {q.focus}
+                      </Text>
+                      {answered && (
+                        <Text style={[styles.answeredBadge, { color: colors.success }]}>✓</Text>
+                      )}
+                    </View>
+                    <Text style={[styles.questionText, { color: colors.textPrimary }]}>
+                      {q.question}
                     </Text>
-                    {(
-                      [
-                        { evalKey: "relevance", i18nKey: "interview.dimensions.relevance" },
-                        { evalKey: "clarity", i18nKey: "interview.dimensions.clarity" },
-                        { evalKey: "structure", i18nKey: "interview.dimensions.structure" },
-                        {
-                          evalKey: "technical_correctness",
-                          i18nKey: "interview.dimensions.technicalCorrectness",
-                        },
-                        { evalKey: "completeness", i18nKey: "interview.dimensions.completeness" },
-                      ] as const
-                    ).map(({ evalKey, i18nKey }) => (
-                      <View key={evalKey} style={styles.evalRow}>
-                        <Text style={[styles.evalLabel, { color: colors.textSecondary }]}>
-                          {t(i18nKey)}
-                        </Text>
-                        <Text style={[styles.evalScore, { color: colors.primaryStrong }]}>
-                          {answerState.evaluation[evalKey]}/10
-                        </Text>
-                      </View>
-                    ))}
-                    <Text style={[styles.evalFeedback, { color: colors.textPrimary }]}>
-                      {answerState.evaluation.feedback}
-                    </Text>
-                    {answerState.evaluation.suggested_answer !== "" && (
-                      <View style={styles.suggestedBlock}>
-                        <Text style={[styles.suggestedLabel, { color: colors.textSecondary }]}>
-                          {t("interview.suggestedAnswer")}
-                        </Text>
-                        <Text style={[styles.suggestedText, { color: colors.textPrimary }]}>
-                          {answerState.evaluation.suggested_answer}
-                        </Text>
-                      </View>
+                  </Pressable>
+                );
+              })}
+
+              {activeQuestion !== null && (
+                <View
+                  style={[
+                    styles.answerSection,
+                    { backgroundColor: colors.surface, borderColor: colors.border },
+                  ]}
+                >
+                  <Text style={[styles.answerSectionTitle, { color: colors.textPrimary }]}>
+                    {t("interview.answerTitle", {
+                      n: sessionDetail.questions.findIndex((q) => q.id === activeQuestionId) + 1,
+                    })}
+                  </Text>
+                  <TextInput
+                    value={answerDraft}
+                    onChangeText={setAnswerDraft}
+                    multiline
+                    accessibilityLabel={t("interview.answerPlaceholder")}
+                    placeholder={t("interview.answerPlaceholder")}
+                    placeholderTextColor={colors.textDisabled}
+                    style={[
+                      styles.answerInput,
+                      {
+                        backgroundColor: colors.background,
+                        borderColor: colors.border,
+                        color: colors.textPrimary,
+                      },
+                    ]}
+                  />
+                  <SpeechToTextButton
+                    onResult={(text) =>
+                      setAnswerDraft((prev) => (prev === "" ? text : `${prev} ${text}`))
+                    }
+                    color={colors.textDisabled}
+                    activeColor={colors.primaryStrong}
+                    label={t("interview.voiceInput")}
+                  />
+                  <Pressable
+                    accessibilityRole="button"
+                    accessibilityLabel={t("interview.submitAnswer")}
+                    onPress={() => void handleSubmitAnswer()}
+                    disabled={answerDraft.trim() === "" || answerState.status === "loading"}
+                    style={({ pressed }) => [
+                      styles.primaryButton,
+                      { backgroundColor: colors.primary },
+                      pressed && styles.pressed,
+                      (answerDraft.trim() === "" || answerState.status === "loading") &&
+                        styles.disabled,
+                    ]}
+                  >
+                    {answerState.status === "loading" ? (
+                      <ActivityIndicator
+                        color={colors.onPrimary}
+                        accessibilityLabel={t("common.loading")}
+                      />
+                    ) : (
+                      <Text style={[styles.primaryButtonText, { color: colors.onPrimary }]}>
+                        {t("interview.submitAnswer")}
+                      </Text>
                     )}
-                  </View>
-                )}
-              </View>
-            )}
-          </>
-        )}
-      </ScrollView>
+                  </Pressable>
+
+                  {answerState.status === "error" && (
+                    <View
+                      style={[styles.errorCard, { backgroundColor: colors.danger }]}
+                      accessibilityRole="alert"
+                    >
+                      <Text style={[styles.errorText, { color: colors.onDanger }]}>
+                        {answerState.message}
+                      </Text>
+                    </View>
+                  )}
+
+                  {answerState.status === "success" && (
+                    <View
+                      style={[
+                        styles.evalCard,
+                        { backgroundColor: colors.primarySoft, borderColor: colors.primary },
+                      ]}
+                    >
+                      <Text style={[styles.evalTitle, { color: colors.primaryStrong }]}>
+                        {t("interview.evaluation")}
+                      </Text>
+                      {(
+                        [
+                          { evalKey: "relevance", i18nKey: "interview.dimensions.relevance" },
+                          { evalKey: "clarity", i18nKey: "interview.dimensions.clarity" },
+                          { evalKey: "structure", i18nKey: "interview.dimensions.structure" },
+                          {
+                            evalKey: "technical_correctness",
+                            i18nKey: "interview.dimensions.technicalCorrectness",
+                          },
+                          { evalKey: "completeness", i18nKey: "interview.dimensions.completeness" },
+                        ] as const
+                      ).map(({ evalKey, i18nKey }) => (
+                        <View key={evalKey} style={styles.evalRow}>
+                          <Text style={[styles.evalLabel, { color: colors.textSecondary }]}>
+                            {t(i18nKey)}
+                          </Text>
+                          <Text style={[styles.evalScore, { color: colors.primaryStrong }]}>
+                            {answerState.evaluation[evalKey]}/10
+                          </Text>
+                        </View>
+                      ))}
+                      <Text style={[styles.evalFeedback, { color: colors.textPrimary }]}>
+                        {answerState.evaluation.feedback}
+                      </Text>
+                      {answerState.evaluation.suggested_answer !== "" && (
+                        <View style={styles.suggestedBlock}>
+                          <Text style={[styles.suggestedLabel, { color: colors.textSecondary }]}>
+                            {t("interview.suggestedAnswer")}
+                          </Text>
+                          <Text style={[styles.suggestedText, { color: colors.textPrimary }]}>
+                            {answerState.evaluation.suggested_answer}
+                          </Text>
+                        </View>
+                      )}
+                    </View>
+                  )}
+                </View>
+              )}
+            </>
+          )}
+        </ScrollView>
+      </KeyboardAvoidingView>
     </AppBackground>
   );
 }
