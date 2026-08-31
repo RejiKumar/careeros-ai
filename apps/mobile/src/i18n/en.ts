@@ -124,6 +124,7 @@ const en = {
     plan: "Plan",
     sendPasswordReset: "Send password reset link",
     signOut: "Sign out",
+    createAccount: "Create account to save progress",
     deleteAccount: "Delete my account",
     deleteTitle: "Delete your account?",
     deleteBody:
@@ -449,6 +450,12 @@ const en = {
     permissionAllow: "Allow",
     permissionDeny: "Not now",
   },
+  loginRequired: {
+    title: "Log in to use this feature",
+    message: "Log in to unlock this feature and keep your data.",
+    loginButton: "Log in",
+    notNow: "Not now",
+  },
   applications: {
     eyebrow: "Applications",
     title: "Track your applications",
@@ -464,6 +471,8 @@ const en = {
     notes: "Notes",
     followUp: "Follow-up date",
     interviewDate: "Interview date",
+    datePlaceholder: "MM/DD/YYYY",
+    invalidDate: "Enter a valid date (MM/DD/YYYY).",
     save: "Save",
     cancel: "Cancel",
     totalApplications: "Total",

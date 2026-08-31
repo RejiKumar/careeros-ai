@@ -15,7 +15,6 @@ from .schema import (
     NotificationLogResponse,
     NotificationPreferenceRequest,
     NotificationPreferenceResponse,
-    SendNotificationRequest,
 )
 from .service import NotificationService
 
@@ -67,21 +66,6 @@ def get_preferences(
     actor: Annotated[CurrentActor, Depends(get_current_actor)],
 ) -> NotificationPreferenceResponse | None:
     return service.get_preference(actor)
-
-
-@router.post("/send", status_code=202)
-def send_notification(
-    payload: SendNotificationRequest,
-    service: Annotated[NotificationService, Depends(get_notification_service)],
-) -> dict[str, str]:
-    service.send_notification(
-        user_id=payload.user_id,
-        title=payload.title,
-        body=payload.body,
-        data=payload.data,
-        image_url=payload.image_url,
-    )
-    return {"status": "queued"}
 
 
 @router.get("", response_model=list[NotificationLogResponse])

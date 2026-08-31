@@ -1,11 +1,15 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
+import { useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 
+import { useAuth } from "@/lib/auth";
+import { isGuestLockedRoute } from "@/lib/featureGates";
 import { useTheme } from "@/lib/theme";
 import AppBackground from "@/ui/AppBackground";
 import GlassCard from "@/ui/GlassCard";
 import IconChip, { type IconName } from "@/ui/IconChip";
+import { LoginRequiredBanner } from "@/ui/LoginRequired";
 import ScreenHeader from "@/ui/ScreenHeader";
 
 import { t } from "../../src/i18n";
@@ -78,6 +82,10 @@ export default function ToolsScreen() {
   const router = useRouter();
   const { theme } = useTheme();
   const { colors } = theme;
+  const { status: authStatus } = useAuth();
+  const [lockedRoute, setLockedRoute] = useState<string | null>(null);
+
+  const isGuest = authStatus === "guest";
 
   return (
     <AppBackground>
@@ -89,24 +97,55 @@ export default function ToolsScreen() {
           onBack={() => router.back()}
         />
 
+        {lockedRoute !== null && (
+          <View style={styles.noticeRow}>
+            <LoginRequiredBanner onDismiss={() => setLockedRoute(null)} />
+          </View>
+        )}
+
         <View style={styles.grid}>
-          {TOOLS.map((tool) => (
-            <Pressable
-              key={tool.key}
-              accessibilityRole="button"
-              accessibilityLabel={`Open ${t(tool.key)}`}
-              onPress={() => router.push(tool.route)}
-              style={({ pressed }) => [styles.card, pressed && styles.pressed]}
-            >
-              <GlassCard style={styles.cardInner}>
-                <IconChip name={tool.icon} size={52} gradient={tool.gradient} />
-                <Text style={[styles.cardTitle, { color: colors.textPrimary }]}>{t(tool.key)}</Text>
-                <View style={styles.cardFooter}>
-                  <Ionicons name="arrow-forward" size={16} color={colors.textDisabled} />
-                </View>
-              </GlassCard>
-            </Pressable>
-          ))}
+          {TOOLS.map((tool) => {
+            const locked = isGuest && isGuestLockedRoute(tool.route);
+            return (
+              <Pressable
+                key={tool.key}
+                accessibilityRole="button"
+                accessibilityLabel={`Open ${t(tool.key)}${locked ? ", requires login" : ""}`}
+                accessibilityState={{ disabled: locked }}
+                onPress={() => {
+                  if (locked) {
+                    setLockedRoute(tool.route);
+                    return;
+                  }
+                  router.push(tool.route);
+                }}
+                style={({ pressed }) => [
+                  styles.card,
+                  pressed && !locked && styles.pressed,
+                  locked && styles.cardDimmed,
+                ]}
+              >
+                <GlassCard style={styles.cardInner}>
+                  <IconChip name={tool.icon} size={52} gradient={tool.gradient} />
+                  <Text
+                    style={[
+                      styles.cardTitle,
+                      { color: locked ? colors.textDisabled : colors.textPrimary },
+                    ]}
+                  >
+                    {t(tool.key)}
+                  </Text>
+                  <View style={styles.cardFooter}>
+                    <Ionicons
+                      name={locked ? "lock-closed" : "arrow-forward"}
+                      size={16}
+                      color={locked ? colors.textDisabled : colors.textSecondary}
+                    />
+                  </View>
+                </GlassCard>
+              </Pressable>
+            );
+          })}
         </View>
       </ScrollView>
     </AppBackground>
@@ -124,9 +163,13 @@ const styles = StyleSheet.create({
     flexWrap: "wrap",
     gap: 12,
   },
+  noticeRow: {
+    marginBottom: 16,
+  },
   card: {
     width: "48%",
   },
+  cardDimmed: {},
   cardInner: {
     minHeight: 148,
     padding: 16,

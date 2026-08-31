@@ -64,7 +64,7 @@ class ApplicationService:
             status=status,
             notes=notes,
             url=url,
-            applied_at=applied_at,
+            applied_at=applied_at if applied_at else date.today().isoformat(),
             interview_date=interview_date,
             follow_up_date=follow_up_date,
         )

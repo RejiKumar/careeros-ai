@@ -277,7 +277,7 @@ export default function ProfileScreen() {
         {isGuest && (
           <Pressable
             accessibilityRole="button"
-            accessibilityLabel="Create account to save progress"
+            accessibilityLabel={t("profile.createAccount")}
             onPress={() => void signOut()}
             style={({ pressed }) => [
               styles.primaryButton,
@@ -286,7 +286,7 @@ export default function ProfileScreen() {
             ]}
           >
             <Text style={[styles.primaryButtonLabel, { color: colors.onPrimary }]}>
-              {t("profile.createAccount") ?? "Create account to save progress"}
+              {t("profile.createAccount")}
             </Text>
           </Pressable>
         )}
@@ -384,7 +384,7 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingHorizontal: 24,
-    paddingBottom: 48,
+    paddingBottom: 80,
   },
   eyebrow: {
     fontSize: 13,
@@ -497,10 +497,13 @@ const styles = StyleSheet.create({
   },
   legalLinks: {
     flexDirection: "row",
+    flexWrap: "wrap",
     justifyContent: "center",
     alignItems: "center",
     marginTop: 24,
-    gap: 8,
+    rowGap: 10,
+    columnGap: 8,
+    paddingHorizontal: 8,
   },
   legalLink: {
     fontSize: 13,

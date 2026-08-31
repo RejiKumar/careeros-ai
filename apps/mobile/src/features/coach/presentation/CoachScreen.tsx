@@ -17,6 +17,7 @@ import { useAuth } from "@/lib/auth";
 import { useTheme } from "@/lib/theme";
 import { t, useStrings } from "../../../i18n";
 import { ApiClient } from "@/services/api";
+import { LoginRequiredScreen } from "@/ui/LoginRequired";
 import SpeechToTextButton from "@/ui/SpeechToTextButton";
 import {
   ApiError,
@@ -275,6 +276,10 @@ export default function CoachScreen() {
     } finally {
       setIsSending(false);
     }
+  }
+
+  if (authStatus !== "signedIn") {
+    return <LoginRequiredScreen />;
   }
 
   if (mode === "chat" && activeThread !== null) {

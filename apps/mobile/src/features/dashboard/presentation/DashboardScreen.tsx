@@ -12,12 +12,14 @@ import {
 } from "react-native";
 
 import { useAuth } from "@/lib/auth";
+import { isGuestLockedRoute } from "@/lib/featureGates";
 import { useTheme } from "@/lib/theme";
 import { ApiClient } from "@/services/api";
 import { ApiError, type DashboardResponse } from "@/services/contract";
 import AppBackground from "@/ui/AppBackground";
 import GlassCard from "@/ui/GlassCard";
 import IconChip, { type IconName } from "@/ui/IconChip";
+import { LoginRequiredBanner } from "@/ui/LoginRequired";
 import ScreenHeader from "@/ui/ScreenHeader";
 import ScoreRing from "@/ui/ScoreRing";
 import AdBanner from "@/ui/AdBanner";
@@ -119,6 +121,7 @@ export default function DashboardScreen() {
   } = useAuth();
 
   const [state, setState] = useState<DashboardState>({ status: "loading" });
+  const [lockedAction, setLockedAction] = useState<string | null>(null);
   const [migrating, setMigrating] = useState(false);
   const [migrateEmail, setMigrateEmail] = useState("");
   const [migratePassword, setMigratePassword] = useState("");
@@ -417,29 +420,66 @@ export default function DashboardScreen() {
         <Text style={[styles.actionsTitle, { color: colors.textPrimary }]}>
           {t("dashboard.explore")}
         </Text>
+        {lockedAction !== null && (
+          <View style={styles.actionsNotice}>
+            <LoginRequiredBanner onDismiss={() => setLockedAction(null)} />
+          </View>
+        )}
         <View style={styles.actions}>
-          {QUICK_ACTIONS.map((action) => (
-            <Pressable
-              key={action.key}
-              accessibilityRole="button"
-              accessibilityLabel={`Open ${action.title}`}
-              onPress={() => router.push(action.route)}
-              style={({ pressed }) => [styles.actionCard, pressed && styles.pressed]}
-            >
-              <GlassCard style={styles.actionInner}>
-                <IconChip name={action.icon} size={46} gradient={action.gradient} />
-                <View style={styles.actionBody}>
-                  <Text style={[styles.actionTitle, { color: colors.textPrimary }]}>
-                    {action.title}
-                  </Text>
-                  <Text style={[styles.actionText, { color: colors.textSecondary }]}>
-                    {action.text}
-                  </Text>
-                </View>
-                <Ionicons name="chevron-forward" size={20} color={colors.textDisabled} />
-              </GlassCard>
-            </Pressable>
-          ))}
+          {QUICK_ACTIONS.map((action) => {
+            const locked = isGuest && isGuestLockedRoute(action.route);
+            return (
+              <Pressable
+                key={action.key}
+                accessibilityRole="button"
+                accessibilityLabel={`Open ${action.title}${locked ? ", requires login" : ""}`}
+                accessibilityState={{ disabled: locked }}
+                onPress={() => {
+                  if (locked) {
+                    setLockedAction(action.route);
+                    return;
+                  }
+                  router.push(action.route);
+                }}
+                style={({ pressed }) => [
+                  styles.actionCard,
+                  pressed && !locked && styles.pressed,
+                  locked && styles.actionCardDimmed,
+                ]}
+              >
+                <GlassCard style={styles.actionInner}>
+                  <IconChip
+                    name={action.icon}
+                    size={46}
+                    gradient={action.gradient}
+                  />
+                  <View style={styles.actionBody}>
+                    <Text
+                      style={[
+                        styles.actionTitle,
+                        { color: locked ? colors.textDisabled : colors.textPrimary },
+                      ]}
+                    >
+                      {action.title}
+                    </Text>
+                    <Text
+                      style={[
+                        styles.actionText,
+                        { color: locked ? colors.textDisabled : colors.textSecondary },
+                      ]}
+                    >
+                      {action.text}
+                    </Text>
+                  </View>
+                  <Ionicons
+                    name={locked ? "lock-closed" : "chevron-forward"}
+                    size={20}
+                    color={colors.textDisabled}
+                  />
+                </GlassCard>
+              </Pressable>
+            );
+          })}
         </View>
 
         <AdBanner />
@@ -557,13 +597,16 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "700",
   },
-  actionsTitle: {
+actionsTitle: {
     fontSize: 18,
     fontWeight: "800",
     marginTop: 24,
     marginBottom: 12,
-    letterSpacing: -0.3,
   },
+  actionsNotice: {
+    marginBottom: 12,
+  },
+  actionCardDimmed: {},
   actions: {
     gap: 12,
   },

@@ -8,6 +8,7 @@ Each write-path service must call ensure_guest_account for guests.
 from __future__ import annotations
 
 import uuid
+from datetime import date
 
 from app.ai.provider import get_ai_provider
 from app.core.config import Settings
@@ -50,6 +51,39 @@ def test_create_application_provisions_guest() -> None:
     assert body["job_title"] == "QA Engineer"
     assert body["company"] == "Atlassian"
     assert clients.service_client._rows["applications"][0]["guest_id"] == guest_id
+
+
+def test_create_application_defaults_applied_at_to_today() -> None:
+    client, clients = _make()
+    guest_id = _guest_id()
+
+    response = client.post(
+        f"{API_V1_PREFIX}/applications",
+        headers={"X-Guest-Id": guest_id},
+        json={"job_title": "QA Engineer", "company": "Atlassian", "status": "applied"},
+    )
+
+    assert response.status_code == 201
+    assert response.json()["applied_at"] == date.today().isoformat()
+
+
+def test_create_application_keeps_explicit_applied_at() -> None:
+    client, _ = _make()
+    guest_id = _guest_id()
+
+    response = client.post(
+        f"{API_V1_PREFIX}/applications",
+        headers={"X-Guest-Id": guest_id},
+        json={
+            "job_title": "QA Engineer",
+            "company": "Atlassian",
+            "status": "applied",
+            "applied_at": "2026-08-01",
+        },
+    )
+
+    assert response.status_code == 201
+    assert response.json()["applied_at"] == "2026-08-01"
 
 
 def test_save_job_provisions_guest() -> None:
