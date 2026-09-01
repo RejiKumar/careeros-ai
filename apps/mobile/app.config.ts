@@ -4,6 +4,11 @@ export type AppEnvironment = "dev" | "prod";
 
 const APP_ENV = (process.env.EXPO_PUBLIC_APP_ENV ?? "dev") as AppEnvironment;
 
+// EAS Build provides the git-ignored google-services.json via a file-type
+// environment variable; fall back to the local file for local builds.
+const GOOGLE_SERVICES_FILE =
+  process.env.GOOGLE_SERVICES_JSON || "./google-services.json";
+
 const ADMOB_IDS = {
   dev: {
     androidAppId: "ca-app-pub-3940256099942544~3347511713",
@@ -47,8 +52,8 @@ const profiles: Record<AppEnvironment, Partial<ExpoConfig>> = {
     version: "1.0.0",
     android: {
       package: "ai.careeros.app",
-      versionCode: 7,
-      googleServicesFile: "./google-services.json",
+      versionCode: 6,
+      googleServicesFile: GOOGLE_SERVICES_FILE,
     },
     ios: {
       bundleIdentifier: "ai.careeros.app",
