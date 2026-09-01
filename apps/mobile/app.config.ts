@@ -47,7 +47,8 @@ const profiles: Record<AppEnvironment, Partial<ExpoConfig>> = {
     version: "1.0.0",
     android: {
       package: "ai.careeros.app",
-      versionCode: 5,
+      versionCode: 6,
+      googleServicesFile: "./google-services.json",
     },
     ios: {
       bundleIdentifier: "ai.careeros.app",

@@ -348,7 +348,7 @@ export interface JobSearchResult {
   match_score: number | null;
   salary_range: string | null;
   posted_date: string | null;
-  created_at: string;
+  created_at?: string;
 }
 
 export interface JobSearchResponse {

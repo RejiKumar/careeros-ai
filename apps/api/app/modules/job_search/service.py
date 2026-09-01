@@ -6,13 +6,14 @@ truth. Saved jobs and alert preferences are owned by the actor.
 
 from __future__ import annotations
 
-import uuid
-
 from fastapi import status
 
-from app.ai.provider import CareerAiProvider
 from app.core.auth import CurrentActor
 from app.core.errors import AppError
+from app.integrations.job_search.provider import (
+    JobSearchProvider,
+    JobSearchProviderError,
+)
 from app.integrations.supabase.client import (
     SupabaseClients,
     ensure_guest_account,
@@ -23,7 +24,6 @@ from .repository import JobSearchRepository
 from .schema import (
     JobAlertPreference,
     JobSearchResponse,
-    JobSearchResult,
     SavedJobResponse,
 )
 
@@ -56,7 +56,11 @@ class DuplicateSavedJobError(AppError):
 
 
 class JobSearchService:
-    def __init__(self, clients: SupabaseClients, provider: CareerAiProvider) -> None:
+    def __init__(
+        self,
+        clients: SupabaseClients,
+        provider: JobSearchProvider,
+    ) -> None:
         service_client = require_service_client(clients)
         self._clients = clients
         self._provider = provider
@@ -72,7 +76,10 @@ class JobSearchService:
         page: int = 1,
         limit: int = 20,
     ) -> JobSearchResponse:
-        results = _mock_search_results(query, location, source, page, limit)
+        try:
+            results = self._provider.search(query, location, source, page, limit)
+        except JobSearchProviderError as exc:
+            raise SearchProviderError from exc
         total = len(results)
         has_more = total == limit
         return JobSearchResponse(
@@ -177,30 +184,3 @@ def _to_alert_preference(row: dict) -> JobAlertPreference:
         enabled=row["enabled"],
         created_at=row["created_at"],
     )
-
-
-def _mock_search_results(
-    query: str,
-    location: str | None,
-    source: str | None,
-    page: int,
-    limit: int,
-) -> list[JobSearchResult]:
-    """Return sample search results. Replace with real scrapers later."""
-    mock_source = source if source and source != "all" else "linkedin"
-    return [
-        JobSearchResult(
-            id=str(uuid.uuid4()),
-            title=f"Senior {query.title()} Engineer",
-            company="Acme Corp",
-            location=location or "Remote",
-            source=mock_source,
-            url=f"https://example.com/jobs/{i}",
-            description=f"We are looking for a {query} professional to join our team.",
-            skills=[query, "problem solving", "communication"],
-            posted_date="2026-08-20",
-            salary_range="$80,000 - $120,000",
-            match_score=None,
-        )
-        for i in range(min(limit, 5))
-    ]

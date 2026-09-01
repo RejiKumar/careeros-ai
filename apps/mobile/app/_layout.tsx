@@ -72,7 +72,7 @@ function RootNavigator() {
 
 export default function RootLayout() {
   useEffect(() => {
-    initAdMob();
+    void initAdMob();
   }, []);
 
   return (
