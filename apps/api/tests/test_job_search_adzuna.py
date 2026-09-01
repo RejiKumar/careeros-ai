@@ -72,9 +72,7 @@ def _ok_payload(items: list[dict]) -> dict:
 
 
 def test_search_request_contract_is_pinned() -> None:
-    provider, captured = _provider(
-        lambda request: httpx.Response(200, json=_ok_payload([_item()]))
-    )
+    provider, captured = _provider(lambda request: httpx.Response(200, json=_ok_payload([_item()])))
 
     provider.search("python", "London", None, page=2, limit=10)
 
@@ -92,9 +90,7 @@ def test_search_request_contract_is_pinned() -> None:
 
 
 def test_search_normalises_results() -> None:
-    provider, _ = _provider(
-        lambda request: httpx.Response(200, json=_ok_payload([_item()]))
-    )
+    provider, _ = _provider(lambda request: httpx.Response(200, json=_ok_payload([_item()])))
 
     results = provider.search("python", None, None, page=1, limit=5)
 
@@ -112,9 +108,7 @@ def test_search_normalises_results() -> None:
 
 
 def test_search_default_query_and_limit_capped() -> None:
-    provider, captured = _provider(
-        lambda request: httpx.Response(200, json=_ok_payload([]))
-    )
+    provider, captured = _provider(lambda request: httpx.Response(200, json=_ok_payload([])))
 
     provider.search("", None, "adzuna", page=1, limit=500)
 
@@ -152,9 +146,7 @@ def test_search_estimated_salary_label() -> None:
     provider, _ = _provider(
         lambda request: httpx.Response(
             200,
-            json=_ok_payload(
-                [_item(salary_min=None, salary_max=95000, salary_is_predicted=True)]
-            ),
+            json=_ok_payload([_item(salary_min=None, salary_max=95000, salary_is_predicted=True)]),
         )
     )
 
@@ -178,9 +170,7 @@ def test_search_maps_http_errors_to_provider_error(status: int, payload: dict) -
 
 
 def test_search_maps_invalid_json_to_provider_error() -> None:
-    provider, _ = _provider(
-        lambda request: httpx.Response(200, text="<html>not json</html>")
-    )
+    provider, _ = _provider(lambda request: httpx.Response(200, text="<html>not json</html>"))
 
     with pytest.raises(JobSearchProviderError):
         provider.search("python", None, None, page=1, limit=5)
