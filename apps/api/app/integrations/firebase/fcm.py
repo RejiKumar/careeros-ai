@@ -44,15 +44,15 @@ def _ensure_initialized(settings: Settings) -> bool:
     global _initialized
     if _initialized:
         return True
-    credentials = _load_credentials(settings)
-    if credentials is None:
+    creds = _load_credentials(settings)
+    if creds is None:
         return False
     try:
         import firebase_admin
-        from firebase_admin import credentials
+        from firebase_admin import credentials as fb_credentials
 
         if not firebase_admin._apps.get(_APP_NAME):
-            cred = credentials.Certificate(credentials)
+            cred = fb_credentials.Certificate(creds)
             firebase_admin.initialize_app(cred, name=_APP_NAME)
         _initialized = True
         return True
