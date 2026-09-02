@@ -36,6 +36,17 @@ class Settings(BaseSettings):
     gemini_api_key: str = ""
     gemini_model: str = ""
 
+    # Adzuna job search API credentials and default country code.
+    adzuna_app_id: str = ""
+    adzuna_app_key: str = ""
+    adzuna_country: str = "gb"
+
+    # Firebase Cloud Messaging service-account credentials.
+    # Provide either a JSON string (FIREBASE_CREDENTIALS_JSON) or a filesystem
+    # path (FIREBASE_CREDENTIALS_PATH) to the service-account key file.
+    firebase_credentials_json: str = ""
+    firebase_credentials_path: str = ""
+
     @property
     def is_prod(self) -> bool:
         return self.environment == ENVIRONMENT_PROD

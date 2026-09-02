@@ -15,6 +15,7 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { useAuth } from "@/lib/auth";
+import { toISODate, formatDate } from "@/lib/dates";
 import { useTheme } from "@/lib/theme";
 import { ApiClient } from "@/services/api";
 import { t } from "../../../i18n";
@@ -117,8 +118,8 @@ export default function ApplicationTrackerScreen() {
     setFormCompany(app.company ?? "");
     setFormStatus(app.status as ApplicationStatus);
     setFormNotes(app.notes ?? "");
-    setFormFollowUp(app.follow_up_date ?? "");
-    setFormInterviewDate(app.interview_date ?? "");
+    setFormFollowUp(formatDate(app.follow_up_date));
+    setFormInterviewDate(formatDate(app.interview_date));
     setFormError(null);
     setModalVisible(true);
   }
@@ -134,6 +135,13 @@ export default function ApplicationTrackerScreen() {
       setFormError(t("applications.jobTitle"));
       return;
     }
+    const followUp = toISODate(formFollowUp);
+    const interviewDate = toISODate(formInterviewDate);
+    if ((formFollowUp.trim() !== "" && followUp === null) ||
+        (formInterviewDate.trim() !== "" && interviewDate === null)) {
+      setFormError(t("applications.invalidDate"));
+      return;
+    }
     setSaving(true);
     setFormError(null);
     try {
@@ -146,8 +154,8 @@ export default function ApplicationTrackerScreen() {
             company: formCompany.trim() !== "" ? formCompany.trim() : null,
             status: formStatus,
             notes: formNotes.trim() !== "" ? formNotes.trim() : null,
-            follow_up_date: formFollowUp.trim() !== "" ? formFollowUp.trim() : null,
-            interview_date: formInterviewDate.trim() !== "" ? formInterviewDate.trim() : null,
+            follow_up_date: followUp,
+            interview_date: interviewDate,
           },
           guestId ?? undefined,
         );
@@ -159,8 +167,8 @@ export default function ApplicationTrackerScreen() {
             company: formCompany.trim() !== "" ? formCompany.trim() : null,
             status: formStatus,
             notes: formNotes.trim() !== "" ? formNotes.trim() : null,
-            follow_up_date: formFollowUp.trim() !== "" ? formFollowUp.trim() : null,
-            interview_date: formInterviewDate.trim() !== "" ? formInterviewDate.trim() : null,
+            follow_up_date: followUp,
+            interview_date: interviewDate,
           },
           guestId ?? undefined,
         );
@@ -262,9 +270,7 @@ export default function ApplicationTrackerScreen() {
             >
               <Text style={[styles.statValue, { color: colors.primaryStrong }]}>
                 {statsState.data.total > 0
-                  ? `${Math.round(
-                      (statsState.data.by_status.interviewing / statsState.data.total) * 100,
-                    )}%`
+                  ? `${Math.round((statsState.data.interviewing / statsState.data.total) * 100)}%`
                   : "0%"}
               </Text>
               <Text style={[styles.statLabel, { color: colors.textSecondary }]}>
@@ -278,7 +284,7 @@ export default function ApplicationTrackerScreen() {
               ]}
             >
               <Text style={[styles.statValue, { color: colors.success }]}>
-                {statsState.data.by_status.offered}
+                {statsState.data.offered}
               </Text>
               <Text style={[styles.statLabel, { color: colors.textSecondary }]}>
                 {t("applications.offered")}
@@ -344,7 +350,7 @@ export default function ApplicationTrackerScreen() {
           accessibilityLabel={t("applications.addApplication")}
           onPress={openCreateModal}
           style={({ pressed }) => [
-            styles.primaryButton,
+            styles.addButton,
             { backgroundColor: colors.primary },
             pressed && styles.pressed,
           ]}
@@ -430,12 +436,18 @@ export default function ApplicationTrackerScreen() {
 
       <Modal visible={modalVisible} animationType="slide" transparent onRequestClose={closeModal}>
         <KeyboardAvoidingView
-          behavior={Platform.OS === "ios" ? "padding" : undefined}
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
           style={styles.modalOverlay}
         >
           <Pressable style={styles.modalBackdrop} onPress={closeModal} />
-          <View style={[styles.modalContent, { backgroundColor: colors.surface }]}>
-            <ScrollView keyboardShouldPersistTaps="handled">
+          <View
+            style={[styles.modalContent, { backgroundColor: colors.surface, paddingBottom: 0 }]}
+          >
+            <ScrollView
+              keyboardShouldPersistTaps="handled"
+              style={styles.modalScroll}
+              contentContainerStyle={styles.modalScrollContent}
+            >
               <Text style={[styles.modalTitle, { color: colors.textPrimary }]}>
                 {editingApp !== null ? t("applications.save") : t("applications.addApplication")}
               </Text>
@@ -520,7 +532,7 @@ export default function ApplicationTrackerScreen() {
                 value={formFollowUp}
                 onChangeText={setFormFollowUp}
                 accessibilityLabel={t("applications.followUp")}
-                placeholder="YYYY-MM-DD"
+                placeholder={t("applications.datePlaceholder")}
                 placeholderTextColor={colors.textDisabled}
                 style={[
                   styles.input,
@@ -539,7 +551,7 @@ export default function ApplicationTrackerScreen() {
                 value={formInterviewDate}
                 onChangeText={setFormInterviewDate}
                 accessibilityLabel={t("applications.interviewDate")}
-                placeholder="YYYY-MM-DD"
+                placeholder={t("applications.datePlaceholder")}
                 placeholderTextColor={colors.textDisabled}
                 style={[
                   styles.input,
@@ -581,7 +593,9 @@ export default function ApplicationTrackerScreen() {
                   <Text style={[styles.noticeText, { color: colors.onDanger }]}>{formError}</Text>
                 </View>
               )}
+            </ScrollView>
 
+            <View style={[styles.modalFooter, { paddingBottom: Math.max(insets.bottom, 24) }]}>
               <View style={styles.modalActions}>
                 <Pressable
                   accessibilityRole="button"
@@ -617,7 +631,7 @@ export default function ApplicationTrackerScreen() {
                   )}
                 </Pressable>
               </View>
-            </ScrollView>
+            </View>
           </View>
         </KeyboardAvoidingView>
       </Modal>
@@ -671,11 +685,11 @@ function ApplicationCard({
         )}
         <View style={styles.cardDates}>
           <Text style={[styles.cardDate, { color: colors.textDisabled }]}>
-            {t("applications.applied")}: {app.applied_date}
+            {t("applications.applied")}: {formatDate(app.applied_at)}
           </Text>
           {app.follow_up_date !== null && (
             <Text style={[styles.cardDate, { color: colors.textDisabled }]}>
-              {t("applications.followUp")}: {app.follow_up_date}
+              {t("applications.followUp")}: {formatDate(app.follow_up_date)}
             </Text>
           )}
         </View>
@@ -756,9 +770,15 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
   primaryButton: {
-    marginTop: 16,
+    flex: 1,
     borderRadius: 14,
-    paddingVertical: 16,
+    paddingVertical: 14,
+    alignItems: "center",
+  },
+  addButton: {
+    marginTop: 24,
+    borderRadius: 14,
+    paddingVertical: 14,
     alignItems: "center",
   },
   primaryButtonLabel: {
@@ -925,7 +945,15 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     gap: 12,
     marginTop: 20,
-    marginBottom: 24,
+  },
+  modalFooter: {
+    flexShrink: 0,
+  },
+  modalScroll: {
+    flexShrink: 1,
+  },
+  modalScrollContent: {
+    paddingBottom: 8,
   },
   secondaryButton: {
     flex: 1,

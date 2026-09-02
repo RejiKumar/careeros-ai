@@ -1,34 +1,28 @@
 {
   "cli": {
-    "appVersionSource": "remote",
+    "appVersionSource": "local",
     "promptToConfigurePushNotifications": false
   },
   "build": {
     "development": {
       "developmentClient": true,
       "distribution": "internal",
-      "channel": "dev",
       "env": {
         "EXPO_PUBLIC_APP_ENV": "dev",
         "EXPO_PUBLIC_API_URL": "http://localhost:8000"
       }
     },
-    "qa": {
-      "distribution": "internal",
-      "channel": "qa",
-      "env": {
-        "EXPO_PUBLIC_APP_ENV": "qa",
-        "EXPO_PUBLIC_API_URL": "https://qa-api.careerosai.app"
-      }
-    },
     "production": {
-      "channel": "prod",
       "env": {
         "EXPO_PUBLIC_APP_ENV": "prod",
-        "EXPO_PUBLIC_API_URL": "https://api.careerosai.app",
+        "EXPO_PUBLIC_API_URL": "https://careeros-ai-production.up.railway.app",
+        "EXPO_PUBLIC_SUPABASE_URL": "https://puxnptidnwdhjpzjrjrp.supabase.co",
+        "EXPO_PUBLIC_SUPABASE_ANON_KEY": "sb_publishable_vI0F_nMYJzIMMGYeen-1Mg_9Zd3F0-I",
         "EXPO_PUBLIC_PRIVACY_URL": "https://careerosai.app/privacy",
         "EXPO_PUBLIC_TERMS_URL": "https://careerosai.app/terms",
-        "EXPO_PUBLIC_SUPPORT_URL": "https://careerosai.app/support"
+        "EXPO_PUBLIC_SUPPORT_URL": "https://careerosai.app/support",
+        "EXPO_PUBLIC_ADMOB_APP_ID_ANDROID": "ca-app-pub-3342123808291001~3690375670",
+        "EXPO_PUBLIC_ADMOB_BANNER_UNIT_ID_ANDROID": "ca-app-pub-3342123808291001/4771523057"
       }
     }
   },

@@ -18,15 +18,6 @@ import { ApiClient } from "@/services/api";
 import { t } from "../../../i18n";
 import { ApiError, type JobSearchResult } from "@/services/contract";
 
-const SOURCES = [
-  { key: "", labelKey: "jobSearch.allSources" },
-  { key: "technopark", labelKey: "jobSearch.technopark" },
-  { key: "naukri", labelKey: "jobSearch.naukri" },
-  { key: "linkedin", labelKey: "jobSearch.linkedin" },
-  { key: "indeed", labelKey: "jobSearch.indeed" },
-  { key: "monster", labelKey: "jobSearch.monster" },
-] as const;
-
 type SearchState =
   | { status: "idle" }
   | { status: "loading" }
@@ -46,7 +37,6 @@ export default function JobSearchScreen() {
 
   const [query, setQuery] = useState("");
   const [location, setLocation] = useState("");
-  const [activeSource, setActiveSource] = useState("");
   const [searchState, setSearchState] = useState<SearchState>({ status: "idle" });
   const [savedIds, setSavedIds] = useState<Set<string>>(new Set());
 
@@ -90,7 +80,7 @@ export default function JobSearchScreen() {
         isGuest ? undefined : accessToken,
         query.trim(),
         location.trim() !== "" ? location.trim() : undefined,
-        activeSource !== "" ? activeSource : undefined,
+        undefined,
         page,
         20,
         isGuest && guestId !== null ? guestId : undefined,
@@ -245,38 +235,6 @@ export default function JobSearchScreen() {
                 />
               </View>
             </View>
-
-            <FlatList
-              data={SOURCES}
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              keyExtractor={(item) => item.key}
-              contentContainerStyle={styles.chipRow}
-              renderItem={({ item }) => (
-                <Pressable
-                  accessibilityRole="button"
-                  accessibilityLabel={t(item.labelKey as Parameters<typeof t>[0])}
-                  accessibilityState={{ selected: activeSource === item.key }}
-                  onPress={() => setActiveSource(item.key)}
-                  style={[
-                    styles.chip,
-                    {
-                      backgroundColor: activeSource === item.key ? colors.primary : colors.surface,
-                      borderColor: activeSource === item.key ? colors.primary : colors.border,
-                    },
-                  ]}
-                >
-                  <Text
-                    style={[
-                      styles.chipText,
-                      { color: activeSource === item.key ? colors.onPrimary : colors.textPrimary },
-                    ]}
-                  >
-                    {t(item.labelKey as Parameters<typeof t>[0])}
-                  </Text>
-                </Pressable>
-              )}
-            />
 
             <Pressable
               accessibilityRole="button"
@@ -536,20 +494,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: 12,
     paddingHorizontal: 12,
-  },
-  chipRow: {
-    gap: 8,
-    paddingVertical: 4,
-  },
-  chip: {
-    borderRadius: 9999,
-    borderWidth: 1,
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-  },
-  chipText: {
-    fontSize: 13,
-    fontWeight: "600",
   },
   primaryButton: {
     marginTop: 16,

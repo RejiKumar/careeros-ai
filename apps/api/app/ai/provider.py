@@ -28,6 +28,7 @@ from .schemas import (
     RewriteContent,
     RoastContent,
     RoastMode,
+    SalaryAnalysisContent,
     TailorContent,
 )
 
@@ -92,6 +93,12 @@ class TailorResult(BaseModel):
 
 class GapAnalysisResult(BaseModel):
     content: GapAnalysisContent
+    request_id: str
+    model_version: str
+
+
+class SalaryAnalysisResult(BaseModel):
+    content: SalaryAnalysisContent
     request_id: str
     model_version: str
 
@@ -187,6 +194,23 @@ class CareerAiProvider(ABC):
 
         Never fabricates experience, skills or qualifications.
         Only rephrases, reorders and emphasizes existing content.
+        """
+        raise NotImplementedError
+
+    @abstractmethod
+    def generate_salary_analysis(
+        self,
+        *,
+        role: str,
+        location: str,
+        experience_years: int | None = None,
+        skills: list[str] | None = None,
+        company: str | None = None,
+    ) -> SalaryAnalysisResult:
+        """Estimate a market salary range and draft negotiation guidance.
+
+        Estimates are advisory only, grounded in general market signals for
+        the role and location, never fabricated single-point offers.
         """
         raise NotImplementedError
 

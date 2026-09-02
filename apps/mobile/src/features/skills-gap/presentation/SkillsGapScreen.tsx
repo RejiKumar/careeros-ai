@@ -74,10 +74,10 @@ export default function SkillsGapScreen() {
   const loadHistory = useCallback(async () => {
     setHistoryState({ status: "loading" });
     try {
-      const items = isGuest
+      const { analyses } = isGuest
         ? await apiClient.listGapAnalyses(undefined, guestId ?? undefined)
         : await apiClient.listGapAnalyses(accessToken);
-      setHistoryState({ status: "success", items });
+      setHistoryState({ status: "success", items: analyses });
     } catch (err) {
       if (err instanceof ApiError && err.status === 401) {
         void handleUnauthorized();

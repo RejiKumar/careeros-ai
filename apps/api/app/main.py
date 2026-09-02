@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import logging
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 
@@ -27,6 +28,7 @@ from app.modules.job_search.router import router as job_search_router
 from app.modules.market_pulse.router import router as market_pulse_router
 from app.modules.missions.router import router as missions_router
 from app.modules.notifications.router import router as notifications_router
+from app.modules.notifications.scheduler import start_notification_scheduler
 from app.modules.resume_tailor.router import router as resume_tailor_router
 from app.modules.resumes.router import router as resumes_router
 from app.modules.rewrites.router import router as rewrites_router
@@ -35,6 +37,8 @@ from app.modules.salary_negotiator.router import router as salary_negotiator_rou
 from app.modules.skills_gap.router import router as skills_gap_router
 from app.modules.wrapped.router import router as wrapped_router
 
+logger = logging.getLogger(__name__)
+
 API_V1_PREFIX = "/api/v1"
 
 
@@ -42,7 +46,17 @@ API_V1_PREFIX = "/api/v1"
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     settings = get_settings()
     configure_logging(settings.log_level)
+    scheduler = None
+    try:
+        scheduler = start_notification_scheduler(settings)
+    except Exception:
+        logger.exception("Failed to start notification scheduler; continuing without it.")
     yield
+    if scheduler is not None:
+        try:
+            scheduler.shutdown(wait=False)
+        except Exception:
+            logger.exception("Failed to stop notification scheduler cleanly.")
 
 
 def create_app(settings: Settings | None = None) -> FastAPI:

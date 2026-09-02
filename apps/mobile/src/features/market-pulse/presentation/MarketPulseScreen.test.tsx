@@ -53,26 +53,41 @@ jest.mock("@/services/api", () => ({
 }));
 
 const pulse: MarketPulseResponse = {
-  location: "All India",
-  role: null,
-  skill_demand: [
-    { skill: "React Native", demand_score: 82, change_pct: 12, job_count: 1340 },
-    { skill: "Python", demand_score: 64, change_pct: -5, job_count: 980 },
+  skill_demands: [
+    { skill: "React Native", demand_score: 82, change_percent: 12, period: "3m", job_count: 1340 },
+    { skill: "Python", demand_score: 64, change_percent: -5, period: "6m", job_count: 980 },
   ],
   salary_ranges: [
-    { role: "Mobile Engineer", location: "Bangalore", min: 600000, max: 2200000, median: 1400000 },
+    {
+      role: "Mobile Engineer",
+      location: "Bangalore",
+      min_salary: 600000,
+      median_salary: 1400000,
+      max_salary: 2200000,
+      currency: "INR",
+      experience_level: "mid",
+    },
   ],
-  top_companies: [{ name: "Acme Corp", job_count: 220, tech_stack: ["React", "TypeScript"] }],
-  recommended_skills: ["GraphQL", "Kubernetes"],
+  top_companies: [
+    {
+      name: "Acme Corp",
+      job_count: 220,
+      tech_stack: ["React", "TypeScript"],
+      location: null,
+      logo_url: null,
+    },
+  ],
+  generated_at: "2026-08-27T00:00:00+00:00",
 };
 
 const trends: SkillTrendResponse = {
-  period: "30d",
   trends: [
-    { skill: "Rust", trend: "rising", change_pct: 18 },
-    { skill: "JavaScript", trend: "stable", change_pct: 1 },
-    { skill: "Perl", trend: "declining", change_pct: -9 },
+    { skill: "Rust", direction: "rising", change_percent: 18, period: "3m" },
+    { skill: "JavaScript", direction: "stable", change_percent: 1, period: "3m" },
+    { skill: "Perl", direction: "declining", change_percent: -9, period: "3m" },
   ],
+  recommended_skills: ["GraphQL", "Kubernetes"],
+  generated_at: "2026-08-27T00:00:00+00:00",
 };
 
 describe("MarketPulseScreen", () => {
@@ -99,12 +114,11 @@ describe("MarketPulseScreen", () => {
   it("shows the empty state when no data is returned", async () => {
     mockGetMarketPulse.mockResolvedValue({
       ...pulse,
-      skill_demand: [],
+      skill_demands: [],
       salary_ranges: [],
       top_companies: [],
-      recommended_skills: [],
     });
-    mockGetSkillTrends.mockResolvedValue({ ...trends, trends: [] });
+    mockGetSkillTrends.mockResolvedValue({ ...trends, trends: [], recommended_skills: [] });
 
     const { getByText } = await renderScreen();
 

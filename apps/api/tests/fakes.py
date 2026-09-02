@@ -16,6 +16,7 @@ from app.ai.provider import (
     ProviderError,
     RewriteResult,
     RoastResult,
+    SalaryAnalysisResult,
     TailorResult,
 )
 from app.ai.schemas import (
@@ -30,6 +31,7 @@ from app.ai.schemas import (
     RewriteContent,
     RoastContent,
     RoastMode,
+    SalaryAnalysisContent,
     TailorContent,
 )
 from app.integrations.supabase.auth import ERROR_CODE_INVALID, AuthVerificationError
@@ -151,6 +153,8 @@ class FakeTable:
         row.setdefault("id", str(uuid.uuid4()))
         row.setdefault("created_at", _FIXED_NOW)
         row.setdefault("updated_at", _FIXED_NOW)
+        row.setdefault("saved_at", _FIXED_NOW)
+        row.setdefault("sent_at", _FIXED_NOW)
         if self.name == "resumes":
             row.setdefault("status", "draft")
             row.setdefault("current_version_id", None)
@@ -471,5 +475,39 @@ class FakeProvider(CareerAiProvider):
                 match_score_improvement=12,
             ),
             request_id="tailor-request-1",
+            model_version="gemini-3.6-flash",
+        )
+
+    def generate_salary_analysis(
+        self,
+        *,
+        role: str,
+        location: str,
+        experience_years: int | None = None,
+        skills: list[str] | None = None,
+        company: str | None = None,
+    ) -> SalaryAnalysisResult:
+        if self._error is not None:
+            raise self._error
+        return SalaryAnalysisResult(
+            content=SalaryAnalysisContent(
+                salary_range={
+                    "min_salary": 600000.0,
+                    "max_salary": 1400000.0,
+                    "median_salary": 950000.0,
+                    "currency": "INR",
+                    "experience_level": "mid",
+                    "confidence": 0.7,
+                },
+                script={
+                    "opening": "Based on market data for this role in this location...",
+                    "justification_points": ["Highlight relevant experience and current skills."],
+                    "handling_objections": [
+                        "If the range is lower than expectations, ask for the band.",
+                    ],
+                    "closing": "Confirm next steps and reiterate interest.",
+                },
+            ),
+            request_id="salary-request-1",
             model_version="gemini-3.6-flash",
         )

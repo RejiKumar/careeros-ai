@@ -37,14 +37,6 @@ class NotificationPreferenceRequest(BaseModel):
     frequency: str | None = None
 
 
-class SendNotificationRequest(BaseModel):
-    user_id: str
-    title: str
-    body: str
-    data: dict[str, str] | None = None
-    image_url: str | None = None
-
-
 class NotificationLogResponse(BaseModel):
     id: str
     user_id: str

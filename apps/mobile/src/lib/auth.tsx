@@ -10,6 +10,7 @@ import {
   loadSession,
   saveSession,
 } from "@/services/sessionStore";
+import { removeFCMTokenOnSignOut } from "@/lib/notifications";
 import { setTokenRefresher } from "@/services/api";
 import { exchangeOAuthCode, getOAuthRedirectUri, getSupabaseClient } from "@/services/supabase";
 
@@ -201,13 +202,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [guestId]);
 
   const signOut = useCallback(async () => {
+    await removeFCMTokenOnSignOut(session?.access_token ?? undefined, guestId);
     await getSupabaseClient().auth.signOut();
     await clearSession();
     await clearGuestId();
     setSession(null);
     setGuestId(null);
     setStatus("signedOut");
-  }, []);
+  }, [session, guestId]);
 
   const handleUnauthorized = useCallback(async () => {
     await clearSession();
