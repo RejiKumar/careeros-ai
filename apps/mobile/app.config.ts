@@ -52,7 +52,7 @@ const profiles: Record<AppEnvironment, Partial<ExpoConfig>> = {
     version: "1.0.0",
     android: {
       package: "ai.careeros.app",
-      versionCode: 6,
+      versionCode: 7,
       googleServicesFile: GOOGLE_SERVICES_FILE,
     },
     ios: {
