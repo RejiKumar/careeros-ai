@@ -115,6 +115,10 @@ const en = {
     genericError: "Something went wrong. Please try again.",
     googleError: "Google sign in failed. Please try again.",
     guestError: "Could not start guest session.",
+    confirming: "Completing sign in\u2026",
+    confirmFailed: "We could not complete the sign in. The link may be invalid or expired.",
+    backToSignIn: "Back to sign in",
+    retry: "Try again",
   },
   profile: {
     eyebrow: "Profile",
