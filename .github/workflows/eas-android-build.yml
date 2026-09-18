@@ -1,8 +1,7 @@
-name: EAS Android Build (Production AAB)
+﻿name: EAS Android Build (Production AAB)
 
 on:
-  workflow_dispatch:
-
+workflow_dispatch:
 jobs:
   build:
     runs-on: ubuntu-latest
