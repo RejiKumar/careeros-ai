@@ -35,10 +35,10 @@ const profiles: Record<AppEnvironment, Partial<ExpoConfig>> = {
     name: "CareerOS AI (Dev)",
     slug: "careeros-ai",
     scheme: "careerosdev",
-    version: "1.0.0",
+    version: '1.0.8',
     android: {
       package: "ai.careeros.app.dev",
-      versionCode: 1,
+      versionCode: 8,
     },
     ios: {
       bundleIdentifier: "ai.careeros.app.dev",
@@ -49,7 +49,7 @@ const profiles: Record<AppEnvironment, Partial<ExpoConfig>> = {
     name: "CareerOS AI",
     slug: "careeros-ai",
     scheme: "careerosai",
-    version: "1.0.0",
+    version: '1.0.8',
     android: {
       package: "ai.careeros.app",
       versionCode: 8,
