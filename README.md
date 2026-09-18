@@ -117,11 +117,13 @@ adb reverse tcp:8000 tcp:8000   # device -> local API on this PC
 
 ### Google sign-in setup (Supabase dashboard)
 
-For "Continue with Google" to work, the Supabase project must have the Google provider enabled:
+For "Continue with Google" and email confirmation deep links to work, the Supabase project must have the Google provider enabled and the app's deep link URLs in the allow-list:
 
 1. Supabase dashboard -> Authentication -> Providers -> Google: enable and set the OAuth client ID/secret (from Google Cloud Console).
-2. Add the app's redirect URL to the provider's **Redirect URLs** (and `Site URL`): `careerosdev://` (the app scheme from `app.config.ts`; exact URL is `careerosdev://` for standalone builds).
+2. Add the app's deep link to the provider's **Redirect URLs** (and **Site URL**): the exact callback URL is `careerosai://auth/callback` (the app scheme from `app.config.ts`; dev builds use `careerosdev://auth/callback`). The password-reset redirect uses `careerosai://reset-password`.
 3. The OAuth flow is PKCE-based (`expo-auth-session` + `expo-web-browser`); no client secret is embedded in the app.
+
+> **Email confirmation (Resend/standard email):** under Authentication -> URL Configuration -> **Redirect URLs**, ensure `careerosai://**` (and `careerosdev://**` for dev) is present. `emailRedirectTo` on sign-up already points to `careerosai://auth/callback`; without a matching allow-list entry Supabase returns `{"error":"requested path is invalid"}` in the browser instead of redirecting back into the app.
 
 ## Requirements & milestones
 
