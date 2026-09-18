@@ -1,4 +1,4 @@
-import type { ConfigContext, ExpoConfig } from "expo/config";
+﻿import type { ConfigContext, ExpoConfig } from "expo/config";
 
 export type AppEnvironment = "dev" | "prod";
 
@@ -35,7 +35,7 @@ const profiles: Record<AppEnvironment, Partial<ExpoConfig>> = {
     name: "CareerOS AI (Dev)",
     slug: "careeros-ai",
     scheme: "careerosdev",
-    version: '1.0.8',
+    version: '1.0.0',
     android: {
       package: "ai.careeros.app.dev",
       versionCode: 8,
@@ -49,7 +49,7 @@ const profiles: Record<AppEnvironment, Partial<ExpoConfig>> = {
     name: "CareerOS AI",
     slug: "careeros-ai",
     scheme: "careerosai",
-    version: '1.0.8',
+    version: '1.0.0',
     android: {
       package: "ai.careeros.app",
       versionCode: 8,
