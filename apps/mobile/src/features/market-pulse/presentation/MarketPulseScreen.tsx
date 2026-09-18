@@ -203,10 +203,10 @@ export default function MarketPulseScreen() {
 
 function isEmpty(data: MarketPulseResponse, trends: SkillTrendResponse): boolean {
   return (
-    data.skill_demand.length === 0 &&
+    data.skill_demands.length === 0 &&
     data.salary_ranges.length === 0 &&
     data.top_companies.length === 0 &&
-    data.recommended_skills.length === 0 &&
+    trends.recommended_skills.length === 0 &&
     trends.trends.length === 0
   );
 }
@@ -235,16 +235,16 @@ function MarketPulseView({
 }) {
   return (
     <View>
-      {data.skill_demand.length > 0 && (
+      {data.skill_demands.length > 0 && (
         <Section title={t("marketPulse.skillDemand")} colors={colors}>
-          {data.skill_demand.map((item) => (
+          {data.skill_demands.map((item) => (
             <View
               key={item.skill}
               style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}
             >
               <View style={styles.skillDemandHeader}>
                 <Text style={[styles.skillName, { color: colors.textPrimary }]}>{item.skill}</Text>
-                <ChangeBadge changePct={item.change_pct} colors={colors} />
+                <ChangeBadge changePct={item.change_percent} colors={colors} />
               </View>
               <View style={[styles.barTrack, { backgroundColor: colors.border }]}>
                 <View
@@ -277,9 +277,13 @@ function MarketPulseView({
                 {salary.location}
               </Text>
               <View style={styles.salaryRow}>
-                <SalaryStat label="Min" value={formatCurrency(salary.min)} colors={colors} />
-                <SalaryStat label="Median" value={formatCurrency(salary.median)} colors={colors} />
-                <SalaryStat label="Max" value={formatCurrency(salary.max)} colors={colors} />
+                <SalaryStat label="Min" value={formatCurrency(salary.min_salary)} colors={colors} />
+                <SalaryStat
+                  label="Median"
+                  value={formatCurrency(salary.median_salary)}
+                  colors={colors}
+                />
+                <SalaryStat label="Max" value={formatCurrency(salary.max_salary)} colors={colors} />
               </View>
             </View>
           ))}
@@ -318,19 +322,19 @@ function MarketPulseView({
           <View style={styles.trendGroup}>
             <TrendColumn
               heading={t("marketPulse.rising")}
-              items={trends.trends.filter((item) => item.trend === "rising")}
+              items={trends.trends.filter((item) => item.direction === "rising")}
               color={colors.success}
               colors={colors}
             />
             <TrendColumn
               heading={t("marketPulse.stable")}
-              items={trends.trends.filter((item) => item.trend === "stable")}
+              items={trends.trends.filter((item) => item.direction === "stable")}
               color={colors.textSecondary}
               colors={colors}
             />
             <TrendColumn
               heading={t("marketPulse.declining")}
-              items={trends.trends.filter((item) => item.trend === "declining")}
+              items={trends.trends.filter((item) => item.direction === "declining")}
               color={colors.danger}
               colors={colors}
             />
@@ -338,10 +342,10 @@ function MarketPulseView({
         </Section>
       )}
 
-      {data.recommended_skills.length > 0 && (
+      {trends.recommended_skills.length > 0 && (
         <Section title={t("marketPulse.recommendedSkills")} colors={colors}>
           <View style={styles.badgeRow}>
-            {data.recommended_skills.map((skill) => (
+            {trends.recommended_skills.map((skill) => (
               <View key={skill} style={[styles.badge, { backgroundColor: colors.surfaceRaised }]}>
                 <Text style={[styles.badgeText, { color: colors.textPrimary }]}>{skill}</Text>
               </View>
@@ -388,12 +392,13 @@ function TrendColumn({
         <Text style={[styles.emptyText, { color: colors.textDisabled }]}>—</Text>
       ) : (
         items.map((item) => {
-          const arrow = item.trend === "rising" ? "↑" : item.trend === "declining" ? "↓" : "→";
+          const arrow =
+            item.direction === "rising" ? "↑" : item.direction === "declining" ? "↓" : "→";
           return (
             <View key={item.skill} style={styles.trendItem}>
               <Text style={[styles.trendArrow, { color }]}>{arrow}</Text>
               <Text style={[styles.trendSkill, { color: colors.textPrimary }]}>{item.skill}</Text>
-              <Text style={[styles.trendChange, { color }]}>{item.change_pct}%</Text>
+              <Text style={[styles.trendChange, { color }]}>{item.change_percent}%</Text>
             </View>
           );
         })

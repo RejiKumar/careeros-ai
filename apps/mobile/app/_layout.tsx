@@ -1,4 +1,4 @@
-import { Stack, usePathname, useRouter } from "expo-router";
+import { Redirect, Stack, usePathname } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useEffect } from "react";
 import {
@@ -34,32 +34,23 @@ function RestoringScreen() {
 }
 
 function RootNavigator() {
-  const router = useRouter();
   const { status, session, guestId } = useAuth();
   const pathname = usePathname();
 
   useEffect(() => {
-    if (status === "signedOut" && pathname !== "/auth") {
-      router.replace("/auth");
-    }
-  }, [status, pathname, router]);
-
-  useEffect(() => {
-    if (status === "restoring") {
-      return;
-    }
-    const accessToken = session?.access_token;
-    let cleanup: (() => void) | undefined;
-    void setupNotifications(status, accessToken, guestId).then((fn) => {
-      cleanup = fn;
-    });
-    return () => {
-      cleanup?.();
-    };
-  }, [status, session, guestId]);
+    void setupNotifications(status, session?.access_token, guestId);
+  }, [status, session?.access_token, guestId]);
 
   if (status === "restoring") {
     return <RestoringScreen />;
+  }
+
+  if (status === "signedOut" && !pathname.startsWith("/auth")) {
+    return <Redirect href="/auth" />;
+  }
+
+  if (status === "signedIn" && pathname.startsWith("/auth")) {
+    return <Redirect href="/" />;
   }
 
   return (
@@ -72,7 +63,7 @@ function RootNavigator() {
 
 export default function RootLayout() {
   useEffect(() => {
-    initAdMob();
+    void initAdMob();
   }, []);
 
   return (

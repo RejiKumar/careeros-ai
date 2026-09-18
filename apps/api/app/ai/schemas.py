@@ -288,3 +288,40 @@ class GapAnalysisContent(BaseModel):
     matched_skills: list[SkillGapItem] = Field(default_factory=list)
     partial_skills: list[SkillGapItem] = Field(default_factory=list)
     missing_skills: list[SkillGapItem] = Field(default_factory=list)
+
+
+class SalaryRangeContent(BaseModel):
+    """AI-estimated market salary range. Advisory, never a guaranteed offer."""
+
+    model_config = ConfigDict(extra="ignore")
+
+    min_salary: float = 0.0
+    max_salary: float = 0.0
+    median_salary: float = 0.0
+    currency: str = "INR"
+    experience_level: str = "mid"
+    confidence: float = 0.7
+
+
+class NegotiationScriptContent(BaseModel):
+    """AI-drafted negotiation guidance. Advisory talking points, not guarantees."""
+
+    model_config = ConfigDict(extra="ignore")
+
+    opening: str = ""
+    justification_points: list[str] = Field(default_factory=list)
+    handling_objections: list[str] = Field(default_factory=list)
+    closing: str = ""
+
+
+class SalaryAnalysisContent(BaseModel):
+    """AI-derived salary estimate and negotiation script. Reviewable, never ground truth.
+
+    Estimates are based on general market signals for the role and location;
+    they are guidance to validate, not guaranteed compensation data.
+    """
+
+    model_config = ConfigDict(extra="ignore")
+
+    salary_range: SalaryRangeContent = Field(default_factory=SalaryRangeContent)
+    script: NegotiationScriptContent = Field(default_factory=NegotiationScriptContent)

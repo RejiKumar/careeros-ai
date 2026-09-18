@@ -50,15 +50,15 @@ describe("AuthScreen", () => {
     mockReplace.mockClear();
   });
 
-  it("calls Google sign in and navigates home on success", async () => {
-    mockGoogleSignIn.mockResolvedValueOnce(undefined);
+  it("calls Google sign in on success", async () => {
+    mockGoogleSignIn.mockResolvedValueOnce(true);
     const screen = await renderAuth();
     const user = userEvent.setup();
 
     await user.press(screen.getByLabelText("Continue with Google"));
 
     await waitFor(() => expect(mockGoogleSignIn).toHaveBeenCalled());
-    expect(mockReplace).toHaveBeenCalledWith("/");
+    expect(mockReplace).not.toHaveBeenCalled();
   });
 
   it("shows the Google error inline when sign in fails", async () => {
@@ -100,14 +100,14 @@ describe("AuthScreen", () => {
     expect(mockSignIn).not.toHaveBeenCalled();
   });
 
-  it("calls sign in and navigates home on success", async () => {
+  it("calls sign in on success", async () => {
     mockSignIn.mockResolvedValueOnce(undefined);
     const screen = await renderAuth();
 
     await submit(screen, "you@example.com", "password123");
 
     await waitFor(() => expect(mockSignIn).toHaveBeenCalledWith("you@example.com", "password123"));
-    expect(mockReplace).toHaveBeenCalledWith("/");
+    expect(mockReplace).not.toHaveBeenCalled();
   });
 
   it("shows the auth error inline", async () => {
@@ -131,7 +131,7 @@ describe("AuthScreen", () => {
     await user.press(screen.getByLabelText("Create account"));
 
     await waitFor(() => expect(mockSignUp).toHaveBeenCalledWith("new@example.com", "password123"));
-    expect(mockReplace).toHaveBeenCalledWith("/");
+    expect(mockReplace).not.toHaveBeenCalled();
   });
 });
 

@@ -390,6 +390,33 @@ def test_achievements_seeded_and_user_achievements_owned(users: _TestUsers) -> N
     assert b_denied.json() == []
 
 
+def test_achievements_readable_but_not_writable_by_users(users: _TestUsers) -> None:
+    a_headers = _rest_headers(users.a_token)
+    rogue_key = f"rogue_achievement_{uuid.uuid4().hex[:8]}"
+
+    listed = httpx.get(
+        f"{SUPABASE_URL}/rest/v1/achievements?select=id,key",
+        headers=a_headers,
+        timeout=30,
+    )
+    assert listed.status_code == 200
+
+    httpx.post(
+        f"{SUPABASE_URL}/rest/v1/achievements",
+        headers={**a_headers, "Prefer": "return=representation"},
+        json={"key": rogue_key, "title": "Injected", "description": "x", "condition": "x"},
+        timeout=30,
+    )
+
+    probe = httpx.get(
+        f"{SUPABASE_URL}/rest/v1/achievements?key=eq.{rogue_key}",
+        headers=_service_headers(),
+        timeout=30,
+    )
+    assert probe.status_code == 200
+    assert probe.json() == [], "authenticated user must not be able to write reference achievements"
+
+
 def test_guest_rows_are_not_publicly_readable() -> None:
     guest_id = str(uuid.uuid4())
     response = httpx.get(

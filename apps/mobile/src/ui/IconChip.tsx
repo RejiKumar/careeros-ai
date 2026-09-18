@@ -10,7 +10,7 @@ interface IconChipProps {
   name: IconName;
   size?: number;
   color?: string;
-  gradient?: readonly [string, string];
+  gradient?: readonly [string, string] | undefined;
 }
 
 export default function IconChip({ name, size = 44, color, gradient }: IconChipProps) {

@@ -2,12 +2,12 @@
 
 from __future__ import annotations
 
-import logging
-
 from fastapi import status
 
 from app.core.auth import CurrentActor
+from app.core.config import Settings
 from app.core.errors import AppError
+from app.integrations.firebase import fcm
 from app.integrations.supabase.client import SupabaseClients, require_service_client
 
 from .repository import NotificationRepository
@@ -16,8 +16,6 @@ from .schema import (
     NotificationLogResponse,
     NotificationPreferenceResponse,
 )
-
-logger = logging.getLogger(__name__)
 
 _DEFAULT_PREFERENCES: dict[str, object] = {
     "job_alerts": True,
@@ -64,32 +62,28 @@ class NotificationNotFoundError(AppError):
 
 
 def _send_fcm_message(
+    settings: Settings,
     token: str,
     title: str,
     body: str,
     data: dict[str, str] | None = None,
     image_url: str | None = None,
 ) -> None:
-    try:
-        from firebase_admin import messaging
-
-        messaging.send(
-            messaging.Message(
-                notification=messaging.Notification(title=title, body=body, image=image_url),
-                token=token,
-                data=data,
-            )
-        )
-    except ImportError:
-        logger.warning("firebase_admin is not installed; skipping push notification.")
-    except Exception:
-        logger.exception("Failed to send FCM message to token %s", token)
+    fcm.send_message(
+        settings,
+        token=token,
+        title=title,
+        body=body,
+        data=data,
+        image_url=image_url,
+    )
 
 
 class NotificationService:
-    def __init__(self, clients: SupabaseClients) -> None:
+    def __init__(self, clients: SupabaseClients, settings: Settings) -> None:
         service_client = require_service_client(clients)
         self._repository = NotificationRepository(service_client)
+        self._settings = settings
 
     def register_fcm_token(
         self,
@@ -145,35 +139,42 @@ class NotificationService:
     def send_notification(
         self,
         *,
-        user_id: str,
+        actor: CurrentActor,
         title: str,
         body: str,
         data: dict[str, str] | None = None,
         image_url: str | None = None,
+        notification_type: str = "push",
     ) -> None:
-        tokens = self._repository.get_fcm_tokens(actor=CurrentActor(id=user_id, kind="user"))
+        tokens = self._repository.get_fcm_tokens(actor=actor)
         if not tokens:
             return
         for token_row in tokens:
             _send_fcm_message(
+                self._settings,
                 token=token_row["token"],
                 title=title,
                 body=body,
                 data=data,
                 image_url=image_url,
             )
-        self.log_notification(user_id=user_id, title=title, body=body, notification_type="push")
+        self.log_notification(
+            actor=actor,
+            title=title,
+            body=body,
+            notification_type=notification_type,
+        )
 
     def log_notification(
         self,
         *,
-        user_id: str,
+        actor: CurrentActor,
         title: str,
         body: str,
         notification_type: str,
     ) -> None:
         self._repository.log_notification(
-            user_id=user_id,
+            actor=actor,
             title=title,
             body=body,
             notification_type=notification_type,

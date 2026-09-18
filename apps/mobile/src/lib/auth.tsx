@@ -1,5 +1,6 @@
+import * as Linking from "expo-linking";
 import * as WebBrowser from "expo-web-browser";
-import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 
 import type { Session } from "@supabase/supabase-js";
 
@@ -10,8 +11,14 @@ import {
   loadSession,
   saveSession,
 } from "@/services/sessionStore";
+import { removeFCMTokenOnSignOut } from "@/lib/notifications";
 import { setTokenRefresher } from "@/services/api";
-import { exchangeOAuthCode, getOAuthRedirectUri, getSupabaseClient } from "@/services/supabase";
+import {
+  exchangeOAuthCode,
+  getOAuthRedirectUri,
+  getSupabaseClient,
+  isOAuthRedirectUrl,
+} from "@/services/supabase";
 
 export type AuthStatus = "restoring" | "signedOut" | "guest" | "signedIn";
 
@@ -21,11 +28,12 @@ interface AuthContextValue {
   guestId: string | null;
   signIn: (email: string, password: string) => Promise<void>;
   signUp: (email: string, password: string) => Promise<void>;
-  googleSignIn: () => Promise<void>;
+  googleSignIn: () => Promise<boolean>;
   signInAsGuest: () => Promise<void>;
   migrateGuest: () => Promise<void>;
   signOut: () => Promise<void>;
   handleUnauthorized: () => Promise<void>;
+  handleOAuthRedirect: (url: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -36,6 +44,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [status, setStatus] = useState<AuthStatus>("restoring");
   const [session, setSession] = useState<Session | null>(null);
   const [guestId, setGuestId] = useState<string | null>(null);
+  const oauthInFlightUrl = useRef<{ url: string; promise: Promise<void> } | null>(null);
+  const oauthHandledUrl = useRef<string | null>(null);
+  const oauthSessionActive = useRef(false);
+  const authStatusRef = useRef<AuthStatus>("restoring");
 
   const refreshToken = useCallback(async (): Promise<string | null> => {
     if (refreshInFlight !== null) {
@@ -102,14 +114,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           }
           return;
         }
-        // No session — restore (or repair) the guest identity
+        // No session — restore (or repair) the guest identity, but land on
+        // the login screen so a fresh launch asks the user to sign in or
+        // continue as guest.
         const existingGuest = await getOrCreateGuestId();
         if (!cancelled) {
           setGuestId(existingGuest);
-          setStatus("guest");
-          return;
-        }
-        if (!cancelled) {
           setStatus("signedOut");
         }
       } catch {
@@ -144,7 +154,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const signUp = useCallback(async (email: string, password: string) => {
-    const { data, error } = await getSupabaseClient().auth.signUp({ email, password });
+    const { data, error } = await getSupabaseClient().auth.signUp({
+      email,
+      password,
+      options: {
+        emailRedirectTo: getOAuthRedirectUri(),
+      },
+    });
     if (error !== null) {
       throw new Error(error.message);
     }
@@ -158,29 +174,108 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setStatus("signedIn");
   }, []);
 
-  const googleSignIn = useCallback(async () => {
-    const redirectTo = getOAuthRedirectUri();
-    const { data, error } = await getSupabaseClient().auth.signInWithOAuth({
-      provider: "google",
-      options: {
-        redirectTo,
-        skipBrowserRedirect: true,
-      },
-    });
-    if (error !== null) {
-      throw new Error(error.message);
-    }
-    if (data.url === null) {
-      throw new Error("Could not start Google sign in.");
-    }
-    const result = await WebBrowser.openAuthSessionAsync(data.url, redirectTo);
-    if (result.type !== "success") {
+  const handleOAuthRedirect = useCallback(async (url: string) => {
+    if (!isOAuthRedirectUrl(url)) {
       return;
     }
-    const oauthSession = await exchangeOAuthCode(result.url);
-    await saveSession(oauthSession);
-    setSession(oauthSession);
-    setStatus("signedIn");
+    if (oauthHandledUrl.current === url) {
+      return;
+    }
+    if (oauthInFlightUrl.current !== null && oauthInFlightUrl.current.url === url) {
+      return oauthInFlightUrl.current.promise;
+    }
+    const promise = (async () => {
+      const oauthSession = await exchangeOAuthCode(url);
+      await saveSession(oauthSession);
+      oauthHandledUrl.current = url;
+      setSession(oauthSession);
+      setStatus("signedIn");
+    })();
+    oauthInFlightUrl.current = { url, promise };
+    try {
+      await promise;
+    } catch (err) {
+      console.debug(
+        `[careeros-oauth] exchange failed: ${err instanceof Error ? err.message : String(err)}`,
+      );
+      throw err;
+    } finally {
+      if (oauthInFlightUrl.current?.url === url) {
+        oauthInFlightUrl.current = null;
+      }
+    }
+  }, []);
+
+  const googleSignIn = useCallback(async (): Promise<boolean> => {
+    if (oauthSessionActive.current) {
+      return false;
+    }
+    oauthSessionActive.current = true;
+    try {
+      const redirectTo = getOAuthRedirectUri();
+      const { data, error } = await getSupabaseClient().auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          redirectTo,
+          skipBrowserRedirect: true,
+        },
+      });
+      if (error !== null) {
+        throw new Error(error.message);
+      }
+      if (data.url === null) {
+        throw new Error("Could not start Google sign in.");
+      }
+      await WebBrowser.openBrowserAsync(data.url);
+      return authStatusRef.current === "signedIn";
+    } finally {
+      oauthSessionActive.current = false;
+    }
+  }, []);
+
+  useEffect(() => {
+    authStatusRef.current = status;
+  }, [status]);
+
+  useEffect(() => {
+    const subscription = Linking.addEventListener("url", (event) => {
+      void handleOAuthRedirect(event.url).catch(() => {
+        // Deep links without a valid OAuth payload are ignored.
+      });
+    });
+    void Linking.getInitialURL().then((initialUrl) => {
+      if (initialUrl !== null) {
+        void handleOAuthRedirect(initialUrl).catch(() => {
+          // Deep links without a valid OAuth payload are ignored.
+        });
+      }
+    });
+    return () => subscription.remove();
+  }, [handleOAuthRedirect]);
+
+  useEffect(() => {
+    const { data } = getSupabaseClient().auth.onAuthStateChange(
+      (event, newSession) => {
+        console.debug(`[careeros-oauth] auth event=${event}`);
+        if (event === "INITIAL_SESSION") {
+          return;
+        }
+        if (event === "SIGNED_IN" || event === "TOKEN_REFRESHED") {
+          if (newSession !== null) {
+            void saveSession(newSession);
+            setSession(newSession);
+            setStatus("signedIn");
+          }
+        } else if (event === "SIGNED_OUT") {
+          void clearSession();
+          setSession(null);
+          setStatus("signedOut");
+        }
+      },
+    );
+    return () => {
+      data.subscription.unsubscribe();
+    };
   }, []);
 
   const signInAsGuest = useCallback(async () => {
@@ -201,13 +296,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [guestId]);
 
   const signOut = useCallback(async () => {
+    await removeFCMTokenOnSignOut(session?.access_token ?? undefined, guestId);
     await getSupabaseClient().auth.signOut();
     await clearSession();
     await clearGuestId();
     setSession(null);
     setGuestId(null);
     setStatus("signedOut");
-  }, []);
+  }, [session, guestId]);
 
   const handleUnauthorized = useCallback(async () => {
     await clearSession();
@@ -227,6 +323,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       migrateGuest,
       signOut,
       handleUnauthorized,
+      handleOAuthRedirect,
     }),
     [
       status,
@@ -239,6 +336,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       migrateGuest,
       signOut,
       handleUnauthorized,
+      handleOAuthRedirect,
     ],
   );
 

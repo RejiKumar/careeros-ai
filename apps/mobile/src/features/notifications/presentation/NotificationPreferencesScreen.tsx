@@ -52,7 +52,7 @@ export default function NotificationPreferencesScreen() {
       const prefs = isGuest
         ? await apiClient.getNotificationPreferences(undefined, guestId ?? undefined)
         : await apiClient.getNotificationPreferences(accessToken);
-      if (prefs !== undefined) {
+      if (prefs != null) {
         setJobAlerts(prefs.job_alerts ?? true);
         setMissionReminders(prefs.mission_reminders ?? true);
         setCareerTips(prefs.career_tips ?? false);

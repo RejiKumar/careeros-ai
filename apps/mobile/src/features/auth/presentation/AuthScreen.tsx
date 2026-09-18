@@ -1,5 +1,4 @@
 import { Ionicons } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
 import { useState } from "react";
 import {
   ActivityIndicator,
@@ -23,7 +22,6 @@ import GradientButton from "@/ui/GradientButton";
 type Mode = "signIn" | "signUp";
 
 export default function AuthScreen() {
-  const router = useRouter();
   const { theme } = useTheme();
   const { colors } = theme;
   const { signIn, signUp, googleSignIn, signInAsGuest } = useAuth();
@@ -70,7 +68,6 @@ export default function AuthScreen() {
       } else {
         await signUp(email.trim(), password);
       }
-      router.replace("/");
     } catch (err) {
       setError(err instanceof Error ? err.message : t("auth.genericError"));
     } finally {
@@ -86,7 +83,6 @@ export default function AuthScreen() {
     setGoogleSubmitting(true);
     try {
       await googleSignIn();
-      router.replace("/");
     } catch (err) {
       setError(err instanceof Error ? err.message : t("auth.googleError"));
     } finally {
@@ -100,7 +96,6 @@ export default function AuthScreen() {
     }
     try {
       await signInAsGuest();
-      router.replace("/");
     } catch (err) {
       setError(err instanceof Error ? err.message : t("auth.guestError"));
     }

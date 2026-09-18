@@ -13,6 +13,7 @@ import type {
   FCMTokenResponse,
   FeedbackResponse,
   GapAnalysisResponse,
+  GapAnalysisHistoryResponse,
   GuestMigrationResponse,
   InterviewAnswerResponse,
   InterviewSessionDetailResponse,
@@ -617,10 +618,13 @@ export class ApiClient {
   listGapAnalyses(
     accessToken: string | undefined,
     guestId?: string,
-  ): Promise<GapAnalysisResponse[]> {
-    return this.request<GapAnalysisResponse[]>("/api/v1/skills-gap", accessToken, guestId, {
-      method: "GET",
-    });
+  ): Promise<GapAnalysisHistoryResponse> {
+    return this.request<GapAnalysisHistoryResponse>(
+      "/api/v1/skills-gap",
+      accessToken,
+      guestId,
+      { method: "GET" },
+    );
   }
 
   deleteGapAnalysis(
@@ -652,25 +656,18 @@ export class ApiClient {
     limit?: number,
     guestId?: string,
   ): Promise<JobSearchResponse> {
-    const params = new URLSearchParams();
-    params.set("query", query);
-    if (location !== undefined && location !== "") {
-      params.set("location", location);
-    }
-    if (source !== undefined && source !== "") {
-      params.set("source", source);
-    }
-    if (page !== undefined) {
-      params.set("page", String(page));
-    }
-    if (limit !== undefined) {
-      params.set("limit", String(limit));
-    }
-    return this.request<JobSearchResponse>(
-      `/api/v1/job-search/search?${params.toString()}`,
+    return this.jsonRequest<JobSearchResponse>(
+      "/api/v1/job-search/search",
       accessToken,
       guestId,
-      { method: "POST" },
+      "POST",
+      {
+        query,
+        location: location !== undefined && location !== "" ? location : null,
+        source: source !== undefined && source !== "" ? source : null,
+        page: page ?? 1,
+        limit: limit ?? 20,
+      },
     );
   }
 

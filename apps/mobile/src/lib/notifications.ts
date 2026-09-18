@@ -27,7 +27,7 @@ export async function requestNotificationPermission(): Promise<boolean> {
 
 export async function getFCMToken(): Promise<string | null> {
   try {
-    const tokenData = await Notifications.getExpoPushTokenAsync();
+    const tokenData = await Notifications.getDevicePushTokenAsync();
     return tokenData.data;
   } catch {
     return null;
@@ -78,4 +78,19 @@ export async function setupNotifications(
 
   const removeListeners = await registerNotificationListeners();
   return removeListeners;
+}
+
+export async function removeFCMTokenOnSignOut(
+  accessToken: string | undefined,
+  guestId: string | null,
+): Promise<void> {
+  const token = await getFCMToken();
+  if (token === null) {
+    return;
+  }
+  try {
+    await apiClient.removeFCMToken(accessToken, token, guestId ?? undefined);
+  } catch {
+    // Best-effort cleanup; the token expires server-side regardless.
+  }
 }

@@ -5,6 +5,23 @@ let BannerAdComponent: React.ComponentType<{ size?: unknown }> | null = null;
 let adAvailable = false;
 let initPromise: Promise<void> | null = null;
 
+export type AdBannerStatus = "idle" | "initializing" | "ready" | "unavailable";
+let adStatus: AdBannerStatus = "idle";
+export type AdStatusListener = (status: AdBannerStatus) => void;
+const statusListeners = new Set<AdStatusListener>();
+
+function setAdStatus(next: AdBannerStatus) {
+  adStatus = next;
+  statusListeners.forEach((listener) => listener(next));
+}
+
+export function onAdStatusChange(listener: AdStatusListener): () => void {
+  statusListeners.add(listener);
+  return () => {
+    statusListeners.delete(listener);
+  };
+}
+
 const BANNER_IDS = {
   dev: {
     android: "ca-app-pub-3940256099942544/6300978111",
@@ -42,17 +59,32 @@ try {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const bannerRef = React.useRef<any>(null);
       const [loaded, setLoaded] = useState(false);
-      const [error, setError] = useState<string | null>(null);
-
-      useForeground(() => bannerRef.current?.load());
+      const [initState, setInitState] = useState<AdBannerStatus>(adStatus);
 
       useEffect(() => {
-        if (!loaded && !error) {
+        return onAdStatusChange(setInitState);
+      }, []);
+
+      useForeground(() => {
+        if (initState === "ready") {
           bannerRef.current?.load();
         }
-      }, [loaded, error]);
+      });
 
-      if (error) {
+      useEffect(() => {
+        if (initState !== "ready") {
+          return;
+        }
+        const timer = setTimeout(() => {
+          if (!loaded) {
+            bannerRef.current?.load();
+          }
+        }, 0);
+        return () => clearTimeout(timer);
+      }, [initState, loaded]);
+
+      if (initState === "unavailable") {
+        console.warn("[AdMob] Banner not rendered: SDK unavailable");
         return null;
       }
 
@@ -68,10 +100,12 @@ try {
             ref={bannerRef}
             unitId={bannerUnitId}
             size={size ?? BannerAdSize.ANCHORED_ADAPTIVE_BANNER}
-            onAdLoaded={() => setLoaded(true)}
+            onAdLoaded={() => {
+              setLoaded(true);
+              console.log("[AdMob] Banner loaded");
+            }}
             onAdFailedToLoad={(e: { code: string; message: string }) => {
               console.warn("[AdMob] Banner failed:", e.code, e.message);
-              setError(e.message);
             }}
           />
         </View>
@@ -80,24 +114,32 @@ try {
 
     BannerAdComponent = BannerInner;
     adAvailable = true;
+    setAdStatus("initializing");
 
     initPromise = mobileAds()
       .initialize()
       .then(() => {
         console.log("[AdMob] SDK initialized successfully");
+        setAdStatus("ready");
       })
       .catch((e: unknown) => {
         console.warn("[AdMob] SDK initialization failed:", e);
         adAvailable = false;
+        setAdStatus("unavailable");
       });
   }
 } catch (e) {
   console.warn("[AdMob] Module load failed:", e);
   adAvailable = false;
+  setAdStatus("unavailable");
 }
 
 export function initAdMob(): Promise<void> {
-  return initPromise ?? Promise.resolve();
+  if (initPromise === null) {
+    initPromise = Promise.reject(new Error("[AdMob] SDK module not loaded"));
+    setAdStatus("unavailable");
+  }
+  return initPromise;
 }
 
 interface AdBannerProps {

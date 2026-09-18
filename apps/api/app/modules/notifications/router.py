@@ -7,6 +7,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends
 
 from app.core.auth import CurrentActor, get_current_actor
+from app.core.config import Settings, get_settings
 from app.integrations.supabase.client import SupabaseClients, get_supabase_clients
 
 from .schema import (
@@ -15,7 +16,6 @@ from .schema import (
     NotificationLogResponse,
     NotificationPreferenceRequest,
     NotificationPreferenceResponse,
-    SendNotificationRequest,
 )
 from .service import NotificationService
 
@@ -24,8 +24,9 @@ router = APIRouter(prefix="/notifications", tags=["notifications"])
 
 def get_notification_service(
     clients: Annotated[SupabaseClients, Depends(get_supabase_clients)],
+    settings: Annotated[Settings, Depends(get_settings)],
 ) -> NotificationService:
-    return NotificationService(clients)
+    return NotificationService(clients, settings)
 
 
 @router.post("/fcm-token", response_model=FCMTokenResponse, status_code=201)
@@ -67,21 +68,6 @@ def get_preferences(
     actor: Annotated[CurrentActor, Depends(get_current_actor)],
 ) -> NotificationPreferenceResponse | None:
     return service.get_preference(actor)
-
-
-@router.post("/send", status_code=202)
-def send_notification(
-    payload: SendNotificationRequest,
-    service: Annotated[NotificationService, Depends(get_notification_service)],
-) -> dict[str, str]:
-    service.send_notification(
-        user_id=payload.user_id,
-        title=payload.title,
-        body=payload.body,
-        data=payload.data,
-        image_url=payload.image_url,
-    )
-    return {"status": "queued"}
 
 
 @router.get("", response_model=list[NotificationLogResponse])

@@ -61,23 +61,25 @@ class SalaryNegotiatorService:
         except ProviderError as exc:
             raise SalaryAiError() from exc
 
+        range_content = result.content.salary_range
+        script_content = result.content.script
         now = datetime.now(UTC).isoformat()
         return NegotiationResponse(
             salary_range=SalaryRangeResponse(
                 role=role,
                 location=location,
-                min_salary=result["min_salary"],
-                max_salary=result["max_salary"],
-                median_salary=result["median_salary"],
-                currency=result.get("currency", "INR"),
-                experience_level=result.get("experience_level", "mid"),
-                confidence=result.get("confidence", 0.7),
+                min_salary=range_content.min_salary,
+                max_salary=range_content.max_salary,
+                median_salary=range_content.median_salary,
+                currency=range_content.currency,
+                experience_level=range_content.experience_level,
+                confidence=range_content.confidence,
             ),
             script=NegotiationScript(
-                opening=result.get("opening", ""),
-                justification_points=result.get("justification_points", []),
-                handling_objections=result.get("handling_objections", []),
-                closing=result.get("closing", ""),
+                opening=script_content.opening,
+                justification_points=script_content.justification_points,
+                handling_objections=script_content.handling_objections,
+                closing=script_content.closing,
             ),
             generated_at=now,
         )
