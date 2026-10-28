@@ -1,0 +1,31 @@
+name: Release Gate
+
+# Verifies that every externally distributed mobile build profile points at an
+# origin that is actually serving the versioned API. This is the guard for the
+# production 404 regression: a release must not build against a host that
+# answers every route with "Application not found".
+#
+# Run locally: node scripts/verify-release-origins.mjs
+
+on:
+  push:
+    branches: [main, prod]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify-origins:
+    name: Verify release API origins
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+
+      - name: Run release origin gate
+        run: node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/verify-release-origins.mjs

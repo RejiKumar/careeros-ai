@@ -45,3 +45,15 @@ class NotificationLogResponse(BaseModel):
     type: str
     sent_at: str
     read_at: str | None
+
+
+class ReminderRunResponse(BaseModel):
+    """Aggregate counts for a single due-reminder evaluation.
+
+    Deliberately carries counts only. No recipient identifier, email address,
+    resume content, application detail or notification token may appear here, so
+    an external scheduler's response can be logged without exposing user data.
+    """
+
+    followup: int = 0
+    mission: int = 0

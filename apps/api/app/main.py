@@ -27,8 +27,8 @@ from app.modules.job_match.router import router as job_match_router
 from app.modules.job_search.router import router as job_search_router
 from app.modules.market_pulse.router import router as market_pulse_router
 from app.modules.missions.router import router as missions_router
+from app.modules.notifications.internal_router import router as notifications_internal_router
 from app.modules.notifications.router import router as notifications_router
-from app.modules.notifications.scheduler import start_notification_scheduler
 from app.modules.resume_tailor.router import router as resume_tailor_router
 from app.modules.resumes.router import router as resumes_router
 from app.modules.rewrites.router import router as rewrites_router
@@ -43,20 +43,17 @@ API_V1_PREFIX = "/api/v1"
 
 
 @asynccontextmanager
-async def lifespan(app: FastAPI) -> AsyncIterator[None]:
-    settings = get_settings()
-    configure_logging(settings.log_level)
-    scheduler = None
-    try:
-        scheduler = start_notification_scheduler(settings)
-    except Exception:
-        logger.exception("Failed to start notification scheduler; continuing without it.")
+async def lifespan(_: FastAPI) -> AsyncIterator[None]:
+    """Start-up that only configures logging.
+
+    There is no background work here. An earlier in-process APScheduler timer was
+    removed because it cannot run safely behind a horizontally scaled host:
+    every replica would start its own loop and notify the same recipient once per
+    replica. Due reminders are now driven by an external scheduler through
+    ``POST /internal/notifications/run-due``.
+    """
+    configure_logging(get_settings().log_level)
     yield
-    if scheduler is not None:
-        try:
-            scheduler.shutdown(wait=False)
-        except Exception:
-            logger.exception("Failed to stop notification scheduler cleanly.")
 
 
 def create_app(settings: Settings | None = None) -> FastAPI:
@@ -101,6 +98,10 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.include_router(company_deep_dive_router, prefix=API_V1_PREFIX)
     app.include_router(salary_negotiator_router, prefix=API_V1_PREFIX)
     app.include_router(career_path_router, prefix=API_V1_PREFIX)
+
+    # Internal platform plumbing, intentionally outside the versioned /api/v1
+    # contract. Do not add the prefix here.
+    app.include_router(notifications_internal_router)
 
     @app.get("/health", tags=["health"])
     def root_health() -> dict[str, str]:

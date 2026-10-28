@@ -52,7 +52,7 @@ const profiles: Record<AppEnvironment, Partial<ExpoConfig>> = {
     version: '1.0.0',
     android: {
       package: "ai.careeros.app",
-      versionCode: 8,
+      versionCode: 9,
       googleServicesFile: GOOGLE_SERVICES_FILE,
     },
     ios: {
@@ -93,6 +93,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
       "expo-router",
       "expo-speech-recognition",
       "./plugins/withAdMobManifest",
+      "./plugins/withSafePermissions",
       "./plugins/withNewArchDisabled",
       [
         "expo-notifications",

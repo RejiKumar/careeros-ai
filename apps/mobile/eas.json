@@ -50,7 +50,7 @@
     "production": {
       "android": {
         "serviceAccountKeyPath": "./secrets/play-service-account.json",
-        "track": "CareerOS AI_V1.0.0(6)"
+        "track": "CareerOS AI_V1.0.0(9)"
       }
     }
   }

@@ -1,22 +1,25 @@
-"""Background notification scheduler.
+"""Due-reminder evaluation.
 
-Runs on a timer (APScheduler) and sends grounded, reviewable reminders derived
-from real user data — never fabricated content. Each reminder respects the
-actor's notification preferences and is de-duplicated per day via
-notification_logs so users are not spammed.
+Sends grounded, reviewable reminders derived from real user data — never
+fabricated content. Each reminder respects the actor's notification preferences
+and is de-duplicated per day via notification_logs so users are not spammed.
 
 Two reminder types are emitted:
 - ``followup``: applications with an interview or follow-up date today.
 - ``mission``: a daily mission-streak nudge when active missions exist but
   none were completed today.
+
+This module owns *what* a reminder pass does, not *when* it runs. There is no
+in-process timer here on purpose: the API scales horizontally, so each replica
+would start its own loop and the same recipient could be notified once per
+replica. Scheduling is external and reaches this code through the internal
+trigger endpoint instead.
 """
 
 from __future__ import annotations
 
 import logging
 from datetime import UTC, date, datetime
-
-from apscheduler.schedulers.background import BackgroundScheduler
 
 from app.core.auth import CurrentActor
 from app.core.config import Settings
@@ -136,34 +139,10 @@ def owner_column(actor: CurrentActor) -> str:
 def build_notification_scheduler(
     clients: SupabaseClients, settings: Settings
 ) -> NotificationScheduler:
-    return NotificationScheduler(clients, settings)
+    """Build a reminder evaluator for a single on-demand pass.
 
-
-def start_notification_scheduler(settings: Settings) -> BackgroundScheduler | None:
-    """Start the in-process reminder scheduler if a service-role client exists.
-
-    Deployed in prod and qa only. Returns None when not applicable (e.g. dev
-    without a backend key). Returns the running scheduler for shutdown.
+    Holds no timer and no background thread, so it is safe to construct per
+    request. Not thread-safe by design — a pass is single-use and each external
+    invocation is de-duplicated by the per-day ``notification_logs`` check.
     """
-    if settings.environment not in ("prod", "qa"):
-        return None
-    if not settings.supabase_service_role_key:
-        logger.warning("Scheduler skipped: no service-role key configured.")
-        return None
-    clients = SupabaseClients(settings)
-    scheduler = build_notification_scheduler(clients, settings)
-    interval_minutes = 60
-
-    _schedule = BackgroundScheduler(daemon=True)
-    _schedule.add_job(
-        scheduler.run_due,
-        "interval",
-        minutes=interval_minutes,
-        id="notification_reminders",
-        replace_existing=True,
-        max_instances=1,
-        coalesce=True,
-    )
-    _schedule.start()
-    logger.info("Notification scheduler started (every %s min).", interval_minutes)
-    return _schedule
+    return NotificationScheduler(clients, settings)

@@ -13,6 +13,7 @@
     "typecheck": "turbo run typecheck",
     "test": "turbo run test",
     "contract:generate": "node scripts/generate-contracts.mjs",
+    "verify:release-origins": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/verify-release-origins.mjs",
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md,yml,yaml}\"",
     "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,md,yml,yaml}\""
   },

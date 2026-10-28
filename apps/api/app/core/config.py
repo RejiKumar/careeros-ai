@@ -44,8 +44,13 @@ class Settings(BaseSettings):
     # Firebase Cloud Messaging service-account credentials.
     # Provide either a JSON string (FIREBASE_CREDENTIALS_JSON) or a filesystem
     # path (FIREBASE_CREDENTIALS_PATH) to the service-account key file.
+    # Container hosts have no readable filesystem, so prefer the JSON form there.
     firebase_credentials_json: str = ""
     firebase_credentials_path: str = ""
+
+    # Shared secret authorising the internal reminder trigger. Optional so the API
+    # starts without it, but the trigger endpoint rejects every caller until set.
+    scheduler_secret: str = ""
 
     @property
     def is_prod(self) -> bool:

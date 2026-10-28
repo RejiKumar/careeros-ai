@@ -25,6 +25,11 @@ uvicorn app.main:app --reload
 
 Docs: http://localhost:8000/docs · Health: http://localhost:8000/health
 
+Public contract: `/api/v1/**`. Internal-only (no public actor, requires
+`X-Scheduler-Secret`): `POST /internal/notifications/run-due` — invoked by an
+external scheduler, not by the app. See
+`docs/runbooks/notifications-scheduler.md`.
+
 ## Checks
 
 ```bash

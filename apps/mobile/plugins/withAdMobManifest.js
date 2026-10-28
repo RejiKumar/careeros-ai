@@ -5,38 +5,74 @@ const ADMOB_APP_IDS = {
   prod: "ca-app-pub-3342123808291001~3690375670",
 };
 
+const AD_MOB_META_NAME = "com.google.android.gms.ads.APPLICATION_ID";
+
+const EXTERNAL_APP_ENV = "prod";
+
+/**
+ * Apply the AdMob application id and the cleartext HTTP policy to an Android
+ * `<application>` element.
+ *
+ * Cleartext HTTP is permitted only outside production. Release builds talk to
+ * the API over https, and opting them into cleartext would let a network
+ * attacker intercept or rewrite every request on a hostile network. Dev builds
+ * keep it because `adb reverse tcp:8000 tcp:8000` serves the API over plain
+ * http on localhost.
+ *
+ * The attribute is *deleted* for production rather than set to "false": an
+ * absent attribute falls back to the platform default (secure-only), so a
+ * release manifest carries no cleartext opt-in at all.
+ *
+ * @param {Record<string, any>} application the `<application>` element
+ * @param {string} appEnv the resolved `EXPO_PUBLIC_APP_ENV`
+ * @returns {Record<string, any>} the same element, mutated
+ */
+function applyAdMobAndCleartext(application, appEnv) {
+  const isProduction = appEnv === EXTERNAL_APP_ENV;
+
+  if (isProduction) {
+    delete application.$["android:usesCleartextTraffic"];
+  } else {
+    application.$["android:usesCleartextTraffic"] = "true";
+  }
+
+  if (!application["meta-data"]) {
+    application["meta-data"] = [];
+  }
+
+  const appId = ADMOB_APP_IDS[appEnv] || ADMOB_APP_IDS.dev;
+  const entry = {
+    $: {
+      "android:name": AD_MOB_META_NAME,
+      "android:value": appId,
+      "tools:node": "replace",
+    },
+  };
+
+  const idx = application["meta-data"].findIndex(
+    (m) => m.$["android:name"] === AD_MOB_META_NAME,
+  );
+
+  if (idx >= 0) {
+    application["meta-data"][idx] = entry;
+  } else {
+    application["meta-data"].push(entry);
+  }
+
+  return application;
+}
+
 module.exports = function withAdMobAndCleartext(config) {
   return withAndroidManifest(config, (cfg) => {
     const manifest = cfg.modResults.manifest;
     const app = manifest.application[0];
-
-    app.$["android:usesCleartextTraffic"] = "true";
-
-    if (!app["meta-data"]) {
-      app["meta-data"] = [];
-    }
-
     const env = process.env.EXPO_PUBLIC_APP_ENV || "dev";
-    const appId = ADMOB_APP_IDS[env] || ADMOB_APP_IDS.dev;
 
-    const idx = app["meta-data"].findIndex(
-      (m) => m.$["android:name"] === "com.google.android.gms.ads.APPLICATION_ID",
-    );
-
-    const entry = {
-      $: {
-        "android:name": "com.google.android.gms.ads.APPLICATION_ID",
-        "android:value": appId,
-        "tools:node": "replace",
-      },
-    };
-
-    if (idx >= 0) {
-      app["meta-data"][idx] = entry;
-    } else {
-      app["meta-data"].push(entry);
-    }
+    applyAdMobAndCleartext(app, env);
 
     return cfg;
   });
 };
+
+module.exports.applyAdMobAndCleartext = applyAdMobAndCleartext;
+module.exports.EXTERNAL_APP_ENV = EXTERNAL_APP_ENV;

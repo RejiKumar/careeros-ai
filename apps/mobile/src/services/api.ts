@@ -50,8 +50,7 @@ import type {
   ApplicationStatsResponse,
 } from "./contract";
 import { ApiError } from "./contract";
-
-const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL;
+import { currentApiOrigin } from "../config/api-origin";
 
 interface ApiErrorEnvelope {
   error?: { code?: string; message?: string } | null;
@@ -99,7 +98,7 @@ export function setTokenRefresher(refresher: TokenRefresher | null): void {
 export class ApiClient {
   readonly baseUrl: string;
 
-  constructor(baseUrl: string = API_BASE_URL ?? "") {
+  constructor(baseUrl: string = currentApiOrigin()) {
     this.baseUrl = baseUrl.replace(/\/+$/, "");
   }
 
