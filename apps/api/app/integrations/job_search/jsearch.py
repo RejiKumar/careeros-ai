@@ -24,6 +24,7 @@ logger = logging.getLogger(__name__)
 
 _HOST = "jsearch.p.rapidapi.com"
 _BASE_URL = f"https://{_HOST}"
+_SEARCH_PATH = "/search-v2"  # "/search" was retired (RapidAPI returns 404)
 _PAGE_SIZE = 10
 _QUOTA_STATUSES = {402, 403, 429}
 
@@ -62,7 +63,7 @@ class JSearchJobSearchProvider(JobSearchProvider):
             with httpx.Client(
                 base_url=_BASE_URL, timeout=20.0, transport=self._transport
             ) as client:
-                resp = client.get("/search", params=params, headers=headers)
+                resp = client.get(_SEARCH_PATH, params=params, headers=headers)
                 if resp.status_code in _QUOTA_STATUSES:
                     logger.warning("[JSearch] quota or plan limit hit (HTTP %s)", resp.status_code)
                     raise JobSearchQuotaError
@@ -74,12 +75,21 @@ class JSearchJobSearchProvider(JobSearchProvider):
             logger.warning("[JSearch] search failed: %s", type(exc).__name__)
             raise JobSearchProviderError from exc
 
-        items = payload.get("data") if isinstance(payload, dict) else None
-        if not isinstance(items, list):
+        items = _job_items(payload)
+        if items is None:
+            logger.warning("[JSearch] unexpected response shape")
             raise JobSearchProviderError
         cap = max(1, min(limit, _PAGE_SIZE))
         valid = [item for item in items if isinstance(item, dict)]
         return [_normalise(item) for item in valid[:cap]]
+
+
+def _job_items(payload: object) -> list | None:
+    """Jobs list from either ``{"data": [...]}`` or ``{"data": {"jobs": [...]}}``."""
+    data = payload.get("data") if isinstance(payload, dict) else None
+    if isinstance(data, dict):
+        data = data.get("jobs")
+    return data if isinstance(data, list) else None
 
 
 def _normalise(item: dict) -> JobSearchResult:

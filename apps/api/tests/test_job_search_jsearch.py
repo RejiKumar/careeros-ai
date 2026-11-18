@@ -74,7 +74,7 @@ def test_request_contract_is_pinned() -> None:
     request = captured[0]
     assert request.method == "GET"
     assert request.url.host == "jsearch.p.rapidapi.com"
-    assert request.url.path == "/search"
+    assert request.url.path == "/search-v2"
     params = dict(request.url.params)
     assert params == {
         "query": "python developer in Bengaluru",
@@ -134,6 +134,16 @@ def test_tolerates_malformed_items_and_caps_to_limit() -> None:
     assert results[0].source == "jsearch"
     assert results[0].salary_range is None
     assert results[0].posted_date is None
+
+
+def test_accepts_nested_jobs_shape() -> None:
+    provider, _ = _provider(
+        lambda r: httpx.Response(200, json={"status": "OK", "data": {"jobs": [_item()]}})
+    )
+
+    [result] = provider.search("python", None, None, page=1, limit=5)
+
+    assert result.title == "Python Developer"
 
 
 @pytest.mark.parametrize("status", [402, 403, 429])
