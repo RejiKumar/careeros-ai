@@ -123,7 +123,8 @@ Settings -> Secrets and variables -> Actions -> **Variables** (none are secret):
 | `SUPABASE_URL` | `https://<ref>.supabase.co` |
 | `SUPABASE_ANON_KEY` | publishable/anon key (public) |
 | `GEMINI_MODEL` | canonical model id |
-| `ADZUNA_COUNTRY` | optional, default `gb` |
+| `ADZUNA_COUNTRY` | optional, default `in` |
+| `JSEARCH_COUNTRY` | optional, default `in` |
 
 Then run **Actions -> API Deploy (Cloud Run) -> Run workflow** (it also runs on
 pushes to `prod` touching `apps/api`). The job summary prints the service URL.
