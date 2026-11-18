@@ -36,16 +36,29 @@ class Settings(BaseSettings):
     gemini_api_key: str = ""
     gemini_model: str = ""
 
+    # Real-time job search: JSearch (Google for Jobs via RapidAPI) is tried
+    # first; Adzuna is the fallback when JSearch fails or its quota runs out.
+    jsearch_api_key: str = ""
+    jsearch_country: str = "in"
+
     # Adzuna job search API credentials and default country code.
     adzuna_app_id: str = ""
     adzuna_app_key: str = ""
-    adzuna_country: str = "gb"
+    adzuna_country: str = "in"
 
     # Firebase Cloud Messaging service-account credentials.
     # Provide either a JSON string (FIREBASE_CREDENTIALS_JSON) or a filesystem
     # path (FIREBASE_CREDENTIALS_PATH) to the service-account key file.
     firebase_credentials_json: str = ""
     firebase_credentials_path: str = ""
+
+    # Reminder scheduling. Hosts that keep a process alive may run the
+    # in-process APScheduler; scale-to-zero hosts (Cloud Run) must disable it
+    # and trigger POST /api/v1/jobs/notification-reminders from an external
+    # scheduler that sends the X-Cron-Secret header. An empty cron secret
+    # disables the HTTP trigger entirely.
+    in_process_scheduler: bool = True
+    cron_secret: str = ""
 
     @property
     def is_prod(self) -> bool:

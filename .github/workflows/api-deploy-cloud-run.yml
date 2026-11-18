@@ -1,0 +1,97 @@
+name: API Deploy (Cloud Run)
+
+# Builds apps/api into a container and deploys it to Google Cloud Run.
+# One-time GCP setup (project, Artifact Registry, Secret Manager secrets,
+# Workload Identity Federation) is documented in
+# docs/runbooks/production-release-free-tier.md. No credentials are stored in
+# GitHub: authentication is keyless via Workload Identity Federation, and all
+# server secrets are read by Cloud Run from Secret Manager at runtime.
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [prod]
+    paths:
+      - "apps/api/**"
+      - ".github/workflows/api-deploy-cloud-run.yml"
+
+concurrency:
+  group: api-deploy-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  id-token: write
+
+env:
+  SERVICE: careeros-api
+  REGION: ${{ vars.GCP_REGION }}
+  PROJECT_ID: ${{ vars.GCP_PROJECT_ID }}
+  IMAGE: ${{ vars.GCP_REGION }}-docker.pkg.dev/${{ vars.GCP_PROJECT_ID }}/careeros/careeros-api:${{ github.sha }}
+
+jobs:
+  test:
+    name: Backend Tests
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/api
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install -e ".[dev]"
+      - run: ruff check .
+      - run: pytest -q
+
+  deploy:
+    name: Build and deploy
+    needs: test
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Authenticate to Google Cloud (keyless)
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ vars.GCP_WIF_PROVIDER }}
+          service_account: ${{ vars.GCP_DEPLOY_SA }}
+
+      - uses: google-github-actions/setup-gcloud@v2
+
+      - name: Build and push image
+        run: |
+          gcloud auth configure-docker "${REGION}-docker.pkg.dev" --quiet
+          docker build -t "$IMAGE" apps/api
+          docker push "$IMAGE"
+
+      - name: Deploy to Cloud Run
+        run: |
+          gcloud run deploy "$SERVICE" \
+            --project "$PROJECT_ID" \
+            --region "$REGION" \
+            --image "$IMAGE" \
+            --service-account "${{ vars.GCP_RUNTIME_SA }}" \
+            --allow-unauthenticated \
+            --min-instances 0 \
+            --max-instances 2 \
+            --cpu 1 \
+            --memory 512Mi \
+            --concurrency 20 \
+            --timeout 300 \
+            --cpu-boost \
+            --set-env-vars "CAREEROS_ENVIRONMENT=prod,CAREEROS_LOG_LEVEL=INFO,CAREEROS_IN_PROCESS_SCHEDULER=false,CAREEROS_SUPABASE_URL=${{ vars.SUPABASE_URL }},CAREEROS_SUPABASE_ANON_KEY=${{ vars.SUPABASE_ANON_KEY }},CAREEROS_GEMINI_MODEL=${{ vars.GEMINI_MODEL }},CAREEROS_ADZUNA_COUNTRY=${{ vars.ADZUNA_COUNTRY || 'in' }},CAREEROS_JSEARCH_COUNTRY=${{ vars.JSEARCH_COUNTRY || 'in' }}" \
+            --set-secrets "CAREEROS_SUPABASE_SERVICE_ROLE_KEY=supabase-service-role-key:latest,CAREEROS_GEMINI_API_KEY=gemini-api-key:latest,CAREEROS_CRON_SECRET=cron-secret:latest,CAREEROS_FIREBASE_CREDENTIALS_JSON=firebase-credentials-json:latest,CAREEROS_ADZUNA_APP_ID=adzuna-app-id:latest,CAREEROS_ADZUNA_APP_KEY=adzuna-app-key:latest,CAREEROS_JSEARCH_API_KEY=jsearch-api-key:latest"
+
+      - name: Smoke test
+        run: |
+          URL=$(gcloud run services describe "$SERVICE" --project "$PROJECT_ID" --region "$REGION" --format 'value(status.url)')
+          echo "Service URL: $URL"
+          curl --fail --silent --show-error --retry 5 --retry-delay 5 "$URL/health"
+          echo "## Deployed $SERVICE" >> "$GITHUB_STEP_SUMMARY"
+          echo "- URL: $URL" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Image: $IMAGE" >> "$GITHUB_STEP_SUMMARY"
