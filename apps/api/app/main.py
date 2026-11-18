@@ -25,6 +25,7 @@ from app.modules.health.router import router as health_router
 from app.modules.interviews.router import router as interviews_router
 from app.modules.job_match.router import router as job_match_router
 from app.modules.job_search.router import router as job_search_router
+from app.modules.jobs.router import router as jobs_router
 from app.modules.market_pulse.router import router as market_pulse_router
 from app.modules.missions.router import router as missions_router
 from app.modules.notifications.router import router as notifications_router
@@ -101,6 +102,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.include_router(company_deep_dive_router, prefix=API_V1_PREFIX)
     app.include_router(salary_negotiator_router, prefix=API_V1_PREFIX)
     app.include_router(career_path_router, prefix=API_V1_PREFIX)
+    app.include_router(jobs_router, prefix=API_V1_PREFIX)
 
     @app.get("/health", tags=["health"])
     def root_health() -> dict[str, str]:

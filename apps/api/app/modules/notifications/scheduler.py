@@ -147,6 +147,9 @@ def start_notification_scheduler(settings: Settings) -> BackgroundScheduler | No
     """
     if settings.environment not in ("prod", "qa"):
         return None
+    if not settings.in_process_scheduler:
+        logger.info("In-process scheduler disabled; reminders run via the jobs endpoint.")
+        return None
     if not settings.supabase_service_role_key:
         logger.warning("Scheduler skipped: no service-role key configured.")
         return None

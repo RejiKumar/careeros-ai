@@ -20,6 +20,10 @@ class JobSearchProviderError(Exception):
     """A job search provider call failed."""
 
 
+class JobSearchQuotaError(JobSearchProviderError):
+    """The provider rejected the call because a plan quota is exhausted."""
+
+
 class JobSearchProvider:
     """Provider-neutral live job search capabilities."""
 
@@ -42,17 +46,33 @@ class JobSearchProvider:
 def build_job_search_provider(settings: Settings) -> JobSearchProvider:
     """Resolve the configured job search provider.
 
-    Uses the Adzuna adapter when credentials are configured, otherwise falls
-    back to the mock provider so development still works offline.
+    - JSearch + Adzuna configured: real-time JSearch first, Adzuna on failure,
+      empty results or exhausted JSearch quota.
+    - Only one configured: that provider alone.
+    - Neither: the mock provider so development still works offline.
     """
+    adzuna: JobSearchProvider | None = None
     if settings.adzuna_app_id and settings.adzuna_app_key:
         from .adzuna import AdzunaJobSearchProvider
 
-        return AdzunaJobSearchProvider(
+        adzuna = AdzunaJobSearchProvider(
             app_id=settings.adzuna_app_id,
             app_key=settings.adzuna_app_key,
             country=settings.adzuna_country,
         )
+    if settings.jsearch_api_key:
+        from .jsearch import JSearchJobSearchProvider
+
+        jsearch = JSearchJobSearchProvider(
+            api_key=settings.jsearch_api_key, country=settings.jsearch_country
+        )
+        if adzuna is None:
+            return jsearch
+        from .fallback import FallbackJobSearchProvider
+
+        return FallbackJobSearchProvider(jsearch, adzuna)
+    if adzuna is not None:
+        return adzuna
     from .mock import MockJobSearchProvider
 
     return MockJobSearchProvider()
