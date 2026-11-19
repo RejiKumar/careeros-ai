@@ -362,12 +362,12 @@ export interface JobSearchResponse {
 export interface SavedJobResponse {
   id: string;
   job_id: string;
-  title: string;
-  company: string | null;
-  location: string | null;
+  job_title: string;
+  company: string;
   source: string;
-  url: string | null;
+  url: string;
   saved_at: string;
+  match_score?: number | null;
 }
 
 export interface JobAlertPreference {

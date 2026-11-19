@@ -683,12 +683,20 @@ export class ApiClient {
     },
     guestId?: string,
   ): Promise<SavedJobResponse> {
+    // The API contract names the title `job_title` and requires non-null
+    // company and url strings; search results may omit either.
     return this.jsonRequest<SavedJobResponse>(
       "/api/v1/job-search/saved",
       accessToken,
       guestId,
       "POST",
-      payload,
+      {
+        job_id: payload.job_id,
+        job_title: payload.title,
+        company: payload.company ?? "",
+        source: payload.source,
+        url: payload.url ?? "",
+      },
     );
   }
 

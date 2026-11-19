@@ -39,6 +39,7 @@ export default function JobSearchScreen() {
   const [location, setLocation] = useState("");
   const [searchState, setSearchState] = useState<SearchState>({ status: "idle" });
   const [savedIds, setSavedIds] = useState<Set<string>>(new Set());
+  const [saveError, setSaveError] = useState<string | null>(null);
 
   const loadSaved = useCallback(async () => {
     if (isGuest && guestId !== null) {
@@ -127,9 +128,12 @@ export default function JobSearchScreen() {
         isGuest && guestId !== null ? guestId : undefined,
       );
       setSavedIds((prev) => new Set([...prev, saved.job_id]));
+      setSaveError(null);
     } catch (err) {
       if (err instanceof ApiError && err.status === 401) {
         void handleUnauthorized();
+      } else {
+        setSaveError(t("jobSearch.saveError"));
       }
     }
   }
@@ -265,6 +269,15 @@ export default function JobSearchScreen() {
                 <Text style={[styles.noticeText, { color: colors.onDanger }]}>
                   {searchState.message}
                 </Text>
+              </View>
+            )}
+
+            {saveError !== null && (
+              <View
+                style={[styles.notice, { backgroundColor: colors.danger }]}
+                accessibilityRole="alert"
+              >
+                <Text style={[styles.noticeText, { color: colors.onDanger }]}>{saveError}</Text>
               </View>
             )}
           </View>
