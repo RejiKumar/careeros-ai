@@ -392,6 +392,7 @@ const en = {
     noResults: "No jobs found. Try a different search.",
     saveJob: "Save",
     saved: "Saved",
+    saveError: "Could not save this job. Please try again.",
     error: "Could not search jobs. Please try again.",
     matchScore: "{score}% match",
     postedAgo: "Posted {date}",

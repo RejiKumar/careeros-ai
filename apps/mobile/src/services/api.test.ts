@@ -77,4 +77,32 @@ describe("ApiClient auth refresh", () => {
     expect(refresher).not.toHaveBeenCalled();
     expect(mockFetch).toHaveBeenCalledTimes(1);
   });
+
+  it("saves a job using the API's job_title contract with non-null company and url", async () => {
+    mockFetch.mockResolvedValueOnce(jsonResponse(201, { job_id: "j1" }));
+
+    const client = new ApiClient("http://test");
+    await client.saveJob(
+      undefined,
+      {
+        job_id: "j1",
+        title: "React Developer",
+        company: null,
+        location: null,
+        source: "LinkedIn",
+        url: null,
+      },
+      "guest-1",
+    );
+
+    const [url, init] = mockFetch.mock.calls[0];
+    expect(url).toBe("http://test/api/v1/job-search/saved");
+    expect(JSON.parse(init.body)).toEqual({
+      job_id: "j1",
+      job_title: "React Developer",
+      company: "",
+      source: "LinkedIn",
+      url: "",
+    });
+  });
 });
