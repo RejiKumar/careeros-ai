@@ -181,10 +181,10 @@ Until per-user AI quotas are enforced (see "Open blockers"), the budget alert an
 - Free tier has no automatic backups: schedule a periodic `supabase db dump`
   to private storage you control.
 
-## Mobile release (v1.0.1, versionCode 9)
+## Mobile release (v1.0.1, versionCode 10)
 
-Play Console showed 6 as the latest; 7 and 8 were built earlier and may have
-been uploaded, and Play never accepts a reused versionCode, so 9 is used.
+Play never accepts a reused versionCode. versionCode 9 ("1.0.0") was found
+installed from the Play Store on a test device, so 9 is consumed and 10 is used.
 
 1. Confirm `https://api.careerosai.app/health` is healthy.
 2. Build: Actions -> **EAS Android Build (Production AAB)**, or locally
