@@ -73,6 +73,8 @@ _ASSESS_SYSTEM_PROMPT = (
     "in the resume itself, never that the candidate lacks the skill. "
     "Never invent, guess or fabricate facts, employers, achievements or skills. "
     "Refer only to facts present in the resume and use neutral, actionable language. "
+    "Every score is an integer from 0 to 100 (not 0-10 or 0-5): 0-39 weak, 40-69 adequate, "
+    "70-89 strong, 90-100 excellent. "
     "Return only JSON matching the requested schema, without markdown fences."
 )
 
@@ -88,6 +90,8 @@ _MATCH_SYSTEM_PROMPT = (
     "Never invent, guess or fabricate facts, employers, achievements, skills or requirements. "
     "A skill is 'matched' only if the resume shows it and the job requires it; 'missing' only "
     "if the job requires it and the resume does not show it. "
+    "The match score is an integer from 0 to 100 (not 0-10 or 0-5): 0 means no overlap and "
+    "100 means every requirement is evidenced. "
     "Use neutral, actionable language. Return only JSON matching the requested schema, "
     "without markdown fences."
 )

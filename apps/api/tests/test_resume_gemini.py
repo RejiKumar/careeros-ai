@@ -246,7 +246,10 @@ def test_assess_request_pins_prompt_contract() -> None:
 
     body = json.loads(captured[0].content)
     assert body["generationConfig"]["responseMimeType"] == "application/json"
-    assert "fabricate" in body["system_instruction"]["parts"][0]["text"]
+    system_text = body["system_instruction"]["parts"][0]["text"]
+    assert "fabricate" in system_text
+    # Lite models otherwise answer on a 0-10 scale, which the app renders as /100.
+    assert "0 to 100" in system_text
     user_text = body["contents"][0]["parts"][0]["text"]
     assert "<resume_content>" in user_text
     assert '"Python"' in user_text
