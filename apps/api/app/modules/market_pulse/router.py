@@ -6,9 +6,8 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, Query
 
-from app.ai.provider import CareerAiProvider, get_ai_provider
 from app.core.auth import CurrentActor, get_current_actor
-from app.integrations.supabase.client import SupabaseClients, get_supabase_clients
+from app.integrations.market_data.provider import MarketDataProvider, get_market_data_provider
 
 from .schema import MarketPulseResponse, SkillTrendResponse
 from .service import MarketPulseService
@@ -17,10 +16,9 @@ router = APIRouter(prefix="/market-pulse", tags=["market-pulse"])
 
 
 def get_market_pulse_service(
-    clients: Annotated[SupabaseClients, Depends(get_supabase_clients)],
-    provider: Annotated[CareerAiProvider, Depends(get_ai_provider)],
+    provider: Annotated[MarketDataProvider, Depends(get_market_data_provider)],
 ) -> MarketPulseService:
-    return MarketPulseService(clients, provider)
+    return MarketPulseService(provider)
 
 
 @router.get("", response_model=MarketPulseResponse)

@@ -15,16 +15,6 @@ class CompanyRepository:
     def __init__(self, client: Client) -> None:
         self._client = client
 
-    def search_companies(self, *, query: str, location: str | None = None) -> list[dict]:
-        qb = self._client.table(COMPANIES_TABLE).select("*").ilike("name", f"%{query}%")
-        if location:
-            qb = qb.ilike("location", f"%{location}%")
-        return qb.execute().data
-
-    def get_company(self, *, company_id: str) -> dict | None:
-        rows = self._client.table(COMPANIES_TABLE).select("*").eq("id", company_id).execute().data
-        return rows[0] if rows else None
-
     def save_company(
         self,
         *,

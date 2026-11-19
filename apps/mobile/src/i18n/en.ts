@@ -330,7 +330,8 @@ const en = {
   marketPulse: {
     eyebrow: "Market Pulse",
     title: "Know the market",
-    subtitle: "Real-time skill demand, salary data, and top companies.",
+    subtitle:
+      "Live job-posting counts, salary data and top hiring companies. Growth compares the last 30 days with the 30 before.",
     location: "Location",
     allLocations: "All India",
     skillDemand: "Skill demand",

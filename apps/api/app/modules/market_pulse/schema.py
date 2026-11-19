@@ -8,14 +8,14 @@ from pydantic import BaseModel, model_validator
 class SkillDemandItem(BaseModel):
     skill: str
     demand_score: float
-    change_percent: float
+    change_percent: float | None = None
     period: str
     job_count: int
 
     @model_validator(mode="after")
     def _period_valid(self) -> SkillDemandItem:
-        if self.period not in ("3m", "6m", "1y"):
-            raise ValueError("period must be one of '3m', '6m', '1y'.")
+        if self.period not in ("30d", "3m", "6m", "1y"):
+            raise ValueError("period must be one of '30d', '3m', '6m', '1y'.")
         return self
 
 

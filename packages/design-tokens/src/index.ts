@@ -112,6 +112,9 @@ export const colorPalette = {
   "primary-soft": "#E8E8FD",
   secondary: "#B34AF0",
   accent: "#38BDF8",
+  /** The single app canvas colour: a rich indigo tint (light) / deep indigo-navy (dark). */
+  canvas: "#DCE1FF",
+  "canvas-dark": "#0E1033",
   success: "#16A34A",
   warning: "#D97706",
   danger: "#DC2626",
@@ -166,7 +169,7 @@ export interface ThemeTokens {
 
 export const lightTheme: ThemeTokens = {
   colors: {
-    background: colorPalette.neutral["50"],
+    background: colorPalette.canvas,
     surface: colorPalette.neutral["0"],
     surfaceRaised: colorPalette.neutral["100"],
     textPrimary: colorPalette.neutral["900"],
@@ -195,7 +198,7 @@ export const lightTheme: ThemeTokens = {
 
 export const darkTheme: ThemeTokens = {
   colors: {
-    background: colorPalette.neutral["900"],
+    background: colorPalette["canvas-dark"],
     surface: colorPalette.neutral["800"],
     surfaceRaised: colorPalette.neutral["700"],
     textPrimary: colorPalette.neutral["50"],

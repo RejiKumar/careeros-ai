@@ -525,7 +525,8 @@ export interface ApplicationStatsResponse {
 export interface SkillDemandItem {
   skill: string;
   demand_score: number;
-  change_percent: number;
+  /** Posting-count change vs the previous period; null when there is no baseline. */
+  change_percent: number | null;
   period: string;
   job_count: number;
 }

@@ -6,8 +6,8 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends
 
-from app.ai.provider import CareerAiProvider, get_ai_provider
 from app.core.auth import CurrentActor, get_current_actor
+from app.integrations.job_search.provider import JobSearchProvider, get_job_search_provider
 from app.integrations.supabase.client import SupabaseClients, get_supabase_clients
 
 from .schema import (
@@ -24,9 +24,9 @@ router = APIRouter(prefix="/companies", tags=["companies"])
 
 def get_company_service(
     clients: Annotated[SupabaseClients, Depends(get_supabase_clients)],
-    provider: Annotated[CareerAiProvider, Depends(get_ai_provider)],
+    job_search: Annotated[JobSearchProvider, Depends(get_job_search_provider)],
 ) -> CompanyService:
-    return CompanyService(clients, provider)
+    return CompanyService(clients, job_search)
 
 
 @router.post("/search", response_model=list[CompanyProfileResponse])
