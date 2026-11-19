@@ -61,7 +61,7 @@ export default function CompanyScreen() {
         ? await apiClient.listSavedCompanies(undefined, guestId ?? undefined)
         : await apiClient.listSavedCompanies(accessToken);
       setSavedCompanies(items);
-      setSavedIds(new Set(items.map((i) => i.company_id)));
+      setSavedIds(new Set(items.map((i) => i.company_name)));
     } catch {
       // Saved list is optional
     }
@@ -121,16 +121,16 @@ export default function CompanyScreen() {
   }
 
   async function handleSaveCompany(company: CompanyProfileResponse) {
-    if (savedIds.has(company.id)) {
+    if (savedIds.has(company.name)) {
       return;
     }
     try {
       const saved = await apiClient.saveCompany(
         isGuest ? undefined : accessToken,
-        { company_id: company.id, company_name: company.name },
+        { company_name: company.name },
         isGuest && guestId !== null ? guestId : undefined,
       );
-      setSavedIds((prev) => new Set([...prev, saved.company_id]));
+      setSavedIds((prev) => new Set([...prev, saved.company_name]));
       setSavedCompanies((prev) => [...prev, saved]);
     } catch (err) {
       if (err instanceof ApiError && err.status === 401) {
@@ -255,7 +255,7 @@ export default function CompanyScreen() {
               key={company.id}
               company={company}
               colors={colors}
-              isSaved={savedIds.has(company.id)}
+              isSaved={savedIds.has(company.name)}
               isSelected={selectedCompanyId === company.id}
               onSave={() => void handleSaveCompany(company)}
               onSelect={() => void handleSelectCompany(company.id)}
@@ -346,7 +346,7 @@ function CompanyCard({
         </View>
       )}
 
-      {company.team_size !== null && (
+      {company.team_size !== null && company.team_size !== "" && (
         <View style={styles.infoRow}>
           <Text style={[styles.infoLabel, { color: colors.textSecondary }]}>
             {t("company.teamSize")}
@@ -370,7 +370,7 @@ function CompanyCard({
         </View>
       )}
 
-      {company.culture_signals.length > 0 && (
+      {company.culture_signals !== null && company.culture_signals.length > 0 && (
         <View style={styles.infoSection}>
           <Text style={[styles.infoLabel, { color: colors.textSecondary }]}>
             {t("company.cultureSignals")}
@@ -388,7 +388,7 @@ function CompanyCard({
           {t("company.recentJobs")}
         </Text>
         <Text style={[styles.infoValue, { color: colors.textPrimary }]}>
-          {company.recent_job_count}
+          {company.recent_job_count ?? "—"}
         </Text>
       </View>
 

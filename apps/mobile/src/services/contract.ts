@@ -424,13 +424,12 @@ export interface NotificationPreferenceResponse {
 
 export interface NotificationLogResponse {
   id: string;
-  user_id: string | null;
-  guest_id: string | null;
+  user_id: string;
   title: string;
   body: string;
-  data: Record<string, unknown> | null;
-  read: boolean;
-  created_at: string;
+  type: string;
+  sent_at: string;
+  read_at: string | null;
 }
 
 export interface LearningResource {
@@ -455,6 +454,41 @@ export interface GapAnalysisResponse {
   missing_skills: string[];
   learning_resources: LearningResource[];
   created_at: string;
+}
+
+/** Raw skills-gap shapes returned by the API (mapped to GapAnalysisResponse in ApiClient). */
+export interface ApiLearningResource {
+  title: string;
+  url: string | null;
+  type: string;
+  provider: string | null;
+}
+
+export interface ApiGapSkill {
+  skill: string;
+  status: string;
+  resume_evidence: string | null;
+  job_requirement: string;
+  confidence: number;
+  learning_resources: ApiLearningResource[] | null;
+}
+
+export interface ApiGapAnalysis {
+  id: string;
+  user_id: string;
+  resume_id: string;
+  job_description_id: string;
+  matched_skills: ApiGapSkill[];
+  partial_skills: ApiGapSkill[];
+  missing_skills: ApiGapSkill[];
+  /** Fraction between 0 and 1. */
+  overall_match: number;
+  created_at: string;
+}
+
+export interface ApiGapAnalysisHistory {
+  analyses: ApiGapAnalysis[];
+  total: number;
 }
 
 export interface GapAnalysisHistoryResponse {
@@ -543,10 +577,13 @@ export interface CompanyProfileResponse {
   name: string;
   location: string | null;
   tech_stack: string[];
-  team_size: number | null;
+  team_size: string | null;
   industry: string | null;
-  culture_signals: string[];
-  recent_job_count: number;
+  description?: string | null;
+  culture_signals: string[] | null;
+  funding_stage?: string | null;
+  growth_indicator?: string | null;
+  recent_job_count: number | null;
   logo_url: string | null;
 }
 
@@ -564,10 +601,11 @@ export interface CompanyJobsResponse {
   jobs: CompanyJob[];
 }
 
+/** Saved companies are keyed by name; the API has no company id on them. */
 export interface SavedCompanyResponse {
   id: string;
-  company_id: string;
   company_name: string;
+  notes?: string | null;
   saved_at: string;
 }
 
@@ -610,29 +648,43 @@ export interface BenefitsComparisonResponse {
 
 /* ─── Career Path ─── */
 
-export interface CareerStage {
+/** A stage as returned by the API (no current flag). */
+export interface ApiCareerStage {
   title: string;
   description: string;
+  typical_years: number;
   required_skills: string[];
   recommended_actions: string[];
+}
+
+/** Response of POST /career-path/generate and GET /career-path/{id}. */
+export interface ApiCareerPath {
+  current_stage: string;
+  stages: ApiCareerStage[];
+  gap_analysis: string[];
+  timeline_estimate: string;
+  generated_at: string;
+}
+
+/** A stage as shown by the screen: the API stage plus whether it is the user's current one. */
+export interface CareerStage extends ApiCareerStage {
   is_current: boolean;
 }
 
 export interface CareerPathResponse {
-  id: string;
-  resume_id: string;
-  target_role: string | null;
+  current_stage: string;
   stages: CareerStage[];
   gap_analysis: string[];
   timeline_estimate: string | null;
-  created_at: string;
+  generated_at: string;
 }
 
+/** Item of GET /career-path (path_data is the JSON-encoded path). */
 export interface SavedCareerPathResponse {
   id: string;
-  path_id: string;
   target_role: string | null;
-  saved_at: string;
+  path_data: string;
+  created_at: string;
 }
 
 export class ApiError extends Error {

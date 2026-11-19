@@ -6,9 +6,6 @@ mock/sample data; real aggregation will be wired up later.
 
 from __future__ import annotations
 
-import uuid
-from datetime import UTC, datetime
-
 from fastapi import status
 
 from app.ai.provider import CareerAiProvider
@@ -22,7 +19,6 @@ from app.integrations.supabase.client import (
 
 from .repository import CompanyRepository
 from .schema import (
-    CompanyJob,
     CompanyJobsResponse,
     CompanyProfileResponse,
     SavedCompanyResponse,
@@ -95,26 +91,12 @@ class CompanyService:
             raise CompanyNotFoundError()
 
         company_name: str = row.get("name", "Unknown")
-        sample_jobs = [
-            CompanyJob(
-                id=str(uuid.uuid4()),
-                title="Software Engineer",
-                location=row.get("location") or "Remote",
-                url=f"https://example.com/jobs/{company_id}",
-                posted_date=datetime.now(UTC).strftime("%Y-%m-%d"),
-            ),
-            CompanyJob(
-                id=str(uuid.uuid4()),
-                title="Product Manager",
-                location=row.get("location") or "Remote",
-                url=f"https://example.com/jobs/{company_id}",
-                posted_date=None,
-            ),
-        ]
+        # No job-listing source is wired to company profiles yet. Return an empty
+        # list rather than invented placeholder postings.
         return CompanyJobsResponse(
             company_name=company_name,
-            jobs=sample_jobs,
-            total=len(sample_jobs),
+            jobs=[],
+            total=0,
         )
 
     def save_company(
