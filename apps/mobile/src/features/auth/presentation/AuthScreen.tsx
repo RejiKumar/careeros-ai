@@ -1,4 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
 import { useState } from "react";
 import {
   ActivityIndicator,
@@ -25,6 +26,7 @@ export default function AuthScreen() {
   const { theme } = useTheme();
   const { colors } = theme;
   const { signIn, signUp, googleSignIn, signInAsGuest } = useAuth();
+  const router = useRouter();
 
   const [mode, setMode] = useState<Mode>("signIn");
   const [email, setEmail] = useState("");
@@ -96,6 +98,9 @@ export default function AuthScreen() {
     }
     try {
       await signInAsGuest();
+      // The root guard only redirects signed-in users away from /auth (guests
+      // may open it to upgrade), so leave the screen explicitly.
+      router.replace("/");
     } catch (err) {
       setError(err instanceof Error ? err.message : t("auth.guestError"));
     }
