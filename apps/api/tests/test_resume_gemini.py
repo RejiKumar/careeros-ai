@@ -22,6 +22,7 @@ API_KEY = "test-key"
 
 def _provider(
     handler: Callable[[httpx.Request], httpx.Response],
+    fallback_models: tuple[str, ...] = (),
 ) -> tuple[GeminiProvider, list[httpx.Request]]:
     captured: list[httpx.Request] = []
 
@@ -33,6 +34,8 @@ def _provider(
         api_key=API_KEY,
         model=MODEL,
         transport=httpx.MockTransport(_handler),
+        fallback_models=fallback_models,
+        sleep=lambda seconds: None,
     )
     return provider, captured
 
@@ -70,7 +73,8 @@ def test_request_contract_is_pinned() -> None:
     request = captured[0]
     assert request.method == "POST"
     assert request.url.path.endswith(f"/models/{MODEL}:generateContent")
-    assert request.url.params["key"] == API_KEY
+    assert request.headers["x-goog-api-key"] == API_KEY
+    assert API_KEY not in str(request.url)
     body = json.loads(request.content)
     assert body["generationConfig"]["responseMimeType"] == "application/json"
     user_parts = body["contents"][0]["parts"][0]["text"]
@@ -83,6 +87,63 @@ def test_http_error_becomes_provider_error() -> None:
 
     with pytest.raises(ProviderError):
         provider.parse_resume("text")
+
+
+def _model_of(request: httpx.Request) -> str:
+    return request.url.path.rsplit("/models/", 1)[1].split(":")[0]
+
+
+def test_transient_error_is_retried_on_the_same_model() -> None:
+    raw = json.dumps({"skills": ["Python"]})
+    calls = iter(
+        [httpx.Response(503, json={"error": "busy"}), httpx.Response(200, json=_ok_payload(raw))]
+    )
+    provider, captured = _provider(lambda request: next(calls))
+
+    parsed = provider.parse_resume("text")
+
+    assert parsed.content.skills == ["Python"]
+    assert [_model_of(r) for r in captured] == [MODEL, MODEL]
+
+
+def test_falls_back_to_the_fallback_model_when_primary_keeps_failing() -> None:
+    raw = json.dumps({"skills": ["Python"]})
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        if _model_of(request) == MODEL:
+            return httpx.Response(503, json={"error": "high demand"})
+        return httpx.Response(200, json=_ok_payload(raw))
+
+    provider, captured = _provider(handler, fallback_models=("gemini-2.5-flash",))
+
+    parsed = provider.parse_resume("text")
+
+    assert parsed.content.skills == ["Python"]
+    assert [_model_of(r) for r in captured] == [MODEL, MODEL, "gemini-2.5-flash"]
+
+
+def test_all_models_failing_becomes_provider_error() -> None:
+    provider, captured = _provider(
+        lambda request: httpx.Response(503, json={"error": "high demand"}),
+        fallback_models=("gemini-2.5-flash",),
+    )
+
+    with pytest.raises(ProviderError):
+        provider.parse_resume("text")
+
+    assert len(captured) == 4
+
+
+def test_client_errors_are_not_retried() -> None:
+    provider, captured = _provider(
+        lambda request: httpx.Response(400, json={"error": "bad key"}),
+        fallback_models=("gemini-2.5-flash",),
+    )
+
+    with pytest.raises(ProviderError):
+        provider.parse_resume("text")
+
+    assert len(captured) == 1
 
 
 def test_transport_error_becomes_provider_error() -> None:

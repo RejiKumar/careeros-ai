@@ -220,9 +220,12 @@ def build_provider(settings: Settings) -> CareerAiProvider:
     if settings.gemini_api_key:
         from .gemini import GeminiProvider
 
+        model = settings.gemini_model or "gemini-3.6-flash"
+        fallback = settings.gemini_fallback_model.strip()
         return GeminiProvider(
             api_key=settings.gemini_api_key,
-            model=settings.gemini_model or "gemini-3.6-flash",
+            model=model,
+            fallback_models=(fallback,) if fallback and fallback != model else (),
         )
     raise ValueError("No AI provider configured: set CAREEROS_GEMINI_API_KEY")
 

@@ -11,6 +11,7 @@ import json
 import logging
 import time
 import uuid
+from collections.abc import Callable
 from typing import Any, TypeVar
 
 import httpx
@@ -50,6 +51,7 @@ from .schemas import (
 logger = logging.getLogger(__name__)
 
 _BASE_URL = "https://generativelanguage.googleapis.com/v1beta"
+_TRANSIENT_STATUSES = frozenset({429, 500, 502, 503, 504})
 _MAX_RESUME_CHARS = 100_000
 
 _SYSTEM_PROMPT = (
@@ -258,10 +260,20 @@ class GeminiProvider(CareerAiProvider):
         base_url: str = _BASE_URL,
         timeout: float = 90.0,
         transport: httpx.BaseTransport | None = None,
+        fallback_models: tuple[str, ...] = (),
+        sleep: Callable[[float], None] = time.sleep,
     ) -> None:
-        self._api_key = api_key
         self._model = model
-        self._client = httpx.Client(base_url=base_url, timeout=timeout, transport=transport)
+        self._fallback_models = fallback_models
+        self._sleep = sleep
+        # The key travels in a header, never the URL, so request logging and
+        # proxies cannot leak it.
+        self._client = httpx.Client(
+            base_url=base_url,
+            timeout=timeout,
+            transport=transport,
+            headers={"x-goog-api-key": api_key},
+        )
 
     def parse_resume(self, text: str) -> ParsedResume:
         user_text = _USER_PROMPT.format(text=text[:_MAX_RESUME_CHARS] or " ")
@@ -443,27 +455,32 @@ class GeminiProvider(CareerAiProvider):
             content=analysis, request_id=request_id, model_version=self._model
         )
 
-    def _post_with_retry(self, body: dict, attempts: int = 3) -> httpx.Response:
-        """POST generateContent with exponential backoff on 429 rate limits."""
-        for attempt in range(attempts):
-            response = self._client.post(
-                f"/models/{self._model}:generateContent",
-                params={"key": self._api_key},
-                json=body,
-            )
-            if response.status_code == 429 and attempt < attempts - 1:
-                wait = 2**attempt * 5.0
+    def _post_with_retry(self, body: dict, attempts: int = 2) -> httpx.Response:
+        """POST generateContent, retrying transient errors, then trying fallback models.
+
+        429 and 5xx (e.g. a 503 "high demand" spike) are retried with a short
+        backoff on each model; other statuses fail immediately.
+        """
+        last: httpx.Response | None = None
+        for model in (self._model, *self._fallback_models):
+            for attempt in range(attempts):
+                response = self._client.post(f"/models/{model}:generateContent", json=body)
+                if response.status_code not in _TRANSIENT_STATUSES:
+                    response.raise_for_status()
+                    return response
+                last = response
                 logger.warning(
-                    "Gemini rate limited (429), retrying in %.0fs (attempt %d/%d)",
-                    wait,
+                    "Gemini %s on %s (attempt %d/%d)",
+                    response.status_code,
+                    model,
                     attempt + 1,
                     attempts,
                 )
-                time.sleep(wait)
-                continue
-            response.raise_for_status()
-            return response
-        raise ProviderError("AI provider rate limit exceeded.")
+                if attempt < attempts - 1:
+                    self._sleep(5.0 if response.status_code == 429 else 2.0)
+        assert last is not None
+        last.raise_for_status()
+        raise ProviderError("AI provider is temporarily unavailable.")
 
     def _generate(
         self, system_prompt: str, user_text: str, response_schema: dict
