@@ -7,6 +7,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends
 
 from app.ai.provider import CareerAiProvider, get_ai_provider
+from app.core.ai_quota import ai_quota
 from app.core.auth import CurrentActor, get_current_actor
 from app.core.i18n import get_request_locale
 from app.integrations.supabase.client import SupabaseClients, get_supabase_clients
@@ -24,7 +25,12 @@ def get_assessment_service(
     return AssessmentService(clients, provider)
 
 
-@router.post("/resumes/{resume_id}/assessments", response_model=AssessmentResponse, status_code=201)
+@router.post(
+    "/resumes/{resume_id}/assessments",
+    response_model=AssessmentResponse,
+    status_code=201,
+    dependencies=[Depends(ai_quota("assess"))],
+)
 def create_assessment(
     resume_id: str,
     locale: Annotated[str, Depends(get_request_locale)],

@@ -1,5 +1,6 @@
 import type {
   AchievementResponse,
+  AiUsageResponse,
   ApiCareerPath,
   ApiGapAnalysis,
   ApiGapAnalysisHistory,
@@ -202,6 +203,12 @@ export class ApiClient {
         method: "GET",
       },
     );
+  }
+
+  getAiUsage(accessToken: string | undefined, guestId?: string): Promise<AiUsageResponse> {
+    return this.request<AiUsageResponse>("/api/v1/billing/ai-usage", accessToken, guestId, {
+      method: "GET",
+    });
   }
 
   /* ─── Resumes ─── */

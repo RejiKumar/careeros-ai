@@ -7,6 +7,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends
 
 from app.ai.provider import CareerAiProvider, get_ai_provider
+from app.core.ai_quota import ai_quota
 from app.core.auth import CurrentActor, get_current_actor
 from app.core.i18n import get_request_locale
 from app.integrations.supabase.client import SupabaseClients, get_supabase_clients
@@ -24,7 +25,12 @@ def get_resume_tailor_service(
     return ResumeTailorService(clients, provider)
 
 
-@router.post("/tailor", response_model=TailorResponse, status_code=201)
+@router.post(
+    "/tailor",
+    response_model=TailorResponse,
+    status_code=201,
+    dependencies=[Depends(ai_quota("tailor"))],
+)
 def tailor_resume(
     payload: TailorRequest,
     locale: Annotated[str, Depends(get_request_locale)],

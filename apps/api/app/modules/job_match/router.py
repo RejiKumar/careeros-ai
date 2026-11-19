@@ -7,6 +7,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends
 
 from app.ai.provider import CareerAiProvider, get_ai_provider
+from app.core.ai_quota import ai_quota
 from app.core.auth import CurrentActor, get_current_actor
 from app.core.i18n import get_request_locale
 from app.integrations.supabase.client import SupabaseClients, get_supabase_clients
@@ -31,7 +32,12 @@ def get_job_match_service(
     return JobMatchService(clients, provider)
 
 
-@router.post("", response_model=JobDescriptionMatchResponse, status_code=201)
+@router.post(
+    "",
+    response_model=JobDescriptionMatchResponse,
+    status_code=201,
+    dependencies=[Depends(ai_quota("match"))],
+)
 def create_job_description(
     payload: JobDescriptionRequest,
     locale: Annotated[str, Depends(get_request_locale)],
@@ -100,7 +106,12 @@ def delete_job_description(
     service.delete_job_description(actor, job_description_id)
 
 
-@router.post("/{job_description_id}/matches", response_model=MatchResponse, status_code=201)
+@router.post(
+    "/{job_description_id}/matches",
+    response_model=MatchResponse,
+    status_code=201,
+    dependencies=[Depends(ai_quota("match"))],
+)
 def run_match(
     job_description_id: str,
     payload: MatchRunRequest,

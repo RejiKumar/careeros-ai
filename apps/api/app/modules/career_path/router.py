@@ -7,6 +7,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends
 
 from app.ai.provider import CareerAiProvider, get_ai_provider
+from app.core.ai_quota import ai_quota
 from app.core.auth import CurrentActor, get_current_actor
 from app.core.i18n import get_request_locale
 from app.integrations.supabase.client import SupabaseClients, get_supabase_clients
@@ -28,7 +29,9 @@ def get_career_path_service(
     return CareerPathService(clients, provider)
 
 
-@router.post("/generate", response_model=CareerPathResponse)
+@router.post(
+    "/generate", response_model=CareerPathResponse, dependencies=[Depends(ai_quota("career_path"))]
+)
 def generate_career_path(
     payload: CareerPathRequest,
     locale: Annotated[str, Depends(get_request_locale)],

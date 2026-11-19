@@ -14,6 +14,7 @@ v8 build without a backend.
 | Container images | Artifact Registry | Free up to 0.5 GB | Keep a cleanup policy (step 2) |
 | Server secrets | Secret Manager | Free up to 6 active secret versions (~$0.06/month each beyond) | 7 used; destroy old versions when rotating |
 | Job search | JSearch (RapidAPI, real-time Google for Jobs) with Adzuna India fallback | Free plans | JSearch free cap is ~100-200 req/month; on quota errors the API uses Adzuna for 6 h |
+| AI usage limits | Per-owner rolling 24 h counter in `ai_usage_events` | Supabase Free | Guests 3 / signed-in 20 AI actions a day (`CAREEROS_AI_DAILY_LIMIT_GUEST` / `_USER`, 0 = off, Pro unlimited). Apply the `ai_usage_events` migration first; until then the API fails open (no limit) and logs a warning |
 | Market Pulse | Adzuna statistics (postings per skill in the last 30 days, hiring leaderboard; no growth % or salary ranges, which the source cannot support honestly) | Adzuna free plan | Needs the Adzuna secrets; cached 6 h per location. Without them `/market-pulse` returns 503 `market_data_unavailable` (never sample data) |
 | Company Deep Dive | Built from live job postings via the job search provider | JSearch/Adzuna quota | Profiles list only what postings show (name, location, open-posting count, technologies, links); cached 1 h per search |
 | Reminder cron | Cloud Scheduler | Free for 3 jobs per billing account | 1 job used |
@@ -183,7 +184,7 @@ Until per-user AI quotas are enforced (see "Open blockers"), the budget alert an
 - Free tier has no automatic backups: schedule a periodic `supabase db dump`
   to private storage you control.
 
-## Mobile release (v1.0.1, versionCode 14)
+## Mobile release (v1.0.1, versionCode 15)
 
 Play never accepts a reused versionCode. versionCode 9 ("1.0.0") was found
 installed from the Play Store on a test device, so 9 is consumed; 10 may already have been uploaded, so 11 is used.

@@ -7,6 +7,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends
 
 from app.ai.provider import CareerAiProvider, get_ai_provider
+from app.core.ai_quota import ai_quota
 from app.core.auth import CurrentActor, get_current_actor
 from app.integrations.supabase.client import SupabaseClients, get_supabase_clients
 
@@ -27,7 +28,12 @@ def get_skills_gap_service(
     return SkillsGapService(clients, provider)
 
 
-@router.post("/analyze", response_model=GapAnalysisResponse, status_code=201)
+@router.post(
+    "/analyze",
+    response_model=GapAnalysisResponse,
+    status_code=201,
+    dependencies=[Depends(ai_quota("skills_gap"))],
+)
 def analyze_gap(
     payload: GapAnalysisRequest,
     service: Annotated[SkillsGapService, Depends(get_skills_gap_service)],

@@ -15,7 +15,12 @@ import { useAuth } from "@/lib/auth";
 import { useTheme } from "@/lib/theme";
 import { t } from "../../../i18n";
 import { ApiClient } from "@/services/api";
-import { ApiError, type EntitlementResponse, type UserResponse } from "@/services/contract";
+import {
+  ApiError,
+  type AiUsageResponse,
+  type EntitlementResponse,
+  type UserResponse,
+} from "@/services/contract";
 import { getSupabaseClient } from "@/services/supabase";
 import AchievementsSection from "@/features/achievements/presentation/AchievementsSection";
 import AppBackground from "@/ui/AppBackground";
@@ -24,7 +29,12 @@ import ScreenHeader from "@/ui/ScreenHeader";
 type ProfileState =
   | { status: "loading" }
   | { status: "error"; message: string }
-  | { status: "success"; user: UserResponse; entitlements: EntitlementResponse | null };
+  | {
+      status: "success";
+      user: UserResponse;
+      entitlements: EntitlementResponse | null;
+      aiUsage: AiUsageResponse | null;
+    };
 
 const apiClient = new ApiClient();
 
@@ -45,10 +55,14 @@ export default function ProfileScreen() {
     setState({ status: "loading" });
     try {
       if (isGuest) {
+        const aiUsage = await apiClient
+          .getAiUsage(undefined, guestId ?? undefined)
+          .catch(() => null);
         setState({
           status: "success",
           user: { id: guestId ?? "guest", email: "Guest User", role: "guest" },
           entitlements: null,
+          aiUsage,
         });
         return;
       }
@@ -56,11 +70,12 @@ export default function ProfileScreen() {
         void handleUnauthorized();
         return;
       }
-      const [user, entitlements] = await Promise.all([
+      const [user, entitlements, aiUsage] = await Promise.all([
         apiClient.getMe(accessToken),
         apiClient.getEntitlements(accessToken).catch(() => null),
+        apiClient.getAiUsage(accessToken).catch(() => null),
       ]);
-      setState({ status: "success", user, entitlements });
+      setState({ status: "success", user, entitlements, aiUsage });
     } catch (err) {
       if (err instanceof ApiError && err.status === 401) {
         void handleUnauthorized();
@@ -165,7 +180,7 @@ export default function ProfileScreen() {
     );
   }
 
-  const { user, entitlements } = state;
+  const { user, entitlements, aiUsage } = state;
 
   return (
     <AppBackground>
@@ -181,30 +196,49 @@ export default function ProfileScreen() {
           <Text style={[styles.cardValue, { color: colors.textPrimary }]}>{user.email ?? "—"}</Text>
         </View>
 
-        {entitlements !== null && (
+        {(entitlements !== null || aiUsage !== null) && (
           <View
             style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}
           >
-            <Text style={[styles.cardLabel, { color: colors.textSecondary }]}>
-              {t("profile.plan")}
-            </Text>
-            <Text style={[styles.cardValue, { color: colors.textPrimary }]}>
-              {entitlements.plan} · {entitlements.status}
-            </Text>
-            {Object.entries(entitlements.usage).map(([feature, used]) => {
-              const limit = entitlements.limits[feature] ?? null;
-              return (
-                <View key={feature} style={styles.usageRow}>
+            {entitlements !== null && (
+              <>
+                <Text style={[styles.cardLabel, { color: colors.textSecondary }]}>
+                  {t("profile.plan")}
+                </Text>
+                <Text style={[styles.cardValue, { color: colors.textPrimary }]}>
+                  {entitlements.plan} · {entitlements.status}
+                </Text>
+              </>
+            )}
+            {aiUsage !== null && (
+              <>
+                <Text style={[styles.cardLabel, { color: colors.textSecondary }]}>
+                  {t("profile.aiToday")}
+                </Text>
+                <Text style={[styles.cardValue, { color: colors.textPrimary }]}>
+                  {aiUsage.limit === null
+                    ? `${aiUsage.used} · ${t("profile.aiUnlimited")}`
+                    : `${aiUsage.used} / ${aiUsage.limit}`}
+                </Text>
+                {aiUsage.limit !== null &&
+                  aiUsage.remaining === 0 &&
+                  aiUsage.resets_at !== null && (
+                    <Text style={[styles.usageLabel, { color: colors.textSecondary }]}>
+                      {t("profile.aiRenews", {
+                        time: new Date(aiUsage.resets_at).toLocaleTimeString([], {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        }),
+                      })}
+                    </Text>
+                  )}
+                {isGuest && (
                   <Text style={[styles.usageLabel, { color: colors.textSecondary }]}>
-                    {feature}
+                    {t("profile.aiGuestHint")}
                   </Text>
-                  <Text style={[styles.usageValue, { color: colors.textPrimary }]}>
-                    {used}
-                    {limit !== null ? ` / ${limit}` : ""}
-                  </Text>
-                </View>
-              );
-            })}
+                )}
+              </>
+            )}
           </View>
         )}
 

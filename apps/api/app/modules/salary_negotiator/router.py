@@ -7,6 +7,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends
 
 from app.ai.provider import CareerAiProvider, get_ai_provider
+from app.core.ai_quota import ai_quota
 from app.core.auth import CurrentActor, get_current_actor
 from app.integrations.supabase.client import SupabaseClients, get_supabase_clients
 
@@ -27,7 +28,9 @@ def get_salary_service(
     return SalaryNegotiatorService(clients, provider)
 
 
-@router.post("/range", response_model=NegotiationResponse)
+@router.post(
+    "/range", response_model=NegotiationResponse, dependencies=[Depends(ai_quota("salary"))]
+)
 def get_salary_range(
     payload: SalaryRequest,
     service: Annotated[SalaryNegotiatorService, Depends(get_salary_service)],

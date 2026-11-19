@@ -5,6 +5,7 @@ from __future__ import annotations
 from typing import Annotated
 
 from app.ai.provider import CareerAiProvider, get_ai_provider
+from app.core.ai_quota import ai_quota
 from app.core.auth import CurrentActor, get_current_actor
 from app.core.i18n import get_request_locale
 from app.integrations.supabase.client import SupabaseClients, get_supabase_clients
@@ -89,6 +90,7 @@ def delete_thread(
     "/threads/{thread_id}/messages",
     response_model=CoachMessagePairResponse,
     status_code=201,
+    dependencies=[Depends(ai_quota("coach"))],
 )
 def send_message(
     thread_id: str,

@@ -7,6 +7,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends
 
 from app.ai.provider import CareerAiProvider, get_ai_provider
+from app.core.ai_quota import ai_quota
 from app.core.auth import CurrentUser, get_current_user
 from app.core.i18n import get_request_locale
 from app.integrations.supabase.client import SupabaseClients, get_supabase_clients
@@ -28,7 +29,12 @@ def get_rewrite_service(
     return RewriteService(clients, provider)
 
 
-@router.post("/{resume_id}/rewrites", response_model=RewriteBatchResponse, status_code=201)
+@router.post(
+    "/{resume_id}/rewrites",
+    response_model=RewriteBatchResponse,
+    status_code=201,
+    dependencies=[Depends(ai_quota("rewrite"))],
+)
 def create_rewrite_batch(
     resume_id: str,
     locale: Annotated[str, Depends(get_request_locale)],
