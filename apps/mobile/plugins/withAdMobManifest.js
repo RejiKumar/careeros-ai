@@ -10,7 +10,9 @@ module.exports = function withAdMobAndCleartext(config) {
     const manifest = cfg.modResults.manifest;
     const app = manifest.application[0];
 
-    app.$["android:usesCleartextTraffic"] = "true";
+    // Plain-HTTP is only needed to reach a local dev API; production talks HTTPS only.
+    const isProd = (process.env.EXPO_PUBLIC_APP_ENV || "dev") === "prod";
+    app.$["android:usesCleartextTraffic"] = isProd ? "false" : "true";
 
     if (!app["meta-data"]) {
       app["meta-data"] = [];
