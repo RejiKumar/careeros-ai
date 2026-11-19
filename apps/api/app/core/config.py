@@ -35,6 +35,9 @@ class Settings(BaseSettings):
 
     gemini_api_key: str = ""
     gemini_model: str = ""
+    # Tried when the primary model keeps failing with 429/5xx (e.g. a 503
+    # "high demand" spike). Empty disables the fallback.
+    gemini_fallback_model: str = "gemini-2.5-flash"
 
     # Real-time job search: JSearch (Google for Jobs via RapidAPI) is tried
     # first; Adzuna is the fallback when JSearch fails or its quota runs out.

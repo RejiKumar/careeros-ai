@@ -18,3 +18,8 @@ def configure_logging(level: str = "INFO") -> None:
     root.setLevel(level.upper())
     root.handlers.clear()
     root.addHandler(handler)
+
+    # httpx logs every request URL at INFO, and some providers (Adzuna) carry
+    # credentials in the query string. Keep request URLs out of the logs.
+    for noisy in ("httpx", "httpcore"):
+        logging.getLogger(noisy).setLevel(logging.WARNING)
