@@ -5,6 +5,7 @@ from __future__ import annotations
 from typing import Annotated
 
 from app.ai.provider import CareerAiProvider, get_ai_provider
+from app.core.ai_quota import ai_quota
 from app.core.auth import CurrentActor, get_current_actor
 from app.integrations.supabase.client import SupabaseClients, get_supabase_clients
 from fastapi import APIRouter, Depends
@@ -22,7 +23,9 @@ def get_roast_service(
     return RoastService(clients, provider)
 
 
-@router.post("", response_model=RoastResponse, status_code=201)
+@router.post(
+    "", response_model=RoastResponse, status_code=201, dependencies=[Depends(ai_quota("roast"))]
+)
 def create_roast(
     payload: RoastCreateRequest,
     service: Annotated[RoastService, Depends(get_roast_service)],

@@ -7,6 +7,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, File, UploadFile
 
 from app.ai.provider import CareerAiProvider, get_ai_provider
+from app.core.ai_quota import ai_quota
 from app.core.auth import CurrentActor, get_current_actor
 from app.integrations.supabase.client import SupabaseClients, get_supabase_clients
 
@@ -29,7 +30,12 @@ def get_resume_service(
     return ResumeService(clients, provider)
 
 
-@router.post("/import", response_model=ResumeImportResponse, status_code=201)
+@router.post(
+    "/import",
+    response_model=ResumeImportResponse,
+    status_code=201,
+    dependencies=[Depends(ai_quota("resume_import"))],
+)
 def import_resume(
     service: Annotated[ResumeService, Depends(get_resume_service)],
     actor: Annotated[CurrentActor, Depends(get_current_actor)],

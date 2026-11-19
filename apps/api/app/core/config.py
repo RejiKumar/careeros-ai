@@ -39,6 +39,11 @@ class Settings(BaseSettings):
     # "high demand" spike). Empty disables the fallback.
     gemini_fallback_model: str = "gemini-3.1-flash-lite"
 
+    # Daily AI actions allowed per rolling 24 hours. 0 disables the limit for
+    # that audience. Pro users are always unlimited.
+    ai_daily_limit_guest: int = 3
+    ai_daily_limit_user: int = 20
+
     # Real-time job search: JSearch (Google for Jobs via RapidAPI) is tried
     # first; Adzuna is the fallback when JSearch fails or its quota runs out.
     jsearch_api_key: str = ""

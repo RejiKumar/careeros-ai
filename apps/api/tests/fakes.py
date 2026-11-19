@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import uuid
+from datetime import datetime
 
 from app.ai.provider import (
     AnswerEvaluationResult,
@@ -60,6 +61,10 @@ class FakeQuery:
         self._filters.append((column, _InValues(values)))
         return self
 
+    def gte(self, column: str, value: str) -> FakeQuery:
+        self._filters.append((column, _Gte(value)))
+        return self
+
     def ilike(self, column: str, pattern: str) -> FakeQuery:
         self._filters.append((column, _ILike(pattern)))
         return self
@@ -96,6 +101,13 @@ class _InValues:
         self.values = values
 
 
+class _Gte:
+    """ISO-8601 timestamp lower bound (inclusive)."""
+
+    def __init__(self, bound: str) -> None:
+        self.bound = datetime.fromisoformat(bound)
+
+
 class _ILike:
     """Case-insensitive `%needle%` match, the only ilike form the API uses."""
 
@@ -104,6 +116,8 @@ class _ILike:
 
 
 def _matches(actual: object, expected: object) -> bool:
+    if isinstance(expected, _Gte):
+        return isinstance(actual, str) and datetime.fromisoformat(actual) >= expected.bound
     if isinstance(expected, _ILike):
         return isinstance(actual, str) and expected.needle in actual.lower()
     if isinstance(expected, _InValues):

@@ -236,6 +236,17 @@ export interface EntitlementResponse {
   limits: Record<string, number | null>;
 }
 
+/** The caller's AI actions in the rolling 24-hour window (GET /billing/ai-usage). */
+export interface AiUsageResponse {
+  used: number;
+  /** null means unlimited. */
+  limit: number | null;
+  remaining: number | null;
+  /** When the oldest counted action leaves the window; null when nothing is counted. */
+  resets_at: string | null;
+  window_hours: number;
+}
+
 export interface AchievementResponse {
   id: string;
   key: string;
