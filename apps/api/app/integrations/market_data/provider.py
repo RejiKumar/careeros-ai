@@ -23,22 +23,10 @@ class MarketDataUnavailableError(Exception):
 
 @dataclass(frozen=True)
 class SkillCount:
-    """Postings mentioning a skill: the last 30 days and the 30 days before that."""
+    """Postings mentioning a skill that were published in the last 30 days."""
 
     skill: str
     last_30_days: int
-    previous_30_days: int
-
-
-@dataclass(frozen=True)
-class SalaryStats:
-    """Salary distribution of real postings that state or carry a salary."""
-
-    min_salary: float
-    median_salary: float
-    max_salary: float
-    currency: str
-    sample_size: int
 
 
 @dataclass(frozen=True)
@@ -55,10 +43,6 @@ class MarketDataProvider:
     def skill_counts(self, skills: list[str], location: str | None) -> list[SkillCount]:
         raise NotImplementedError
 
-    def salary_stats(self, role: str, location: str | None) -> SalaryStats | None:
-        """Return None when the source has no salary data for the role."""
-        raise NotImplementedError
-
     def top_companies(self, role: str, location: str | None, limit: int) -> list[CompanyCount]:
         raise NotImplementedError
 
@@ -70,9 +54,6 @@ class UnconfiguredMarketData(MarketDataProvider):
         return MarketDataUnavailableError("No market data source is configured.")
 
     def skill_counts(self, skills: list[str], location: str | None) -> list[SkillCount]:
-        raise self._unavailable()
-
-    def salary_stats(self, role: str, location: str | None) -> SalaryStats | None:
         raise self._unavailable()
 
     def top_companies(self, role: str, location: str | None, limit: int) -> list[CompanyCount]:

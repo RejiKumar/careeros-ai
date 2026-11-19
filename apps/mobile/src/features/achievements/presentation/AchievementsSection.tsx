@@ -121,7 +121,7 @@ export default function AchievementsSection() {
                     {a.title}
                   </Text>
                   <Text style={[styles.achievementCondition, { color: colors.textDisabled }]}>
-                    {a.condition}
+                    {a.description}
                   </Text>
                 </View>
               ))}

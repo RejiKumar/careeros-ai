@@ -179,16 +179,6 @@ export default function ProfileScreen() {
             {t("profile.email")}
           </Text>
           <Text style={[styles.cardValue, { color: colors.textPrimary }]}>{user.email ?? "—"}</Text>
-          {!isGuest && (
-            <>
-              <Text style={[styles.cardLabel, { color: colors.textSecondary }]}>
-                {t("profile.role")}
-              </Text>
-              <Text style={[styles.cardValue, { color: colors.textPrimary }]}>
-                {user.role ?? "member"}
-              </Text>
-            </>
-          )}
         </View>
 
         {entitlements !== null && (

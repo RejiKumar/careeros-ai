@@ -268,7 +268,7 @@ export default function CompanyScreen() {
         </Text>
         {savedCompanies.length === 0 && (
           <Text style={[styles.emptyText, { color: colors.textDisabled }]}>
-            {t("company.noResults")}
+            {t("company.noSaved")}
           </Text>
         )}
         {savedCompanies.map((saved) => (

@@ -330,8 +330,7 @@ const en = {
   marketPulse: {
     eyebrow: "Market Pulse",
     title: "Know the market",
-    subtitle:
-      "Live job-posting counts, salary data and top hiring companies. Growth compares the last 30 days with the 30 before.",
+    subtitle: "Live job-posting counts from the last 30 days and top hiring companies.",
     location: "Location",
     allLocations: "All India",
     skillDemand: "Skill demand",
@@ -511,7 +510,7 @@ const en = {
   company: {
     eyebrow: "Company Deep Dive",
     title: "Research companies",
-    subtitle: "Tech stack, culture, and job openings.",
+    subtitle: "Technologies and recent job openings, from live postings.",
     searchPlaceholder: "Search company...",
     locationPlaceholder: "Location (optional)",
     techStack: "Tech stack",
@@ -522,6 +521,7 @@ const en = {
     saveCompany: "Save",
     saved: "Saved",
     noResults: "No companies found.",
+    noSaved: "No saved companies yet.",
     error: "Could not load company data.",
   },
   salary: {

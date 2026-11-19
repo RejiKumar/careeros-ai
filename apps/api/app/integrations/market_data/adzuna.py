@@ -1,10 +1,10 @@
 """Adzuna labour-market statistics (REST API).
 
-Uses three real endpoints: ``search`` (the ``count`` of matching postings,
-optionally limited with ``max_days_old``), ``histogram`` (salary distribution
-of postings) and ``top_companies`` (hiring leaderboard). Credentials are read
-from settings and never logged. Results are cached in memory because the free
-plan has a small daily quota.
+Uses two real endpoints: ``search`` (the ``count`` of postings published in the
+last 30 days that mention a skill) and ``top_companies`` (hiring leaderboard).
+Credentials are read from settings and never logged. Results are cached in
+memory because the free plan has a small daily quota, and one transient
+failure (rate limit, 5xx, timeout) is retried before giving up.
 """
 
 from __future__ import annotations
@@ -21,7 +21,6 @@ from .provider import (
     CompanyCount,
     MarketDataProvider,
     MarketDataUnavailableError,
-    SalaryStats,
     SkillCount,
 )
 
@@ -29,20 +28,9 @@ logger = logging.getLogger(__name__)
 
 _BASE_URL = "https://api.adzuna.com/v1/api/jobs"
 _CACHE_TTL_SECONDS = 6 * 60 * 60
-_MAX_WORKERS = 4
-
-_CURRENCIES = {
-    "in": "INR",
-    "gb": "GBP",
-    "us": "USD",
-    "ca": "CAD",
-    "au": "AUD",
-    "de": "EUR",
-    "fr": "EUR",
-    "nl": "EUR",
-    "sg": "SGD",
-    "za": "ZAR",
-}
+_MAX_WORKERS = 3
+_RETRY_DELAY_SECONDS = 1.5
+_TRANSIENT_STATUSES = frozenset({429, 500, 502, 503, 504})
 
 _cache: dict[tuple, tuple[float, object]] = {}
 _cache_lock = threading.Lock()
@@ -74,21 +62,19 @@ class AdzunaMarketData(MarketDataProvider):
         app_key: str,
         country: str = "in",
         transport: httpx.BaseTransport | None = None,
+        sleep: Callable[[float], None] = time.sleep,
     ) -> None:
         self._app_id = app_id
         self._app_key = app_key
         self._country = country.lower()
         self._transport = transport
+        self._sleep = sleep
 
     # -- public API ------------------------------------------------------
 
     def skill_counts(self, skills: list[str], location: str | None) -> list[SkillCount]:
         key = ("skills", self._country, location or "", tuple(skills))
         return _cached(key, lambda: self._load_skill_counts(skills, location))
-
-    def salary_stats(self, role: str, location: str | None) -> SalaryStats | None:
-        key = ("salary", self._country, location or "", role)
-        return _cached(key, lambda: self._load_salary_stats(role, location))
 
     def top_companies(self, role: str, location: str | None, limit: int) -> list[CompanyCount]:
         key = ("companies", self._country, location or "", role, limit)
@@ -98,22 +84,16 @@ class AdzunaMarketData(MarketDataProvider):
 
     def _load_skill_counts(self, skills: list[str], location: str | None) -> list[SkillCount]:
         def count_for(skill: str) -> SkillCount:
-            recent = self._posting_count(skill, location, max_days_old=30)
-            last_60 = self._posting_count(skill, location, max_days_old=60)
-            return SkillCount(
-                skill=skill,
-                last_30_days=recent,
-                previous_30_days=max(last_60 - recent, 0),
-            )
+            return SkillCount(skill=skill, last_30_days=self._posting_count(skill, location))
 
         with ThreadPoolExecutor(max_workers=_MAX_WORKERS) as pool:
             return list(pool.map(count_for, skills))
 
-    def _posting_count(self, what: str, location: str | None, *, max_days_old: int) -> int:
+    def _posting_count(self, what: str, location: str | None) -> int:
         params: dict[str, str | int] = {
             "what": what,
             "results_per_page": 1,
-            "max_days_old": max_days_old,
+            "max_days_old": 30,
         }
         if location:
             params["where"] = location
@@ -122,39 +102,6 @@ class AdzunaMarketData(MarketDataProvider):
         if not isinstance(count, int) or count < 0:
             raise MarketDataUnavailableError("Unexpected Adzuna search response.")
         return count
-
-    def _load_salary_stats(self, role: str, location: str | None) -> SalaryStats | None:
-        params: dict[str, str | int] = {"what": role}
-        if location:
-            params["where"] = location
-        payload = self._get(f"{self._country}/histogram", params)
-        histogram = payload.get("histogram")
-        if not isinstance(histogram, dict):
-            raise MarketDataUnavailableError("Unexpected Adzuna histogram response.")
-        parsed: list[tuple[float, int]] = []
-        for lower, count in histogram.items():
-            try:
-                parsed.append((float(lower), int(count)))
-            except (TypeError, ValueError):
-                continue
-        buckets = sorted(bucket for bucket in parsed if bucket[1] > 0)
-        total = sum(count for _, count in buckets)
-        if total == 0:
-            return None
-        cumulative = 0
-        median = buckets[0][0]
-        for lower, count in buckets:
-            cumulative += count
-            if cumulative >= total / 2:
-                median = lower
-                break
-        return SalaryStats(
-            min_salary=buckets[0][0],
-            median_salary=median,
-            max_salary=buckets[-1][0],
-            currency=_CURRENCIES.get(self._country, ""),
-            sample_size=total,
-        )
 
     def _load_top_companies(
         self, role: str, location: str | None, limit: int
@@ -185,14 +132,30 @@ class AdzunaMarketData(MarketDataProvider):
             "app_key": self._app_key,
             "content-type": "application/json",
         }
-        try:
-            with httpx.Client(timeout=10.0, transport=self._transport) as client:
-                response = client.get(f"{_BASE_URL}/{path}", params=query)
+        last: Exception | None = None
+        for attempt in range(2):
+            try:
+                with httpx.Client(timeout=10.0, transport=self._transport) as client:
+                    response = client.get(f"{_BASE_URL}/{path}", params=query)
+                if response.status_code in _TRANSIENT_STATUSES and attempt == 0:
+                    logger.warning("[Adzuna] %s on %s; retrying", response.status_code, path)
+                    self._sleep(_RETRY_DELAY_SECONDS)
+                    continue
                 response.raise_for_status()
                 payload = response.json()
-        except (httpx.HTTPError, ValueError) as exc:
-            logger.warning("[Adzuna] market data request failed: %s", type(exc).__name__)
-            raise MarketDataUnavailableError("Adzuna request failed.") from exc
-        if not isinstance(payload, dict):
-            raise MarketDataUnavailableError("Unexpected Adzuna response.")
-        return payload
+            except httpx.TimeoutException as exc:
+                last = exc
+                logger.warning("[Adzuna] timeout on %s (attempt %d)", path, attempt + 1)
+                self._sleep(_RETRY_DELAY_SECONDS)
+                continue
+            except httpx.HTTPStatusError as exc:
+                # Log the status only: the request URL carries the API credentials.
+                logger.warning("[Adzuna] HTTP %s on %s", exc.response.status_code, path)
+                raise MarketDataUnavailableError("Adzuna request failed.") from exc
+            except (httpx.HTTPError, ValueError) as exc:
+                logger.warning("[Adzuna] request failed on %s: %s", path, type(exc).__name__)
+                raise MarketDataUnavailableError("Adzuna request failed.") from exc
+            if not isinstance(payload, dict):
+                raise MarketDataUnavailableError("Unexpected Adzuna response.")
+            return payload
+        raise MarketDataUnavailableError("Adzuna request failed.") from last

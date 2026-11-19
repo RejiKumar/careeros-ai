@@ -41,8 +41,8 @@ export default function NotificationPreferencesScreen() {
   const [state, setState] = useState<PreferencesState>({ status: "loading" });
   const [jobAlerts, setJobAlerts] = useState(true);
   const [missionReminders, setMissionReminders] = useState(true);
-  const [careerTips, setCareerTips] = useState(false);
-  const [frequency, setFrequency] = useState<Frequency>("instant");
+  const [careerTips, setCareerTips] = useState(true);
+  const [frequency, setFrequency] = useState<Frequency>("daily");
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
 

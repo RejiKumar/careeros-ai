@@ -2,6 +2,9 @@
 
 from __future__ import annotations
 
+import logging
+from collections.abc import Callable
+
 import httpx
 import pytest
 from app.integrations.market_data import adzuna
@@ -17,7 +20,9 @@ def _fresh_cache() -> None:
     adzuna.clear_cache()
 
 
-def _provider(handler) -> tuple[AdzunaMarketData, list[httpx.Request]]:  # type: ignore[no-untyped-def]
+def _provider(
+    handler: Callable[[httpx.Request], httpx.Response],
+) -> tuple[AdzunaMarketData, list[httpx.Request]]:
     captured: list[httpx.Request] = []
 
     def _handler(request: httpx.Request) -> httpx.Response:
@@ -30,47 +35,22 @@ def _provider(handler) -> tuple[AdzunaMarketData, list[httpx.Request]]:  # type:
             app_key=APP_KEY,
             country="in",
             transport=httpx.MockTransport(_handler),
+            sleep=lambda seconds: None,
         ),
         captured,
     )
 
 
-def test_skill_counts_compare_the_last_30_days_with_the_30_before() -> None:
-    def handler(request: httpx.Request) -> httpx.Response:
-        days = int(request.url.params["max_days_old"])
-        # 30 days -> 100 postings, 60 days -> 160 (so 60 posted 30-60 days ago).
-        return httpx.Response(200, json={"count": 100 if days == 30 else 160, "results": []})
+def test_skill_counts_are_postings_from_the_last_30_days() -> None:
+    provider, captured = _provider(lambda _request: httpx.Response(200, json={"count": 1234}))
 
-    provider, captured = _provider(handler)
+    [python, react] = provider.skill_counts(["Python", "React"], "Bangalore")
 
-    [python] = provider.skill_counts(["Python"], "Bangalore")
-
-    assert (python.skill, python.last_30_days, python.previous_30_days) == ("Python", 100, 60)
+    assert (python.skill, python.last_30_days) == ("Python", 1234)
+    assert react.skill == "React"
+    assert {r.url.params["max_days_old"] for r in captured} == {"30"}
     assert {r.url.params["where"] for r in captured} == {"Bangalore"}
     assert all(r.url.path.endswith("/in/search/1") for r in captured)
-
-
-def test_salary_stats_come_from_the_histogram() -> None:
-    histogram = {"300000": 10, "600000": 30, "900000": 40, "1200000": 20, "1500000": 0}
-    provider, captured = _provider(
-        lambda _request: httpx.Response(200, json={"histogram": histogram})
-    )
-
-    stats = provider.salary_stats("Software Engineer", None)
-
-    assert stats is not None
-    assert stats.min_salary == 300000
-    assert stats.median_salary == 900000
-    assert stats.max_salary == 1200000
-    assert stats.currency == "INR"
-    assert stats.sample_size == 100
-    assert captured[0].url.path.endswith("/in/histogram")
-
-
-def test_salary_stats_without_salary_data_is_none() -> None:
-    provider, _ = _provider(lambda _request: httpx.Response(200, json={"histogram": {}}))
-
-    assert provider.salary_stats("Astronaut", None) is None
 
 
 def test_top_companies_come_from_the_leaderboard() -> None:
@@ -88,13 +68,46 @@ def test_top_companies_come_from_the_leaderboard() -> None:
     assert [(c.name, c.job_count) for c in companies] == [("Acme", 42), ("Beta", 17)]
 
 
-def test_http_errors_become_unavailable_without_leaking_credentials() -> None:
+def test_a_transient_failure_is_retried_once() -> None:
+    responses = iter([httpx.Response(429, json={}), httpx.Response(200, json={"leaderboard": []})])
+    provider, captured = _provider(lambda _request: next(responses))
+
+    assert provider.top_companies("software engineer", None, 5) == []
+    assert len(captured) == 2
+
+
+def test_a_persistent_failure_becomes_unavailable_without_leaking_credentials(
+    caplog: pytest.LogCaptureFixture,
+) -> None:
     provider, _ = _provider(lambda _request: httpx.Response(429, json={"error": "quota"}))
 
-    with pytest.raises(MarketDataUnavailableError) as raised:
+    with caplog.at_level(logging.WARNING), pytest.raises(MarketDataUnavailableError) as raised:
         provider.top_companies("software engineer", None, 5)
 
     assert APP_KEY not in str(raised.value)
+    assert APP_KEY not in caplog.text
+    assert "429" in caplog.text
+
+
+def test_non_transient_errors_are_not_retried() -> None:
+    provider, captured = _provider(lambda _request: httpx.Response(401, json={}))
+
+    with pytest.raises(MarketDataUnavailableError):
+        provider.top_companies("software engineer", None, 5)
+
+    assert len(captured) == 1
+
+
+def test_timeouts_become_unavailable() -> None:
+    def handler(request: httpx.Request) -> httpx.Response:
+        raise httpx.ReadTimeout("slow", request=request)
+
+    provider, captured = _provider(handler)
+
+    with pytest.raises(MarketDataUnavailableError):
+        provider.top_companies("software engineer", None, 5)
+
+    assert len(captured) == 2
 
 
 def test_unexpected_payloads_become_unavailable() -> None:
