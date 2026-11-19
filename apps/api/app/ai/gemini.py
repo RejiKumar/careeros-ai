@@ -166,8 +166,12 @@ _INTERVIEW_USER_PROMPT = (
 _EVALUATE_SYSTEM_PROMPT = (
     "You evaluate a user's interview answer as guidance, never as a definitive "
     "hiring judgment. Score each criterion 0-100 based only on the answer and the "
-    "question. Be specific and encouraging. The suggested_answer must show how the "
-    "answer could be improved without inventing facts about the user. "
+    "question. Every score is an integer from 0 to 100. Be specific and encouraging. "
+    "The suggested_answer must show how the answer could be improved using ONLY facts "
+    "stated in the user's answer or the resume context. NEVER invent tools, numbers, "
+    "decisions, strategies or outcomes the user did not state; where a detail is "
+    "missing, write a bracketed placeholder such as [your TTL setting] for the user "
+    "to fill in. "
     "Return only JSON matching the requested schema, without markdown fences."
 )
 
