@@ -381,49 +381,27 @@ export interface JobAlertPreference {
   updated_at: string;
 }
 
-export interface TailorSectionDiff {
-  section: string;
+/** One tailored field with the model's reasoning (API: `diffs[]`). */
+export interface TailorFieldDiff {
+  /** "summary", "skills" or "experience". */
+  field: string;
   original: string;
   tailored: string;
   reasoning: string;
 }
 
-export interface TailorDiff {
-  id: string;
-  resume_id: string;
-  job_description_id: string;
-  resume_version_id: string;
-  original_summary: string | null;
-  tailored_summary: string | null;
-  original_skills: string[];
-  tailored_skills: string[];
-  original_experience: WorkEntry[];
-  tailored_experience: WorkEntry[];
-  section_diffs: TailorSectionDiff[];
-  model_version: string | null;
-  created_at: string;
-}
-
+/** Response of POST /resume-tailor/tailor, /accept and items of GET /history/{id}. */
 export interface TailorResponse {
-  tailor: TailorDiff;
-  job_description: JobDescriptionResponse;
-}
-
-export interface TailorHistoryItem {
   id: string;
+  user_id: string;
   resume_id: string;
   job_description_id: string;
-  job_title: string | null;
-  job_company: string | null;
-  accepted: boolean;
+  tailored_content: ResumeContent;
+  diffs: TailorFieldDiff[];
+  original_version_id: string;
+  tailored_version_id: string | null;
   created_at: string;
-}
-
-export interface TailorAcceptResponse {
-  resume_id: string;
-  version: number;
-  version_id: string;
-  status: string;
+  accepted: boolean;
 }
 
 export interface FCMTokenResponse {

@@ -41,8 +41,6 @@ import type {
   SavedCareerPathResponse,
   SavedCompanyResponse,
   SavedJobResponse,
-  TailorAcceptResponse,
-  TailorHistoryItem,
   TailorResponse,
   UserResponse,
   WrappedResponse,
@@ -619,12 +617,9 @@ export class ApiClient {
     accessToken: string | undefined,
     guestId?: string,
   ): Promise<GapAnalysisHistoryResponse> {
-    return this.request<GapAnalysisHistoryResponse>(
-      "/api/v1/skills-gap",
-      accessToken,
-      guestId,
-      { method: "GET" },
-    );
+    return this.request<GapAnalysisHistoryResponse>("/api/v1/skills-gap", accessToken, guestId, {
+      method: "GET",
+    });
   }
 
   deleteGapAnalysis(
@@ -879,8 +874,8 @@ export class ApiClient {
     accessToken: string | undefined,
     payload: { tailor_id: string },
     guestId?: string,
-  ): Promise<TailorAcceptResponse> {
-    return this.jsonRequest<TailorAcceptResponse>(
+  ): Promise<TailorResponse> {
+    return this.jsonRequest<TailorResponse>(
       "/api/v1/resume-tailor/accept",
       accessToken,
       guestId,
@@ -893,8 +888,8 @@ export class ApiClient {
     accessToken: string | undefined,
     resumeId: string,
     guestId?: string,
-  ): Promise<TailorHistoryItem[]> {
-    return this.request<TailorHistoryItem[]>(
+  ): Promise<TailorResponse[]> {
+    return this.request<TailorResponse[]>(
       `/api/v1/resume-tailor/history/${resumeId}`,
       accessToken,
       guestId,
