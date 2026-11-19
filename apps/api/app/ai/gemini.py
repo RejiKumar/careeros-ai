@@ -258,7 +258,7 @@ class GeminiProvider(CareerAiProvider):
         model: str,
         *,
         base_url: str = _BASE_URL,
-        timeout: float = 90.0,
+        timeout: float = 45.0,
         transport: httpx.BaseTransport | None = None,
         fallback_models: tuple[str, ...] = (),
         sleep: Callable[[float], None] = time.sleep,
@@ -462,9 +462,17 @@ class GeminiProvider(CareerAiProvider):
         backoff on each model; other statuses fail immediately.
         """
         last: httpx.Response | None = None
+        timed_out = False
         for model in (self._model, *self._fallback_models):
             for attempt in range(attempts):
-                response = self._client.post(f"/models/{model}:generateContent", json=body)
+                try:
+                    response = self._client.post(f"/models/{model}:generateContent", json=body)
+                except httpx.TimeoutException:
+                    # A slow model will usually be slow again: move to the next one
+                    # instead of waiting for the same timeout twice.
+                    timed_out = True
+                    logger.warning("Gemini timed out on %s", model)
+                    break
                 if response.status_code not in _TRANSIENT_STATUSES:
                     response.raise_for_status()
                     return response
@@ -478,9 +486,11 @@ class GeminiProvider(CareerAiProvider):
                 )
                 if attempt < attempts - 1:
                     self._sleep(5.0 if response.status_code == 429 else 2.0)
-        assert last is not None
-        last.raise_for_status()
-        raise ProviderError("AI provider is temporarily unavailable.")
+        if last is not None:
+            last.raise_for_status()
+        raise ProviderError(
+            "AI provider timed out." if timed_out else "AI provider is temporarily unavailable."
+        )
 
     def _generate(
         self, system_prompt: str, user_text: str, response_schema: dict

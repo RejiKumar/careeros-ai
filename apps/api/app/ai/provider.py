@@ -220,7 +220,7 @@ def build_provider(settings: Settings) -> CareerAiProvider:
     if settings.gemini_api_key:
         from .gemini import GeminiProvider
 
-        model = settings.gemini_model or "gemini-3.6-flash"
+        model = settings.gemini_model or "gemini-3.5-flash-lite"
         fallback = settings.gemini_fallback_model.strip()
         return GeminiProvider(
             api_key=settings.gemini_api_key,
