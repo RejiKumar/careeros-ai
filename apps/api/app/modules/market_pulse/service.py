@@ -1,8 +1,12 @@
 """Market Pulse use cases: labour-market intelligence from real job postings.
 
-Every number comes from live job-board statistics (job counts, salary
-distributions and the hiring leaderboard). When the source cannot be reached
-the use case fails with a clear error instead of returning placeholder data.
+Every number is a live job-board count (postings published in the last 30
+days per skill, and the hiring leaderboard). Nothing is estimated: growth
+rates and salary ranges are deliberately not reported because the source
+cannot support them honestly (expired postings inflate any "growth" measure,
+and its salary histogram is too coarse for a range). When the source cannot be
+reached the use case fails with a clear error instead of returning placeholder
+data.
 """
 
 from __future__ import annotations
@@ -21,21 +25,17 @@ from app.integrations.market_data.provider import (
 
 from .schema import (
     MarketPulseResponse,
-    SalaryRange,
     SkillDemandItem,
-    SkillTrendItem,
     SkillTrendResponse,
     TopCompany,
 )
 
-# Skills tracked on the dashboard. Each costs two cached source calls.
+# Skills tracked on the dashboard (one cached source call each).
 TRACKED_SKILLS = ["Python", "React", "TypeScript", "Java", "AWS", "Docker"]
-SALARY_ROLES = ["Software Engineer", "Data Scientist"]
 TOP_COMPANY_ROLE = "software engineer"
 TOP_COMPANY_LIMIT = 5
 PERIOD = "30d"
-# A skill is "rising" or "declining" only beyond this posting-count change.
-TREND_THRESHOLD_PERCENT = 5.0
+RECOMMENDED_LIMIT = 5
 
 
 class MarketDataUnavailableAppError(AppError):
@@ -59,33 +59,17 @@ class MarketPulseService:
         role: str | None = None,
     ) -> MarketPulseResponse:
         location = (location or "").strip() or None
-        roles = [role.strip()] if role and role.strip() else SALARY_ROLES
         try:
             counts = self._provider.skill_counts(TRACKED_SKILLS, location)
-            salary_ranges: list[SalaryRange] = []
-            for salary_role in roles:
-                stats = self._provider.salary_stats(salary_role, location)
-                if stats is None:
-                    continue
-                salary_ranges.append(
-                    SalaryRange(
-                        role=salary_role,
-                        location=location or "All locations",
-                        min_salary=stats.min_salary,
-                        max_salary=stats.max_salary,
-                        median_salary=stats.median_salary,
-                        currency=stats.currency,
-                    )
-                )
             companies = self._provider.top_companies(
-                role or TOP_COMPANY_ROLE, location, TOP_COMPANY_LIMIT
+                (role or "").strip() or TOP_COMPANY_ROLE, location, TOP_COMPANY_LIMIT
             )
         except MarketDataUnavailableError as exc:
             raise MarketDataUnavailableAppError() from exc
 
         return MarketPulseResponse(
             skill_demands=_skill_demands(counts),
-            salary_ranges=salary_ranges,
+            salary_ranges=[],
             top_companies=[
                 TopCompany(name=c.name, job_count=c.job_count, tech_stack=[], location=location)
                 for c in companies
@@ -106,41 +90,16 @@ class MarketPulseService:
         except MarketDataUnavailableError as exc:
             raise MarketDataUnavailableAppError() from exc
 
-        trends = [
-            SkillTrendItem(
-                skill=count.skill,
-                direction=_direction(change),
-                change_percent=change,
-                period=PERIOD,
-            )
-            for count in counts
-            if (change := _change_percent(count)) is not None
-        ]
         recommended = [
             count.skill
             for count in sorted(counts, key=lambda c: c.last_30_days, reverse=True)
             if count.last_30_days > 0
-        ][:5]
+        ][:RECOMMENDED_LIMIT]
         return SkillTrendResponse(
-            trends=trends,
+            trends=[],
             recommended_skills=recommended,
             generated_at=datetime.now(UTC).isoformat(),
         )
-
-
-def _change_percent(count: SkillCount) -> float | None:
-    """Posting-count change vs the previous 30 days; None when there is no baseline."""
-    if count.previous_30_days <= 0:
-        return None
-    return round((count.last_30_days - count.previous_30_days) / count.previous_30_days * 100, 1)
-
-
-def _direction(change: float) -> str:
-    if change > TREND_THRESHOLD_PERCENT:
-        return "rising"
-    if change < -TREND_THRESHOLD_PERCENT:
-        return "declining"
-    return "stable"
 
 
 def _skill_demands(counts: list[SkillCount]) -> list[SkillDemandItem]:
@@ -149,7 +108,7 @@ def _skill_demands(counts: list[SkillCount]) -> list[SkillDemandItem]:
         SkillDemandItem(
             skill=count.skill,
             demand_score=round(count.last_30_days / busiest * 100, 1) if busiest else 0.0,
-            change_percent=_change_percent(count),
+            change_percent=None,
             period=PERIOD,
             job_count=count.last_30_days,
         )

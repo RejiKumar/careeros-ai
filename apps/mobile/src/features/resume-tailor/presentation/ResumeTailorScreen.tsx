@@ -474,13 +474,7 @@ function TailorResultView({
           ]}
         >
           <Text style={[styles.changeSection, { color: colors.primaryStrong }]}>
-            {diff.field === "summary"
-              ? t("tailor.summaryChange")
-              : diff.field === "skills"
-                ? t("tailor.skillsChange")
-                : diff.field === "experience"
-                  ? t("tailor.experienceChange")
-                  : diff.field}
+            {sectionLabel(diff.field)}
           </Text>
           <Text style={[styles.reasoningLabel, { color: colors.textSecondary }]}>
             {t("tailor.reasoning")}
@@ -584,12 +578,14 @@ function TailoredView({ tailor, colors }: { tailor: TailorResponse; colors: Colo
   );
 }
 
+/** `diffs[].field` is a path such as "summary" or "experience.0.bullets.1". */
 function sectionLabel(field: string): string {
-  return field === "summary"
+  const section = field.split(".")[0];
+  return section === "summary"
     ? t("tailor.summaryChange")
-    : field === "skills"
+    : section === "skills"
       ? t("tailor.skillsChange")
-      : field === "experience"
+      : section === "experience"
         ? t("tailor.experienceChange")
         : field;
 }

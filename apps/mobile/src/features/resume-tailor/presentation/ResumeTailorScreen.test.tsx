@@ -68,6 +68,12 @@ const apiResponse: TailorResponse = {
       tailored: "React engineer focused on dashboards.",
       reasoning: "Mirrors the job's React focus.",
     },
+    {
+      field: "experience.0.bullets.1",
+      original: "Built dashboards.",
+      tailored: "Built React dashboards.",
+      reasoning: "Adds the keyword the job asks for.",
+    },
   ],
   original_version_id: "v1",
   tailored_version_id: null,
@@ -102,6 +108,9 @@ describe("ResumeTailorScreen", () => {
       expect(screen.getByText("React engineer focused on dashboards.")).toBeOnTheScreen(),
     );
     expect(screen.getByText("Mirrors the job's React focus.")).toBeOnTheScreen();
+    // Field paths from the API are shown as section names, never raw.
+    expect(screen.getByText("Adds the keyword the job asks for.")).toBeOnTheScreen();
+    expect(screen.queryByText("experience.0.bullets.1")).not.toBeOnTheScreen();
   });
 
   it("shows the original text from the diffs when toggled", async () => {
