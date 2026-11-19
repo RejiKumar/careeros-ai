@@ -72,6 +72,17 @@ describe("ProfileScreen", () => {
     expect(getByText("2 / 3")).toBeOnTheScreen();
   });
 
+  it("does not expose the internal database role", async () => {
+    const { getByText, queryByText } = await render(
+      <ThemeProvider>
+        <ProfileScreen />
+      </ThemeProvider>,
+    );
+
+    await waitFor(() => expect(getByText("user@example.com")).toBeOnTheScreen());
+    expect(queryByText("authenticated")).not.toBeOnTheScreen();
+  });
+
   it("renders the sign out button", async () => {
     const { getByLabelText } = await render(
       <ThemeProvider>
