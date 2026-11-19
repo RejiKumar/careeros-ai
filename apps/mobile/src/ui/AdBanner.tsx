@@ -39,8 +39,10 @@ try {
     const mobileAds = require("react-native-google-mobile-ads").default;
     /* eslint-disable @typescript-eslint/no-require-imports */
     const {
+      AdsConsent,
       BannerAd,
       BannerAdSize,
+      MaxAdContentRating,
       TestIds,
       useForeground,
     } = require("react-native-google-mobile-ads");
@@ -116,8 +118,7 @@ try {
     adAvailable = true;
     setAdStatus("initializing");
 
-    initPromise = mobileAds()
-      .initialize()
+    initPromise = initialiseAds(mobileAds, AdsConsent, MaxAdContentRating)
       .then(() => {
         console.log("[AdMob] SDK initialized successfully");
         setAdStatus("ready");
@@ -132,6 +133,44 @@ try {
   console.warn("[AdMob] Module load failed:", e);
   adAvailable = false;
   setAdStatus("unavailable");
+}
+
+interface ConsentInfo {
+  canRequestAds?: boolean;
+}
+
+/**
+ * Sets a family-friendly content rating, collects the user's consent where the
+ * law requires it (the UMP form configured in AdMob, e.g. in the EEA/UK), and
+ * only then initializes the SDK. A consent failure never blocks the app: ads
+ * simply stay off unless consent allows requesting them.
+ */
+export async function initialiseAds(
+  mobileAds: () => {
+    initialize: () => Promise<unknown>;
+    setRequestConfiguration?: (c: object) => Promise<void>;
+  },
+  adsConsent: { gatherConsent?: () => Promise<ConsentInfo> } | undefined,
+  maxRating: { PG?: string } | undefined,
+): Promise<void> {
+  const sdk = mobileAds();
+  try {
+    await sdk.setRequestConfiguration?.({ maxAdContentRating: maxRating?.PG ?? "PG" });
+  } catch (e) {
+    console.warn("[AdMob] Request configuration failed:", e);
+  }
+  let canRequestAds = true;
+  try {
+    const info = await adsConsent?.gatherConsent?.();
+    canRequestAds = info?.canRequestAds !== false;
+  } catch (e) {
+    // No consent form configured or the check failed: fall back to the SDK default.
+    console.warn("[AdMob] Consent check failed:", e);
+  }
+  if (!canRequestAds) {
+    throw new Error("[AdMob] User consent does not allow ad requests");
+  }
+  await sdk.initialize();
 }
 
 export function initAdMob(): Promise<void> {

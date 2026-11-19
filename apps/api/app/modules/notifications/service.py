@@ -68,8 +68,8 @@ def _send_fcm_message(
     body: str,
     data: dict[str, str] | None = None,
     image_url: str | None = None,
-) -> None:
-    fcm.send_message(
+) -> bool:
+    return fcm.send_message(
         settings,
         token=token,
         title=title,
@@ -149,15 +149,26 @@ class NotificationService:
         tokens = self._repository.get_fcm_tokens(actor=actor)
         if not tokens:
             return
+        delivered = False
         for token_row in tokens:
-            _send_fcm_message(
-                self._settings,
-                token=token_row["token"],
-                title=title,
-                body=body,
-                data=data,
-                image_url=image_url,
-            )
+            try:
+                sent = _send_fcm_message(
+                    self._settings,
+                    token=token_row["token"],
+                    title=title,
+                    body=body,
+                    data=data,
+                    image_url=image_url,
+                )
+            except fcm.InvalidTokenError:
+                self._repository.delete_fcm_token(actor=actor, token=token_row["token"])
+                continue
+            delivered = delivered or sent
+        # Only record the notification when a device actually received it, so a
+        # failed push is retried by the next scheduler run instead of being
+        # suppressed by the once-per-day de-duplication.
+        if not delivered:
+            return
         self.log_notification(
             actor=actor,
             title=title,

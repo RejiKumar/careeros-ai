@@ -8,6 +8,7 @@ from app.ai.provider import (
     AnswerEvaluationResult,
     AssessmentResult,
     CareerAiProvider,
+    CareerPathResult,
     CoachResult,
     GapAnalysisResult,
     InterviewQuestionsResult,
@@ -21,6 +22,7 @@ from app.ai.provider import (
 )
 from app.ai.schemas import (
     AnswerEvaluation,
+    CareerPathContent,
     CoachMessage,
     CoachReply,
     GapAnalysisContent,
@@ -58,6 +60,10 @@ class FakeQuery:
         self._filters.append((column, _InValues(values)))
         return self
 
+    def ilike(self, column: str, pattern: str) -> FakeQuery:
+        self._filters.append((column, _ILike(pattern)))
+        return self
+
     def order(self, column: str, desc: bool = False) -> FakeQuery:
         self._order = (column, desc)
         return self
@@ -90,7 +96,16 @@ class _InValues:
         self.values = values
 
 
+class _ILike:
+    """Case-insensitive `%needle%` match, the only ilike form the API uses."""
+
+    def __init__(self, pattern: str) -> None:
+        self.needle = pattern.strip("%").lower()
+
+
 def _matches(actual: object, expected: object) -> bool:
+    if isinstance(expected, _ILike):
+        return isinstance(actual, str) and expected.needle in actual.lower()
     if isinstance(expected, _InValues):
         return actual in expected.values
     return actual == expected
@@ -252,6 +267,7 @@ class FakeProvider(CareerAiProvider):
         self.match_calls: list[tuple[ResumeContent, str, str]] = []
         self.rewrite_calls: list[tuple[ResumeContent, str]] = []
         self.coach_calls: list[tuple[list[CoachMessage], str | None, str]] = []
+        self.career_path_calls: list[tuple[ResumeContent, str | None]] = []
         self._match: MatchResult | None = None
 
     def parse_resume(self, text: str) -> ParsedResume:
@@ -454,6 +470,42 @@ class FakeProvider(CareerAiProvider):
                 summary="Resume covers core skills but misses containerization.",
             ),
             request_id="gap-request-1",
+            model_version="gemini-3.6-flash",
+        )
+
+    def generate_career_path(
+        self,
+        content: ResumeContent,
+        target_role: str | None,
+        *,
+        locale: str = "en",
+    ) -> CareerPathResult:
+        self.career_path_calls.append((content, target_role))
+        if self._error is not None:
+            raise self._error
+        return CareerPathResult(
+            content=CareerPathContent(
+                current_stage="Mathematician",
+                stages=[
+                    {
+                        "title": "Mathematician",
+                        "description": "Where the resume places the candidate today.",
+                        "typical_years": 3,
+                        "required_skills": ["Python"],
+                        "recommended_actions": ["Publish results"],
+                    },
+                    {
+                        "title": "Research Lead",
+                        "description": "Leads a research group.",
+                        "typical_years": 4,
+                        "required_skills": ["Mentoring"],
+                        "recommended_actions": ["Mentor a junior colleague"],
+                    },
+                ],
+                gap_analysis=["No people-management evidence on the resume."],
+                timeline_estimate="4-6 years",
+            ),
+            request_id="career-request-1",
             model_version="gemini-3.6-flash",
         )
 

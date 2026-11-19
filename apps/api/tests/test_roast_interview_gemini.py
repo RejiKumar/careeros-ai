@@ -154,6 +154,19 @@ def test_evaluate_interview_answer_success() -> None:
     assert "What did you ship?" in captured[0].content.decode()
 
 
+def test_evaluate_prompt_forbids_invented_facts_and_states_scale() -> None:
+    provider, captured = _provider(
+        lambda _request: httpx.Response(200, json=_ok_payload(json.dumps({"relevance": 80})))
+    )
+
+    provider.evaluate_interview_answer("Q", "A", resume_context=None)
+
+    system_text = json.loads(captured[0].content)["system_instruction"]["parts"][0]["text"]
+    assert "0 to 100" in system_text
+    assert "NEVER invent" in system_text
+    assert "bracketed placeholder" in system_text
+
+
 def test_evaluate_interview_answer_malformed_output_raises() -> None:
     provider, _ = _provider(lambda _request: httpx.Response(200, json=_ok_payload("[]")))
 

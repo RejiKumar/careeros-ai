@@ -314,6 +314,29 @@ class NegotiationScriptContent(BaseModel):
     closing: str = ""
 
 
+class CareerStageContent(BaseModel):
+    """One stage of an AI-suggested career progression."""
+
+    model_config = ConfigDict(extra="ignore")
+
+    title: str = ""
+    description: str = ""
+    typical_years: int = 0
+    required_skills: list[str] = Field(default_factory=list)
+    recommended_actions: list[str] = Field(default_factory=list)
+
+
+class CareerPathContent(BaseModel):
+    """AI-derived career progression grounded in the resume. Advisory, never a promise."""
+
+    model_config = ConfigDict(extra="ignore")
+
+    current_stage: str = ""
+    stages: list[CareerStageContent] = Field(default_factory=list)
+    gap_analysis: list[str] = Field(default_factory=list)
+    timeline_estimate: str = ""
+
+
 class SalaryAnalysisContent(BaseModel):
     """AI-derived salary estimate and negotiation script. Reviewable, never ground truth.
 

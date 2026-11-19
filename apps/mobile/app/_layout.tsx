@@ -38,7 +38,19 @@ function RootNavigator() {
   const pathname = usePathname();
 
   useEffect(() => {
-    void setupNotifications(status, session?.access_token, guestId);
+    let cancelled = false;
+    let cleanup = () => {};
+    void setupNotifications(status, session?.access_token, guestId).then((remove) => {
+      if (cancelled) {
+        remove();
+      } else {
+        cleanup = remove;
+      }
+    });
+    return () => {
+      cancelled = true;
+      cleanup();
+    };
   }, [status, session?.access_token, guestId]);
 
   if (status === "restoring") {

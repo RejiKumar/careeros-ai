@@ -21,6 +21,7 @@ from .provider import (
     AnswerEvaluationResult,
     AssessmentResult,
     CareerAiProvider,
+    CareerPathResult,
     CoachResult,
     GapAnalysisResult,
     InterviewQuestionsResult,
@@ -34,6 +35,7 @@ from .provider import (
 )
 from .schemas import (
     AnswerEvaluation,
+    CareerPathContent,
     CoachMessage,
     CoachReply,
     GapAnalysisContent,
@@ -166,8 +168,12 @@ _INTERVIEW_USER_PROMPT = (
 _EVALUATE_SYSTEM_PROMPT = (
     "You evaluate a user's interview answer as guidance, never as a definitive "
     "hiring judgment. Score each criterion 0-100 based only on the answer and the "
-    "question. Be specific and encouraging. The suggested_answer must show how the "
-    "answer could be improved without inventing facts about the user. "
+    "question. Every score is an integer from 0 to 100. Be specific and encouraging. "
+    "The suggested_answer must show how the answer could be improved using ONLY facts "
+    "stated in the user's answer or the resume context. NEVER invent tools, numbers, "
+    "decisions, strategies or outcomes the user did not state; where a detail is "
+    "missing, write a bracketed placeholder such as [your TTL setting] for the user "
+    "to fill in. "
     "Return only JSON matching the requested schema, without markdown fences."
 )
 
@@ -209,6 +215,24 @@ _SALARY_SYSTEM_PROMPT = (
     "Always present figures as ranges and estimates to validate. Keep the "
     "negotiation script practical and respectful. "
     "Return only JSON matching the requested schema, without markdown fences."
+)
+
+_CAREER_PATH_SYSTEM_PROMPT = (
+    "You map a career progression from a candidate's resume. Ground every statement in "
+    "the resume content given: identify the stage the candidate is at today from their "
+    "actual titles and experience, then list the realistic next stages toward the target "
+    "role (or the natural next roles when none is given). NEVER invent the candidate's "
+    "employers, titles, skills, certifications or achievements; required_skills and "
+    "recommended_actions describe what a stage typically needs, and gap_analysis lists "
+    "only gaps between the resume and those needs. typical_years is a rough, advisory "
+    "estimate. current_stage MUST equal the title of one of the returned stages. "
+    "Return only JSON matching the requested schema, without markdown fences."
+)
+
+_CAREER_PATH_USER_PROMPT = (
+    "Map a career path for the candidate below.\n\n"
+    "<resume_content>\n{content}\n</resume_content>\n\n"
+    "<target_role>\n{target_role}\n</target_role>"
 )
 
 _SALARY_USER_PROMPT = (
@@ -458,6 +482,23 @@ class GeminiProvider(CareerAiProvider):
         return SalaryAnalysisResult(
             content=analysis, request_id=request_id, model_version=self._model
         )
+
+    def generate_career_path(
+        self,
+        content: ResumeContent,
+        target_role: str | None,
+        *,
+        locale: str = "en",
+    ) -> CareerPathResult:
+        payload = content.model_dump(mode="json")
+        user_text = _CAREER_PATH_USER_PROMPT.format(
+            content=json.dumps(payload, ensure_ascii=False),
+            target_role=(target_role or "").strip()[:200] or "not specified",
+        )
+        system_prompt = _CAREER_PATH_SYSTEM_PROMPT + _language_instruction(locale)
+        raw, request_id = self._generate(system_prompt, user_text, _career_path_json_schema())
+        path = _validated(CareerPathContent, raw, request_id)
+        return CareerPathResult(content=path, request_id=request_id, model_version=self._model)
 
     def _post_with_retry(self, body: dict, attempts: int = 2) -> httpx.Response:
         """POST generateContent, retrying transient errors, then trying fallback models.
@@ -852,6 +893,38 @@ def _salary_json_schema() -> dict[str, Any]:
             ),
         },
         ["salary_range", "script"],
+    )
+
+
+def _career_path_json_schema() -> dict[str, Any]:
+    """Strict JSON schema matching CareerPathContent."""
+    string_array = _string_array_schema()
+    return _object_schema(
+        {
+            "current_stage": {"type": "string"},
+            "stages": {
+                "type": "array",
+                "items": _object_schema(
+                    {
+                        "title": {"type": "string"},
+                        "description": {"type": "string"},
+                        "typical_years": {"type": "integer"},
+                        "required_skills": string_array,
+                        "recommended_actions": string_array,
+                    },
+                    [
+                        "title",
+                        "description",
+                        "typical_years",
+                        "required_skills",
+                        "recommended_actions",
+                    ],
+                ),
+            },
+            "gap_analysis": string_array,
+            "timeline_estimate": {"type": "string"},
+        },
+        ["current_stage", "stages", "gap_analysis", "timeline_estimate"],
     )
 
 

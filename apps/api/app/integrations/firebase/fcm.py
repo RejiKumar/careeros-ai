@@ -15,8 +15,14 @@ from app.core.config import Settings
 logger = logging.getLogger(__name__)
 
 _APP_NAME = "careeros-fcm"
+# Must match the default channel the mobile app creates (expo-notifications).
+ANDROID_CHANNEL_ID = "default"
 
 _initialized = False
+
+
+class InvalidTokenError(Exception):
+    """FCM reports the device token is no longer valid and should be deleted."""
 
 
 def _load_credentials(settings: Settings) -> dict | None:
@@ -83,17 +89,26 @@ def send_message(
         logger.warning("FCM is not configured; skipping push to token.")
         return False
     try:
+        import firebase_admin
         from firebase_admin import messaging
 
         messaging.send(
             messaging.Message(
                 notification=messaging.Notification(title=title, body=body, image=image_url),
+                android=messaging.AndroidConfig(
+                    notification=messaging.AndroidNotification(channel_id=ANDROID_CHANNEL_ID)
+                ),
                 token=token,
                 data=data,
             ),
-            app_name=_APP_NAME,
+            app=firebase_admin.get_app(_APP_NAME),
         )
         return True
-    except Exception:
+    except Exception as exc:
+        from firebase_admin import messaging as fb_messaging
+
+        if isinstance(exc, fb_messaging.UnregisteredError | fb_messaging.SenderIdMismatchError):
+            logger.info("FCM token is no longer valid; it will be removed.")
+            raise InvalidTokenError from exc
         logger.exception("Failed to send FCM message to device.")
         return False

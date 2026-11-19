@@ -12,20 +12,19 @@ import {
   ApiError,
   type JobDescriptionResponse,
   type ResumeResponse,
-  type TailorDiff,
-  type TailorHistoryItem,
+  type TailorResponse,
 } from "@/services/contract";
 
 type TailorState =
   | { status: "idle" }
   | { status: "loading" }
   | { status: "error"; message: string }
-  | { status: "success"; tailor: TailorDiff; jobDescription: JobDescriptionResponse };
+  | { status: "success"; tailor: TailorResponse; jobDescription: JobDescriptionResponse | null };
 
 type HistoryState =
   | { status: "loading" }
   | { status: "error"; message: string }
-  | { status: "success"; items: TailorHistoryItem[] };
+  | { status: "success"; items: TailorResponse[] };
 
 const apiClient = new ApiClient();
 
@@ -117,8 +116,8 @@ export default function ResumeTailorScreen() {
             resume_id: resumeId,
             job_description_id: jobDescriptionId,
           });
-      const jd = jobDescriptions.find((j) => j.id === jobDescriptionId) ?? result.job_description;
-      setTailorState({ status: "success", tailor: result.tailor, jobDescription: jd });
+      const jd = jobDescriptions.find((j) => j.id === jobDescriptionId) ?? null;
+      setTailorState({ status: "success", tailor: result, jobDescription: jd });
       setShowOriginal(false);
     } catch (err) {
       if (err instanceof ApiError && err.status === 401) {
@@ -380,8 +379,8 @@ export default function ResumeTailorScreen() {
                 >
                   <View style={styles.savedBody}>
                     <Text style={[styles.savedTitle, { color: colors.textPrimary }]}>
-                      {item.job_title ?? "Untitled role"}
-                      {item.job_company !== null ? ` · ${item.job_company}` : ""}
+                      {jobDescriptions.find((j) => j.id === item.job_description_id)?.title ??
+                        "Untitled role"}
                     </Text>
                     <Text style={[styles.savedText, { color: colors.textSecondary }]}>
                       {item.accepted ? t("tailor.accepted") : t("tailor.rejectButton")}
@@ -417,8 +416,8 @@ function TailorResultView({
   onAccept,
   onReject,
 }: {
-  tailor: TailorDiff;
-  jobDescription: JobDescriptionResponse;
+  tailor: TailorResponse;
+  jobDescription: JobDescriptionResponse | null;
   colors: ReturnType<typeof import("@/lib/theme").useTheme>["theme"]["colors"];
   showOriginal: boolean;
   onToggleView: () => void;
@@ -453,8 +452,8 @@ function TailorResultView({
       </Pressable>
 
       <Text style={[styles.resultSubtitle, { color: colors.textSecondary }]}>
-        {jobDescription.title ?? "Role"}
-        {jobDescription.company !== null ? ` at ${jobDescription.company}` : ""}
+        {jobDescription?.title ?? "Role"}
+        {jobDescription?.company != null ? ` at ${jobDescription.company}` : ""}
       </Text>
 
       {showOriginal ? (
@@ -466,7 +465,7 @@ function TailorResultView({
       <Text style={[styles.changesHeader, { color: colors.textPrimary }]}>
         {t("tailor.changes")}
       </Text>
-      {tailor.section_diffs.map((diff, i) => (
+      {tailor.diffs.map((diff, i) => (
         <View
           key={i}
           style={[
@@ -475,13 +474,13 @@ function TailorResultView({
           ]}
         >
           <Text style={[styles.changeSection, { color: colors.primaryStrong }]}>
-            {diff.section === "summary"
+            {diff.field === "summary"
               ? t("tailor.summaryChange")
-              : diff.section === "skills"
+              : diff.field === "skills"
                 ? t("tailor.skillsChange")
-                : diff.section === "experience"
+                : diff.field === "experience"
                   ? t("tailor.experienceChange")
-                  : diff.section}
+                  : diff.field}
           </Text>
           <Text style={[styles.reasoningLabel, { color: colors.textSecondary }]}>
             {t("tailor.reasoning")}
@@ -526,41 +525,55 @@ function TailorResultView({
   );
 }
 
-function OriginalView({
-  tailor,
-  colors,
-}: {
-  tailor: TailorDiff;
-  colors: ReturnType<typeof import("@/lib/theme").useTheme>["theme"]["colors"];
-}) {
+type Colors = ReturnType<typeof import("@/lib/theme").useTheme>["theme"]["colors"];
+
+function ContentBlock({ label, text, colors }: { label: string; text: string; colors: Colors }) {
+  return (
+    <View style={styles.contentBlock}>
+      <Text style={[styles.contentLabel, { color: colors.primaryStrong }]}>{label}</Text>
+      <Text style={[styles.contentText, { color: colors.textPrimary }]}>{text}</Text>
+    </View>
+  );
+}
+
+/** The API returns each field's original text in `diffs`; show those as "before". */
+function OriginalView({ tailor, colors }: { tailor: TailorResponse; colors: Colors }) {
   return (
     <View style={styles.contentView}>
-      {tailor.original_summary !== null && (
-        <View style={styles.contentBlock}>
-          <Text style={[styles.contentLabel, { color: colors.primaryStrong }]}>
-            {t("tailor.summaryChange")}
-          </Text>
-          <Text style={[styles.contentText, { color: colors.textPrimary }]}>
-            {tailor.original_summary}
-          </Text>
-        </View>
+      {tailor.diffs
+        .filter((diff) => diff.original.trim() !== "")
+        .map((diff, i) => (
+          <ContentBlock
+            key={i}
+            label={sectionLabel(diff.field)}
+            text={diff.original}
+            colors={colors}
+          />
+        ))}
+    </View>
+  );
+}
+
+function TailoredView({ tailor, colors }: { tailor: TailorResponse; colors: Colors }) {
+  const content = tailor.tailored_content;
+  return (
+    <View style={styles.contentView}>
+      {content.summary !== null && content.summary !== "" && (
+        <ContentBlock label={t("tailor.summaryChange")} text={content.summary} colors={colors} />
       )}
-      {tailor.original_skills.length > 0 && (
-        <View style={styles.contentBlock}>
-          <Text style={[styles.contentLabel, { color: colors.primaryStrong }]}>
-            {t("tailor.skillsChange")}
-          </Text>
-          <Text style={[styles.contentText, { color: colors.textPrimary }]}>
-            {tailor.original_skills.join(", ")}
-          </Text>
-        </View>
+      {content.skills.length > 0 && (
+        <ContentBlock
+          label={t("tailor.skillsChange")}
+          text={content.skills.join(", ")}
+          colors={colors}
+        />
       )}
-      {tailor.original_experience.length > 0 && (
+      {content.experience.length > 0 && (
         <View style={styles.contentBlock}>
           <Text style={[styles.contentLabel, { color: colors.primaryStrong }]}>
             {t("tailor.experienceChange")}
           </Text>
-          {tailor.original_experience.map((exp, i) => (
+          {content.experience.map((exp, i) => (
             <Text key={i} style={[styles.contentText, { color: colors.textPrimary }]}>
               {exp.title ?? exp.organization} — {exp.bullets.join("; ")}
             </Text>
@@ -571,49 +584,14 @@ function OriginalView({
   );
 }
 
-function TailoredView({
-  tailor,
-  colors,
-}: {
-  tailor: TailorDiff;
-  colors: ReturnType<typeof import("@/lib/theme").useTheme>["theme"]["colors"];
-}) {
-  return (
-    <View style={styles.contentView}>
-      {tailor.tailored_summary !== null && (
-        <View style={styles.contentBlock}>
-          <Text style={[styles.contentLabel, { color: colors.primaryStrong }]}>
-            {t("tailor.summaryChange")}
-          </Text>
-          <Text style={[styles.contentText, { color: colors.textPrimary }]}>
-            {tailor.tailored_summary}
-          </Text>
-        </View>
-      )}
-      {tailor.tailored_skills.length > 0 && (
-        <View style={styles.contentBlock}>
-          <Text style={[styles.contentLabel, { color: colors.primaryStrong }]}>
-            {t("tailor.skillsChange")}
-          </Text>
-          <Text style={[styles.contentText, { color: colors.textPrimary }]}>
-            {tailor.tailored_skills.join(", ")}
-          </Text>
-        </View>
-      )}
-      {tailor.tailored_experience.length > 0 && (
-        <View style={styles.contentBlock}>
-          <Text style={[styles.contentLabel, { color: colors.primaryStrong }]}>
-            {t("tailor.experienceChange")}
-          </Text>
-          {tailor.tailored_experience.map((exp, i) => (
-            <Text key={i} style={[styles.contentText, { color: colors.textPrimary }]}>
-              {exp.title ?? exp.organization} — {exp.bullets.join("; ")}
-            </Text>
-          ))}
-        </View>
-      )}
-    </View>
-  );
+function sectionLabel(field: string): string {
+  return field === "summary"
+    ? t("tailor.summaryChange")
+    : field === "skills"
+      ? t("tailor.skillsChange")
+      : field === "experience"
+        ? t("tailor.experienceChange")
+        : field;
 }
 
 const styles = StyleSheet.create({

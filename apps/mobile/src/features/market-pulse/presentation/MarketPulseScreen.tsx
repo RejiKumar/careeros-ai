@@ -244,7 +244,9 @@ function MarketPulseView({
             >
               <View style={styles.skillDemandHeader}>
                 <Text style={[styles.skillName, { color: colors.textPrimary }]}>{item.skill}</Text>
-                <ChangeBadge changePct={item.change_percent} colors={colors} />
+                {item.change_percent !== null && (
+                  <ChangeBadge changePct={item.change_percent} colors={colors} />
+                )}
               </View>
               <View style={[styles.barTrack, { backgroundColor: colors.border }]}>
                 <View

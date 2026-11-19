@@ -18,6 +18,7 @@ from app.core.config import Settings, get_settings
 
 from .schemas import (
     AnswerEvaluation,
+    CareerPathContent,
     CoachMessage,
     CoachReply,
     GapAnalysisContent,
@@ -99,6 +100,12 @@ class GapAnalysisResult(BaseModel):
 
 class SalaryAnalysisResult(BaseModel):
     content: SalaryAnalysisContent
+    request_id: str
+    model_version: str
+
+
+class CareerPathResult(BaseModel):
+    content: CareerPathContent
     request_id: str
     model_version: str
 
@@ -211,6 +218,21 @@ class CareerAiProvider(ABC):
 
         Estimates are advisory only, grounded in general market signals for
         the role and location, never fabricated single-point offers.
+        """
+        raise NotImplementedError
+
+    @abstractmethod
+    def generate_career_path(
+        self,
+        content: ResumeContent,
+        target_role: str | None,
+        *,
+        locale: str = "en",
+    ) -> CareerPathResult:
+        """Suggest a career progression grounded only in the resume content.
+
+        Stages are advisory; the path never invents the user's experience or
+        credentials.
         """
         raise NotImplementedError
 

@@ -1,5 +1,8 @@
 import type {
   AchievementResponse,
+  ApiCareerPath,
+  ApiGapAnalysis,
+  ApiGapAnalysisHistory,
   AssessmentResponse,
   BenefitsComparisonResponse,
   CoachMessagePairResponse,
@@ -41,8 +44,6 @@ import type {
   SavedCareerPathResponse,
   SavedCompanyResponse,
   SavedJobResponse,
-  TailorAcceptResponse,
-  TailorHistoryItem,
   TailorResponse,
   UserResponse,
   WrappedResponse,
@@ -50,6 +51,8 @@ import type {
   ApplicationStatsResponse,
 } from "./contract";
 import { ApiError } from "./contract";
+import { toCareerPath } from "./careerPath";
+import { toGapAnalysis, toGapAnalysisHistory } from "./gapAnalysis";
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL;
 
@@ -593,13 +596,13 @@ export class ApiClient {
     },
     guestId?: string,
   ): Promise<GapAnalysisResponse> {
-    return this.jsonRequest<GapAnalysisResponse>(
+    return this.jsonRequest<ApiGapAnalysis>(
       "/api/v1/skills-gap/analyze",
       accessToken,
       guestId,
       "POST",
       payload,
-    );
+    ).then(toGapAnalysis);
   }
 
   getGapAnalysis(
@@ -607,24 +610,18 @@ export class ApiClient {
     analysisId: string,
     guestId?: string,
   ): Promise<GapAnalysisResponse> {
-    return this.request<GapAnalysisResponse>(
-      `/api/v1/skills-gap/${analysisId}`,
-      accessToken,
-      guestId,
-      { method: "GET" },
-    );
+    return this.request<ApiGapAnalysis>(`/api/v1/skills-gap/${analysisId}`, accessToken, guestId, {
+      method: "GET",
+    }).then(toGapAnalysis);
   }
 
   listGapAnalyses(
     accessToken: string | undefined,
     guestId?: string,
   ): Promise<GapAnalysisHistoryResponse> {
-    return this.request<GapAnalysisHistoryResponse>(
-      "/api/v1/skills-gap",
-      accessToken,
-      guestId,
-      { method: "GET" },
-    );
+    return this.request<ApiGapAnalysisHistory>("/api/v1/skills-gap", accessToken, guestId, {
+      method: "GET",
+    }).then(toGapAnalysisHistory);
   }
 
   deleteGapAnalysis(
@@ -879,8 +876,8 @@ export class ApiClient {
     accessToken: string | undefined,
     payload: { tailor_id: string },
     guestId?: string,
-  ): Promise<TailorAcceptResponse> {
-    return this.jsonRequest<TailorAcceptResponse>(
+  ): Promise<TailorResponse> {
+    return this.jsonRequest<TailorResponse>(
       "/api/v1/resume-tailor/accept",
       accessToken,
       guestId,
@@ -893,8 +890,8 @@ export class ApiClient {
     accessToken: string | undefined,
     resumeId: string,
     guestId?: string,
-  ): Promise<TailorHistoryItem[]> {
-    return this.request<TailorHistoryItem[]>(
+  ): Promise<TailorResponse[]> {
+    return this.request<TailorResponse[]>(
       `/api/v1/resume-tailor/history/${resumeId}`,
       accessToken,
       guestId,
@@ -916,16 +913,12 @@ export class ApiClient {
     location?: string,
     guestId?: string,
   ): Promise<CompanyProfileResponse[]> {
-    const params = new URLSearchParams();
-    params.set("query", query);
-    if (location !== undefined && location !== "") {
-      params.set("location", location);
-    }
-    return this.request<CompanyProfileResponse[]>(
-      `/api/v1/companies/search?${params.toString()}`,
+    return this.jsonRequest<CompanyProfileResponse[]>(
+      "/api/v1/companies/search",
       accessToken,
       guestId,
-      { method: "POST" },
+      "POST",
+      { query, location: location !== undefined && location !== "" ? location : null },
     );
   }
 
@@ -957,7 +950,7 @@ export class ApiClient {
 
   saveCompany(
     accessToken: string | undefined,
-    payload: { company_id: string; company_name: string },
+    payload: { company_name: string },
     guestId?: string,
   ): Promise<SavedCompanyResponse> {
     return this.jsonRequest<SavedCompanyResponse>(
@@ -1037,13 +1030,13 @@ export class ApiClient {
     payload: { resume_id: string; target_role?: string },
     guestId?: string,
   ): Promise<CareerPathResponse> {
-    return this.jsonRequest<CareerPathResponse>(
+    return this.jsonRequest<ApiCareerPath>(
       "/api/v1/career-path/generate",
       accessToken,
       guestId,
       "POST",
       payload,
-    );
+    ).then(toCareerPath);
   }
 
   getCareerPath(
@@ -1051,9 +1044,9 @@ export class ApiClient {
     pathId: string,
     guestId?: string,
   ): Promise<CareerPathResponse> {
-    return this.request<CareerPathResponse>(`/api/v1/career-path/${pathId}`, accessToken, guestId, {
+    return this.request<ApiCareerPath>(`/api/v1/career-path/${pathId}`, accessToken, guestId, {
       method: "GET",
-    });
+    }).then(toCareerPath);
   }
 
   listCareerPaths(

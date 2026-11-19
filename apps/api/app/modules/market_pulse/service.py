@@ -1,6 +1,8 @@
-"""Market Pulse use cases: aggregated market intelligence dashboard.
+"""Market Pulse use cases: labour-market intelligence from real job postings.
 
-Returns mock data initially — real aggregation pipelines will replace stubs.
+Every number comes from live job-board statistics (job counts, salary
+distributions and the hiring leaderboard). When the source cannot be reached
+the use case fails with a clear error instead of returning placeholder data.
 """
 
 from __future__ import annotations
@@ -9,12 +11,14 @@ from datetime import UTC, datetime
 
 from fastapi import status
 
-from app.ai.provider import CareerAiProvider
 from app.core.auth import CurrentActor
 from app.core.errors import AppError
-from app.integrations.supabase.client import SupabaseClients, require_service_client
+from app.integrations.market_data.provider import (
+    MarketDataProvider,
+    MarketDataUnavailableError,
+    SkillCount,
+)
 
-from .repository import MarketPulseRepository
 from .schema import (
     MarketPulseResponse,
     SalaryRange,
@@ -24,21 +28,28 @@ from .schema import (
     TopCompany,
 )
 
+# Skills tracked on the dashboard. Each costs two cached source calls.
+TRACKED_SKILLS = ["Python", "React", "TypeScript", "Java", "AWS", "Docker"]
+SALARY_ROLES = ["Software Engineer", "Data Scientist"]
+TOP_COMPANY_ROLE = "software engineer"
+TOP_COMPANY_LIMIT = 5
+PERIOD = "30d"
+# A skill is "rising" or "declining" only beyond this posting-count change.
+TREND_THRESHOLD_PERCENT = 5.0
 
-class MarketPulseError(AppError):
-    def __init__(self, *, message: str = "Market data could not be loaded.") -> None:
+
+class MarketDataUnavailableAppError(AppError):
+    def __init__(self) -> None:
         super().__init__(
-            code="market_pulse_error",
-            message=message,
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            code="market_data_unavailable",
+            message="Live market data is temporarily unavailable. Please try again later.",
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
         )
 
 
 class MarketPulseService:
-    def __init__(self, clients: SupabaseClients, provider: CareerAiProvider) -> None:
-        service_client = require_service_client(clients)
+    def __init__(self, provider: MarketDataProvider) -> None:
         self._provider = provider
-        self._repository = MarketPulseRepository(service_client)
 
     def get_market_pulse(
         self,
@@ -47,100 +58,39 @@ class MarketPulseService:
         location: str | None = None,
         role: str | None = None,
     ) -> MarketPulseResponse:
-        now = datetime.now(UTC).isoformat()
-
-        # TODO: replace with real aggregation from repository + provider
-        skill_demands = [
-            SkillDemandItem(
-                skill="React",
-                demand_score=92.5,
-                change_percent=12.3,
-                period="6m",
-                job_count=1840,
-            ),
-            SkillDemandItem(
-                skill="Python",
-                demand_score=88.1,
-                change_percent=8.7,
-                period="6m",
-                job_count=2150,
-            ),
-            SkillDemandItem(
-                skill="TypeScript",
-                demand_score=85.4,
-                change_percent=15.1,
-                period="3m",
-                job_count=1620,
-            ),
-            SkillDemandItem(
-                skill="Node.js",
-                demand_score=79.8,
-                change_percent=5.2,
-                period="1y",
-                job_count=1380,
-            ),
-            SkillDemandItem(
-                skill="AWS",
-                demand_score=82.0,
-                change_percent=10.4,
-                period="6m",
-                job_count=1590,
-            ),
-        ]
-
-        salary_ranges = [
-            SalaryRange(
-                role="Software Engineer",
-                location="Bangalore",
-                min_salary=600000,
-                max_salary=1800000,
-                median_salary=1100000,
-                experience_level="mid",
-            ),
-            SalaryRange(
-                role="Software Engineer",
-                location="Remote",
-                min_salary=500000,
-                max_salary=1600000,
-                median_salary=950000,
-                experience_level="mid",
-            ),
-            SalaryRange(
-                role="Data Scientist",
-                location="Bangalore",
-                min_salary=800000,
-                max_salary=2200000,
-                median_salary=1400000,
-                experience_level="senior",
-            ),
-        ]
-
-        top_companies = [
-            TopCompany(
-                name="TCS",
-                job_count=342,
-                tech_stack=["Java", "React", "AWS"],
-                location="Bangalore",
-            ),
-            TopCompany(
-                name="Infosys",
-                job_count=298,
-                tech_stack=["Python", "Angular", "Azure"],
-                location="Hyderabad",
-            ),
-            TopCompany(
-                name="Flipkart",
-                job_count=156,
-                tech_stack=["Kotlin", "React", "GCP"],
-                location="Bangalore",
-            ),
-        ]
+        location = (location or "").strip() or None
+        roles = [role.strip()] if role and role.strip() else SALARY_ROLES
+        try:
+            counts = self._provider.skill_counts(TRACKED_SKILLS, location)
+            salary_ranges: list[SalaryRange] = []
+            for salary_role in roles:
+                stats = self._provider.salary_stats(salary_role, location)
+                if stats is None:
+                    continue
+                salary_ranges.append(
+                    SalaryRange(
+                        role=salary_role,
+                        location=location or "All locations",
+                        min_salary=stats.min_salary,
+                        max_salary=stats.max_salary,
+                        median_salary=stats.median_salary,
+                        currency=stats.currency,
+                    )
+                )
+            companies = self._provider.top_companies(
+                role or TOP_COMPANY_ROLE, location, TOP_COMPANY_LIMIT
+            )
+        except MarketDataUnavailableError as exc:
+            raise MarketDataUnavailableAppError() from exc
 
         return MarketPulseResponse(
-            skill_demands=skill_demands,
+            skill_demands=_skill_demands(counts),
             salary_ranges=salary_ranges,
-            top_companies=top_companies,
-            generated_at=now,
+            top_companies=[
+                TopCompany(name=c.name, job_count=c.job_count, tech_stack=[], location=location)
+                for c in companies
+            ],
+            generated_at=datetime.now(UTC).isoformat(),
         )
 
     def get_skill_trends(
@@ -150,46 +100,59 @@ class MarketPulseService:
         period: str,
         location: str | None = None,
     ) -> SkillTrendResponse:
-        now = datetime.now(UTC).isoformat()
+        location = (location or "").strip() or None
+        try:
+            counts = self._provider.skill_counts(TRACKED_SKILLS, location)
+        except MarketDataUnavailableError as exc:
+            raise MarketDataUnavailableAppError() from exc
 
-        # TODO: replace with real trend analysis from repository + provider
         trends = [
             SkillTrendItem(
-                skill="React",
-                direction="rising",
-                change_percent=12.3,
-                period=period,
-            ),
-            SkillTrendItem(
-                skill="Python",
-                direction="rising",
-                change_percent=8.7,
-                period=period,
-            ),
-            SkillTrendItem(
-                skill="Java",
-                direction="stable",
-                change_percent=1.2,
-                period=period,
-            ),
-            SkillTrendItem(
-                skill="PHP",
-                direction="declining",
-                change_percent=-4.5,
-                period=period,
-            ),
-            SkillTrendItem(
-                skill="jQuery",
-                direction="declining",
-                change_percent=-11.2,
-                period=period,
-            ),
+                skill=count.skill,
+                direction=_direction(change),
+                change_percent=change,
+                period=PERIOD,
+            )
+            for count in counts
+            if (change := _change_percent(count)) is not None
         ]
-
-        recommended_skills = ["React", "Python", "TypeScript", "AWS", "Docker"]
-
+        recommended = [
+            count.skill
+            for count in sorted(counts, key=lambda c: c.last_30_days, reverse=True)
+            if count.last_30_days > 0
+        ][:5]
         return SkillTrendResponse(
             trends=trends,
-            recommended_skills=recommended_skills,
-            generated_at=now,
+            recommended_skills=recommended,
+            generated_at=datetime.now(UTC).isoformat(),
         )
+
+
+def _change_percent(count: SkillCount) -> float | None:
+    """Posting-count change vs the previous 30 days; None when there is no baseline."""
+    if count.previous_30_days <= 0:
+        return None
+    return round((count.last_30_days - count.previous_30_days) / count.previous_30_days * 100, 1)
+
+
+def _direction(change: float) -> str:
+    if change > TREND_THRESHOLD_PERCENT:
+        return "rising"
+    if change < -TREND_THRESHOLD_PERCENT:
+        return "declining"
+    return "stable"
+
+
+def _skill_demands(counts: list[SkillCount]) -> list[SkillDemandItem]:
+    busiest = max((c.last_30_days for c in counts), default=0)
+    items = [
+        SkillDemandItem(
+            skill=count.skill,
+            demand_score=round(count.last_30_days / busiest * 100, 1) if busiest else 0.0,
+            change_percent=_change_percent(count),
+            period=PERIOD,
+            job_count=count.last_30_days,
+        )
+        for count in counts
+    ]
+    return sorted(items, key=lambda item: item.job_count, reverse=True)

@@ -551,7 +551,7 @@ export default function InterviewScreen() {
                             {t(i18nKey)}
                           </Text>
                           <Text style={[styles.evalScore, { color: colors.primaryStrong }]}>
-                            {answerState.evaluation[evalKey]}/10
+                            {answerState.evaluation[evalKey]}/100
                           </Text>
                         </View>
                       ))}

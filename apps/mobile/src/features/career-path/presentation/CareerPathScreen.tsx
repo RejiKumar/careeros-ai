@@ -297,14 +297,14 @@ export default function CareerPathScreen() {
               <View style={styles.savedBody}>
                 <Text style={[styles.savedTitle, { color: colors.textPrimary }]}>
                   {item.target_role ?? "Career Path"} —{" "}
-                  {new Date(item.saved_at).toLocaleDateString()}
+                  {new Date(item.created_at).toLocaleDateString()}
                 </Text>
               </View>
               <View style={styles.savedActions}>
                 <Pressable
                   accessibilityRole="button"
                   accessibilityLabel={`${t("common.delete")} career path`}
-                  onPress={() => void handleDelete(item.path_id)}
+                  onPress={() => void handleDelete(item.id)}
                   style={[styles.smallButton, { backgroundColor: colors.danger }]}
                 >
                   <Text style={[styles.smallButtonText, { color: colors.onDanger }]}>
