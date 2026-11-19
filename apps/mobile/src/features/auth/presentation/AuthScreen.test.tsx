@@ -7,6 +7,7 @@ import AuthScreen from "./AuthScreen";
 const mockSignIn = jest.fn();
 const mockSignUp = jest.fn();
 const mockGoogleSignIn = jest.fn();
+const mockSignInAsGuest = jest.fn();
 const mockReplace = jest.fn();
 
 jest.mock("expo-router", () => ({
@@ -20,6 +21,7 @@ jest.mock("@/lib/auth", () => ({
     signIn: mockSignIn,
     signUp: mockSignUp,
     googleSignIn: mockGoogleSignIn,
+    signInAsGuest: mockSignInAsGuest,
     signOut: jest.fn(),
     handleUnauthorized: jest.fn(),
   }),
@@ -47,7 +49,30 @@ describe("AuthScreen", () => {
     mockSignIn.mockClear();
     mockSignUp.mockClear();
     mockGoogleSignIn.mockClear();
+    mockSignInAsGuest.mockReset();
     mockReplace.mockClear();
+  });
+
+  it("continues as guest and leaves the auth screen", async () => {
+    mockSignInAsGuest.mockResolvedValueOnce(undefined);
+    const screen = await renderAuth();
+    const user = userEvent.setup();
+
+    await user.press(screen.getByLabelText("Continue as guest"));
+
+    await waitFor(() => expect(mockReplace).toHaveBeenCalledWith("/"));
+    expect(mockSignInAsGuest).toHaveBeenCalled();
+  });
+
+  it("stays on the auth screen and shows the error when guest start fails", async () => {
+    mockSignInAsGuest.mockRejectedValueOnce(new Error("Storage unavailable"));
+    const screen = await renderAuth();
+    const user = userEvent.setup();
+
+    await user.press(screen.getByLabelText("Continue as guest"));
+
+    expect(await screen.findByText("Storage unavailable")).toBeOnTheScreen();
+    expect(mockReplace).not.toHaveBeenCalled();
   });
 
   it("calls Google sign in on success", async () => {
