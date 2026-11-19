@@ -122,6 +122,34 @@ def test_falls_back_to_the_fallback_model_when_primary_keeps_failing() -> None:
     assert [_model_of(r) for r in captured] == [MODEL, MODEL, "gemini-2.5-flash"]
 
 
+def test_timeout_moves_straight_to_the_fallback_model() -> None:
+    raw = json.dumps({"skills": ["Python"]})
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        if _model_of(request) == MODEL:
+            raise httpx.ReadTimeout("slow", request=request)
+        return httpx.Response(200, json=_ok_payload(raw))
+
+    provider, captured = _provider(handler, fallback_models=("fallback-model",))
+
+    parsed = provider.parse_resume("text")
+
+    assert parsed.content.skills == ["Python"]
+    assert [_model_of(r) for r in captured] == [MODEL, "fallback-model"]
+
+
+def test_timeout_on_every_model_becomes_provider_error() -> None:
+    def handler(request: httpx.Request) -> httpx.Response:
+        raise httpx.ReadTimeout("slow", request=request)
+
+    provider, captured = _provider(handler, fallback_models=("fallback-model",))
+
+    with pytest.raises(ProviderError, match="timed out"):
+        provider.parse_resume("text")
+
+    assert len(captured) == 2
+
+
 def test_all_models_failing_becomes_provider_error() -> None:
     provider, captured = _provider(
         lambda request: httpx.Response(503, json={"error": "high demand"}),
