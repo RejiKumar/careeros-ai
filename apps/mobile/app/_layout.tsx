@@ -1,26 +1,17 @@
 import { Redirect, Stack, usePathname } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useEffect } from "react";
-import {
-  ActivityIndicator,
-  Platform,
-  StatusBar as RNStatusBar,
-  StyleSheet,
-  View,
-} from "react-native";
+import { ActivityIndicator, StyleSheet, View } from "react-native";
 
 import { AuthProvider, useAuth } from "@/lib/auth";
 import { setupNotifications } from "@/lib/notifications";
 import { ThemeProvider, useTheme } from "@/lib/theme";
 import { initAdMob } from "@/ui/AdBanner";
 
+// The app draws edge to edge (Android 15+), so the status bar has no background
+// colour to set: only the icon style follows the theme.
 function ThemedStatusBar() {
-  const { colorScheme, theme } = useTheme();
-  useEffect(() => {
-    if (Platform.OS === "android") {
-      RNStatusBar.setBackgroundColor(colorScheme === "dark" ? "#14181D" : theme.colors.surface);
-    }
-  }, [colorScheme, theme]);
+  const { colorScheme } = useTheme();
   return <StatusBar style={colorScheme === "dark" ? "light" : "dark"} />;
 }
 
@@ -33,7 +24,11 @@ function RestoringScreen() {
   );
 }
 
+/** Widest the app content gets; on tablets and landscape it is centred, not stretched. */
+export const MAX_CONTENT_WIDTH = 720;
+
 function RootNavigator() {
+  const { theme } = useTheme();
   const { status, session, guestId } = useAuth();
   const pathname = usePathname();
 
@@ -66,10 +61,12 @@ function RootNavigator() {
   }
 
   return (
-    <>
+    <View style={[styles.canvas, { backgroundColor: theme.colors.background }]}>
       <ThemedStatusBar />
-      <Stack screenOptions={{ headerShown: false }} />
-    </>
+      <View style={styles.column}>
+        <Stack screenOptions={{ headerShown: false }} />
+      </View>
+    </View>
   );
 }
 
@@ -88,6 +85,15 @@ export default function RootLayout() {
 }
 
 const styles = StyleSheet.create({
+  canvas: {
+    flex: 1,
+  },
+  column: {
+    flex: 1,
+    width: "100%",
+    maxWidth: MAX_CONTENT_WIDTH,
+    alignSelf: "center",
+  },
   restoring: {
     flex: 1,
     alignItems: "center",

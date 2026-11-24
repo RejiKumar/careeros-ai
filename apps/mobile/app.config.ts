@@ -38,7 +38,7 @@ const profiles: Record<AppEnvironment, Partial<ExpoConfig>> = {
     version: '1.0.1',
     android: {
       package: "ai.careeros.app.dev",
-      versionCode: 16,
+      versionCode: 17,
     },
     ios: {
       bundleIdentifier: "ai.careeros.app.dev",
@@ -52,7 +52,7 @@ const profiles: Record<AppEnvironment, Partial<ExpoConfig>> = {
     version: '1.0.1',
     android: {
       package: "ai.careeros.app",
-      versionCode: 16,
+      versionCode: 17,
       googleServicesFile: GOOGLE_SERVICES_FILE,
     },
     ios: {
@@ -71,7 +71,8 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     name: profile.name ?? config.name ?? "CareerOS AI",
     slug: profile.slug ?? config.slug ?? "careeros-ai",
     version: profile.version ?? config.version ?? "1.0.0",
-    orientation: "portrait",
+    // No orientation lock: Android 16 ignores it on large screens, and Play flags it.
+    orientation: "default",
     userInterfaceStyle: "automatic",
     icon: "./assets/careerosai_icon.png",
     android: {
@@ -95,6 +96,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
       "./plugins/withAdMobManifest",
       "./plugins/withNewArchDisabled",
       "./plugins/withOptionalHardware",
+      "./plugins/withR8Release",
       [
         "expo-notifications",
         {
